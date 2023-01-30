@@ -275,8 +275,7 @@ Winter$EthnicityDummyMixed <-
                                                                  "Mixed - White and Asian" ,
                                                                  "Other ethnic group - Arab",
                                                                  "Mixed - White and Black Caribbean",
-                                                                 "Mixed - White and Black African"),
-    1,0) %>% as.numeric()
+                                                                 "Mixed - White and Black African"),1,0) %>% as.numeric()
 
 
 
@@ -437,7 +436,9 @@ Winter$SmellIssues <- ifelse(Winter$Do..you.have.any.difficulties.being.able.to.
 Winter$HearingIssues <- ifelse(Winter$Do..you.have.difficulties.with.your.hearing.at.the.moment..Please.answer.assuming..you.are.wearing.hearing.aids.if.you.need.them.=="Yes",1,0)
 Winter$SightIssues <- ifelse(Winter$Do..you.have.difficulties.with.your.sight.at.the.moment..Please.answer.assuming.you..are.wearing.glasses.or.contact.lenses.if.you.need.them.=="Yes",1,0)
 
-
+Winter$Impairment <- ifelse((Winter$SightIssues==1)|
+                                (Winter$SmellIssues==1)|
+                                (Winter$HearingIssues==1),1,0)
 
 #----------------------------------------------------------------------------------------------------------
 ## Calculating distances:
@@ -781,7 +782,7 @@ Reshaped$Respondent <-rep(1:nrow(Winter),each=length(unique(Reshaped$Task)))
 ## I coerce all these variables to numeric here to enable estimation later
 Reshaped <- Reshaped %>% mutate_at(c("EducationDummy","Choice","Gender","ExactAge","MilesDistance",
                                      "Charity","EducationLevels","ClassDummy","IncomeDummy",
-                                     "SmellIssues","SightIssues","SightIssues","HearingIssues",
+                                     "SmellIssues","SightIssues","SightIssues","HearingIssues","Impairment",
                                      "Country","EthnicityDummyWhite","Block","Overall",
                                      "Encountering.the.living.things","The.number.of.living.things",
                                      "The.variety.of.living.things","The.interactions.between.plants",
@@ -832,8 +833,8 @@ colnames(database)[which(names(database)=="Spring20210WoodlandVisitDummy")] <- "
 
 
 ## These are the only ones we actually end up using
-write.csv(database, file = "database_Winter.csv", fileEncoding = "latin1")
-write.csv(Winter,  file = "Winter_dataframe.csv", fileEncoding = "latin1")
+write.csv(database, file = "database_Winter_Step1.csv", fileEncoding = "latin1")
+write.csv(Winter,  file = "Winter_dataframe_Step1.csv", fileEncoding = "latin1")
 
 # write.csv(database_Truncated, file = "database_Truncated_Winter.csv", fileEncoding = "latin1")
 
