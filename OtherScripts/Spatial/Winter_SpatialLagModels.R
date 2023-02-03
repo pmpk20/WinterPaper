@@ -69,14 +69,10 @@ Data_Winter <- Data
 
 
 K = sqrt(nrow(Data))
-Data <-
-  Data[!is.na(Data$LonH),]
-Data <-
-  Data[!is.na(Data$LatH),]
-Data <-
-  Data[which(!duplicated(Data$LatH)),]
-Data <-
-  Data[which(!duplicated(Data$LonH)),]
+Data <- Data[!is.na(Data$LonH),]
+Data <- Data[!is.na(Data$LatH),]
+Data <- Data[which(!duplicated(Data$LatH)),]
+Data <- Data[which(!duplicated(Data$LonH)),]
 
 
 K = sqrt(nrow(Data))
@@ -90,26 +86,6 @@ Distances_Inverse <- lapply(Distances, function(x)
   1 / (x ^ 2))
 KNN_Weights <- nb2listw(KNN_ToNBs, glist = Distances_Inverse)
 
-
-
-
-# # GB_Winter <- st_read("GB_Winter_2021-10-27.gpkg")
-# GB_Winter_Joined <- st_read("GB_Winter_2022_07_29.gpkg")
-# # GB_Winter_Joined <- st_read("GB_Winter_Joined_2021-11-24.gpkg")
-# GB_Winter_Trimmed <- GB_Winter_Joined[!is.na(GB_Winter_Joined$ColourWTP),]
-#
-#
-# GB_Winter_Trimmed <-
-#   GB_Winter_Trimmed[!is.na(GB_Winter_Trimmed$LonH),]
-# GB_Winter_Trimmed <-
-#   GB_Winter_Trimmed[!is.na(GB_Winter_Trimmed$LatH),]
-# GB_Winter_Trimmed <-
-#   GB_Winter_Trimmed[which(!duplicated(GB_Winter_Trimmed$LatH)),]
-# GB_Winter_Trimmed <-
-#   GB_Winter_Trimmed[which(!duplicated(GB_Winter_Trimmed$LonH)),]
-#
-# Data_Winter <-
-#   GB_Winter_Trimmed
 
 
 # Function Definition -----------------------------------------------------

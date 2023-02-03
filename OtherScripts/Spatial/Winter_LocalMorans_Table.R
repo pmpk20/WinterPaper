@@ -592,6 +592,9 @@ Data$quad_sig_WTP_DecompositionHigh <- recode(Data$quad_sig_WTP_DecompositionHig
 #----------------------------------------------------------------------
 
 
+
+# Yeah this is ugly but somehow it actually spits out the table like the one in-text:
+## Be careful of mixing plyr (for rbind.fill) and dplyr (for everything else)
 LocalMoransTable <- rbind.fill(
   data.frame(rbind(round(table(Data$quad_sig_WTP_Tax),2),
         noquote(paste0("(",round(prop.table(table(Data$quad_sig_WTP_Tax))*100,2),"%)")))),
