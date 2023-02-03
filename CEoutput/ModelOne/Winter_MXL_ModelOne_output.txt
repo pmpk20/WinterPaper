@@ -1,0 +1,670 @@
+Model run by pk372 using Apollo 0.2.8 on R 4.1.1 for Linux.
+www.ApolloChoiceModelling.com
+
+Model name                                  : Winter_MXL_ModelOne
+Model description                           : Winter_MXL_ModelOne
+Model run at                                : 2023-01-31 00:16:21
+Estimation method                           : bfgs
+Model diagnosis                             : successful convergence 
+Number of individuals                       : 1711
+Number of rows in database                  : 15399
+Number of modelled outcomes                 : 15399
+
+Number of cores used                        :  1 
+Number of inter-individual draws            : 1000 (pmc)
+
+LL(start)                                   : -19947.33
+LL at equal shares, LL(0)                   : -16917.53
+LL at observed shares, LL(C)                : -16806.78
+LL(final)                                   : -12915.19
+Rho-squared vs equal shares                  :  0.2366 
+Adj.Rho-squared vs equal shares              :  0.2355 
+Rho-squared vs observed shares               :  0.2315 
+Adj.Rho-squared vs observed shares           :  0.2304 
+AIC                                         :  25868.37 
+BIC                                         :  26013.57 
+
+Estimated parameters                        :  19
+Time taken (hh:mm:ss)                       :  03:53:10.2 
+     pre-estimation                         :  00:18:36.32 
+     estimation                             :  01:47:41.18 
+     post-estimation                        :  01:46:52.7 
+Iterations                                  :  109  
+Min abs eigenvalue of Hessian               :  0.827434 
+
+Unconstrained optimisation.
+
+These outputs have had the scaling used in estimation applied to them.
+Estimates:
+                 Estimate        s.e.   t.rat.(0)  p(1-sided)    Rob.s.e.
+asc_A              0.0000          NA          NA          NA          NA
+asc_B              0.0000          NA          NA          NA          NA
+asc_C             -2.0574     0.04196    -49.0300    0.000000     0.05925
+mu_Tax            -3.9038     0.10039    -38.8880    0.000000     0.10000
+mu_Sound          -1.5492     0.48172     -3.2161  6.4976e-04     0.50236
+mu_Smell          -0.4604     0.57003     -0.8077    0.209618     0.57422
+mu_Colour          3.8545     0.61414      6.2762   1.735e-10     0.92167
+mu_Deadwood        1.5104     0.40612      3.7190  9.9996e-05     0.50323
+sig_Tax           -3.0774     0.11960    -25.7298    0.000000     0.13654
+sig_Sound         -0.5833     0.44802     -1.3020    0.096458     0.20484
+sig_Smell          1.0690     0.42759      2.5000    0.006209     0.28672
+sig_Colour        -0.4216     0.47297     -0.8915    0.186334     0.23059
+sig_Deadwood      -1.5304     0.21940     -6.9755   1.524e-12     0.24217
+mu_Sound2          2.7415     0.55010      4.9835   3.122e-07     0.64794
+mu_Smell2          3.4731     0.47077      7.3775   8.060e-14     0.74844
+mu_Colour2         7.0321     0.72823      9.6565    0.000000     1.24911
+mu_Deadwood2      -4.5593     0.60475     -7.5392   2.365e-14     0.57970
+sig_Sound2         4.5731     0.43273     10.5681    0.000000     0.68501
+sig_Smell2         1.1024     0.25730      4.2843   9.167e-06     0.20753
+sig_Colour2        5.8303     0.43683     13.3469    0.000000     0.76128
+sig_Deadwood2      4.2480     0.55671      7.6305   1.166e-14     0.45099
+              Rob.t.rat.(0)  p(1-sided)
+asc_A                    NA          NA
+asc_B                    NA          NA
+asc_C              -34.7236    0.000000
+mu_Tax             -39.0379    0.000000
+mu_Sound            -3.0839    0.001021
+mu_Smell            -0.8019    0.211319
+mu_Colour            4.1821   1.444e-05
+mu_Deadwood          3.0014    0.001344
+sig_Tax            -22.5391    0.000000
+sig_Sound           -2.8477    0.002202
+sig_Smell            3.7283   9.638e-05
+sig_Colour          -1.8286    0.033732
+sig_Deadwood        -6.3194   1.313e-10
+mu_Sound2            4.2310   1.163e-05
+mu_Smell2            4.6405   1.738e-06
+mu_Colour2           5.6297   9.025e-09
+mu_Deadwood2        -7.8649   1.887e-15
+sig_Sound2           6.6760   1.228e-11
+sig_Smell2           5.3119   5.425e-08
+sig_Colour2          7.6585   9.437e-15
+sig_Deadwood2        9.4193    0.000000
+
+
+Overview of choices for MNL model component :
+                                        A       B        C
+Times available                  15399.00 15399.0 15399.00
+Times chosen                      5854.00  5189.0  4356.00
+Percentage chosen overall           38.02    33.7    28.29
+Percentage chosen when available    38.02    33.7    28.29
+
+
+Classical covariance matrix:
+                      asc_C        mu_Tax      mu_Sound      mu_Smell
+asc_C              0.001761   -8.8547e-04      0.003394   -1.9876e-04
+mu_Tax          -8.8547e-04      0.010077     -0.002343     -0.001690
+mu_Sound           0.003394     -0.002343      0.232050     -0.028737
+mu_Smell        -1.9876e-04     -0.001690     -0.028737      0.324931
+mu_Colour         -0.008439      0.002747     -0.114302     -0.159616
+mu_Deadwood       -0.005101      0.003776     -0.105456      0.036006
+sig_Tax           -0.001132      0.006102     -0.004837      0.004342
+sig_Sound          0.001473    -1.395e-05     -0.042651      0.008454
+sig_Smell         -0.002338    2.4015e-04     -0.005468      0.111855
+sig_Colour         0.001043     1.653e-05     8.320e-05     -0.003334
+sig_Deadwood       0.002384     -0.001042      0.011922      0.022822
+mu_Sound2         -0.003892     -0.003612      0.038535     -0.039376
+mu_Smell2         -0.007488      0.003269     -0.134073      0.020030
+mu_Colour2        -0.009043    9.5733e-04     -0.090558     -0.063248
+mu_Deadwood2      9.894e-05     -0.007665      0.022853      0.041151
+sig_Sound2        -0.006356   -2.0283e-04     -0.055193     -0.008392
+sig_Smell2        -0.001421     6.679e-05      0.001700     -0.009659
+sig_Colour2       -0.006205      0.001219     -0.079814     -0.024377
+sig_Deadwood2     -0.003836     -0.002385     -0.070067      0.036990
+                  mu_Colour   mu_Deadwood       sig_Tax     sig_Sound
+asc_C             -0.008439     -0.005101     -0.001132      0.001473
+mu_Tax             0.002747      0.003776      0.006102    -1.395e-05
+mu_Sound          -0.114302     -0.105456     -0.004837     -0.042651
+mu_Smell          -0.159616      0.036006      0.004342      0.008454
+mu_Colour          0.377172      0.059199      0.016880     -0.028482
+mu_Deadwood        0.059199      0.164937      0.014314     -0.006970
+sig_Tax            0.016880      0.014314      0.014305     -0.002912
+sig_Sound         -0.028482     -0.006970     -0.002912      0.200726
+sig_Smell          0.011479      0.032121      0.003779      0.005994
+sig_Colour        -0.016091     -0.019097     -0.009460      0.021432
+sig_Deadwood      -0.065245     -0.038687     -0.004912     -0.011145
+mu_Sound2          0.116040     -0.045847      0.004096     -0.003757
+mu_Smell2          0.140995      0.128997      0.015335     -0.016348
+mu_Colour2         0.215367      0.117969      0.016793     -0.023180
+mu_Deadwood2      -0.007037   -5.6381e-04     -0.004205     -0.005263
+sig_Sound2         0.142495      0.048984      0.011072     -0.012967
+sig_Smell2         0.027608      0.003729      0.001503      0.008943
+sig_Colour2        0.136165      0.089344      0.010337     -0.013753
+sig_Deadwood2      0.067526      0.071514      0.003985     -0.020573
+                  sig_Smell    sig_Colour  sig_Deadwood     mu_Sound2
+asc_C             -0.002338      0.001043      0.002384     -0.003892
+mu_Tax           2.4015e-04     1.653e-05     -0.001042     -0.003612
+mu_Sound          -0.005468     8.320e-05      0.011922      0.038535
+mu_Smell           0.111855     -0.003334      0.022822     -0.039376
+mu_Colour          0.011479     -0.016091     -0.065245      0.116040
+mu_Deadwood        0.032121     -0.019097     -0.038687     -0.045847
+sig_Tax            0.003779     -0.009460     -0.004912      0.004096
+sig_Sound          0.005994      0.021432     -0.011145     -0.003757
+sig_Smell          0.182832      0.134597   -9.1316e-04      0.006167
+sig_Colour         0.134597      0.223700     -0.005953     -0.002939
+sig_Deadwood    -9.1316e-04     -0.005953      0.048134     -0.031525
+mu_Sound2          0.006167     -0.002939     -0.031525      0.302614
+mu_Smell2          0.034553     -0.016553     -0.036658      0.031322
+mu_Colour2         0.036427     -0.008320     -0.054771      0.064850
+mu_Deadwood2       0.026594      0.001762     -0.004254      0.029053
+sig_Sound2         0.023099     -0.011285     -0.038193      0.187746
+sig_Smell2         0.003854     -0.002366     -0.009674      0.039474
+sig_Colour2        0.025566     -0.007231     -0.034875      0.038486
+sig_Deadwood2      0.036935      0.001224     -0.018052      0.015359
+                  mu_Smell2    mu_Colour2  mu_Deadwood2    sig_Sound2
+asc_C             -0.007488     -0.009043     9.894e-05     -0.006356
+mu_Tax             0.003269    9.5733e-04     -0.007665   -2.0283e-04
+mu_Sound          -0.134073     -0.090558      0.022853     -0.055193
+mu_Smell           0.020030     -0.063248      0.041151     -0.008392
+mu_Colour          0.140995      0.215367     -0.007037      0.142495
+mu_Deadwood        0.128997      0.117969   -5.6381e-04      0.048984
+sig_Tax            0.015335      0.016793     -0.004205      0.011072
+sig_Sound         -0.016348     -0.023180     -0.005263     -0.012967
+sig_Smell          0.034553      0.036427      0.026594      0.023099
+sig_Colour        -0.016553     -0.008320      0.001762     -0.011285
+sig_Deadwood      -0.036658     -0.054771     -0.004254     -0.038193
+mu_Sound2          0.031322      0.064850      0.029053      0.187746
+mu_Smell2          0.221626      0.183024     -0.020033      0.139237
+mu_Colour2         0.183024      0.530312     -0.073029      0.134512
+mu_Deadwood2      -0.020033     -0.073029      0.365718      0.007536
+sig_Sound2         0.139237      0.134512      0.007536      0.187255
+sig_Smell2         0.032934      0.052996     -0.009735      0.030680
+sig_Colour2        0.147770      0.291272     -0.034348      0.100806
+sig_Deadwood2      0.103161      0.030168      0.219648      0.072922
+                 sig_Smell2   sig_Colour2 sig_Deadwood2
+asc_C             -0.001421     -0.006205     -0.003836
+mu_Tax            6.679e-05      0.001219     -0.002385
+mu_Sound           0.001700     -0.079814     -0.070067
+mu_Smell          -0.009659     -0.024377      0.036990
+mu_Colour          0.027608      0.136165      0.067526
+mu_Deadwood        0.003729      0.089344      0.071514
+sig_Tax            0.001503      0.010337      0.003985
+sig_Sound          0.008943     -0.013753     -0.020573
+sig_Smell          0.003854      0.025566      0.036935
+sig_Colour        -0.002366     -0.007231      0.001224
+sig_Deadwood      -0.009674     -0.034875     -0.018052
+mu_Sound2          0.039474      0.038486      0.015359
+mu_Smell2          0.032934      0.147770      0.103161
+mu_Colour2         0.052996      0.291272      0.030168
+mu_Deadwood2      -0.009735     -0.034348      0.219648
+sig_Sound2         0.030680      0.100806      0.072922
+sig_Smell2         0.066205      0.038292     -0.030207
+sig_Colour2        0.038292      0.190817      0.042866
+sig_Deadwood2     -0.030207      0.042866      0.309924
+
+Robust covariance matrix:
+                      asc_C        mu_Tax      mu_Sound      mu_Smell
+asc_C              0.003511   -7.0922e-04      0.007622      0.003748
+mu_Tax          -7.0922e-04      0.010000   -8.7449e-04     -0.003464
+mu_Sound           0.007622   -8.7449e-04      0.252367      0.014822
+mu_Smell           0.003748     -0.003464      0.014822      0.329728
+mu_Colour         -0.021554      0.004396     -0.272952     -0.282042
+mu_Deadwood       -0.011880      0.003940     -0.183257     -0.022873
+sig_Tax           -0.001454      0.006366     -0.019857     -0.008456
+sig_Sound          0.003046   -7.0980e-04      0.002091      0.032518
+sig_Smell         -0.004174    1.1123e-04     -0.038480      0.072326
+sig_Colour         0.002202   -2.5947e-04      0.012807     -0.006885
+sig_Deadwood       0.006048     -0.001718      0.058494      0.056220
+mu_Sound2         -0.011016   -1.2036e-04     -0.038756     -0.175630
+mu_Smell2         -0.018864      0.004764     -0.269912     -0.111663
+mu_Colour2        -0.027228      0.005391     -0.408840     -0.269159
+mu_Deadwood2       0.006493     -0.005640      0.088692      0.130241
+sig_Sound2        -0.016600      0.002524     -0.171610     -0.156295
+sig_Smell2        -0.004135      0.001085     -0.039259     -0.052073
+sig_Colour2       -0.017633      0.003734     -0.260077     -0.154974
+sig_Deadwood2     -0.005537   -6.5482e-04     -0.092603      0.046309
+                  mu_Colour   mu_Deadwood       sig_Tax     sig_Sound
+asc_C             -0.021554     -0.011880     -0.001454      0.003046
+mu_Tax             0.004396      0.003940      0.006366   -7.0980e-04
+mu_Sound          -0.272952     -0.183257     -0.019857      0.002091
+mu_Smell          -0.282042     -0.022873     -0.008456      0.032518
+mu_Colour          0.849470      0.314671      0.057977     -0.094342
+mu_Deadwood        0.314671      0.253241      0.031307     -0.035588
+sig_Tax            0.057977      0.031307      0.018642     -0.007958
+sig_Sound         -0.094342     -0.035588     -0.007958      0.041960
+sig_Smell          0.086828      0.071726      0.006743     -0.014134
+sig_Colour        -0.055204     -0.035608     -0.013598      0.011018
+sig_Deadwood      -0.200591     -0.098416     -0.015147      0.023241
+mu_Sound2          0.421658      0.100156      0.026289     -0.050269
+mu_Smell2          0.583460      0.337580      0.047660     -0.068553
+mu_Colour2         0.981110      0.500374      0.070069     -0.105586
+mu_Deadwood2      -0.212945     -0.094054     -0.023740      0.021336
+sig_Sound2         0.555659      0.243621      0.041375     -0.066046
+sig_Smell2         0.147765      0.060535      0.009507     -0.015965
+sig_Colour2        0.605764      0.320122      0.043778     -0.066826
+sig_Deadwood2      0.131989      0.114327      0.009219     -0.020271
+                  sig_Smell    sig_Colour  sig_Deadwood     mu_Sound2
+asc_C             -0.004174      0.002202      0.006048      -0.01102
+mu_Tax           1.1123e-04   -2.5947e-04     -0.001718   -1.2036e-04
+mu_Sound          -0.038480      0.012807      0.058494      -0.03876
+mu_Smell           0.072326     -0.006885      0.056220      -0.17563
+mu_Colour          0.086828     -0.055204     -0.200591       0.42166
+mu_Deadwood        0.071726     -0.035608     -0.098416       0.10016
+sig_Tax            0.006743     -0.013598     -0.015147       0.02629
+sig_Sound         -0.014134      0.011018      0.023241      -0.05027
+sig_Smell          0.082209      0.011191     -0.028916       0.02925
+sig_Colour         0.011191      0.053171      0.017019      -0.03243
+sig_Deadwood      -0.028916      0.017019      0.058648      -0.11380
+mu_Sound2          0.029247     -0.032434     -0.113797       0.41983
+mu_Smell2          0.094561     -0.051322     -0.159239       0.27418
+mu_Colour2         0.135525     -0.060784     -0.255614       0.45065
+mu_Deadwood2       0.009860      0.011599      0.048891      -0.07720
+sig_Sound2         0.069605     -0.046546     -0.151225       0.38449
+sig_Smell2         0.014061     -0.012970     -0.040234       0.10031
+sig_Colour2        0.086833     -0.040915     -0.159989       0.28119
+sig_Deadwood2      0.057437     -0.011345     -0.041460       0.05350
+                  mu_Smell2    mu_Colour2  mu_Deadwood2    sig_Sound2
+asc_C             -0.018864     -0.027228      0.006493     -0.016600
+mu_Tax             0.004764      0.005391     -0.005640      0.002524
+mu_Sound          -0.269912     -0.408840      0.088692     -0.171610
+mu_Smell          -0.111663     -0.269159      0.130241     -0.156295
+mu_Colour          0.583460      0.981110     -0.212945      0.555659
+mu_Deadwood        0.337580      0.500374     -0.094054      0.243621
+sig_Tax            0.047660      0.070069     -0.023740      0.041375
+sig_Sound         -0.068553     -0.105586      0.021336     -0.066046
+sig_Smell          0.094561      0.135525      0.009860      0.069605
+sig_Colour        -0.051322     -0.060784      0.011599     -0.046546
+sig_Deadwood      -0.159239     -0.255614      0.048891     -0.151225
+mu_Sound2          0.274177      0.450650     -0.077205      0.384490
+mu_Smell2          0.560161      0.851682     -0.174260      0.461957
+mu_Colour2         0.851682      1.560265     -0.321272      0.716440
+mu_Deadwood2      -0.174260     -0.321272      0.336048     -0.137795
+sig_Sound2         0.461957      0.716440     -0.137795      0.469236
+sig_Smell2         0.120631      0.214021     -0.042918      0.120351
+sig_Colour2        0.542099      0.943979     -0.190334      0.453561
+sig_Deadwood2      0.161364      0.165901      0.121900      0.123256
+                 sig_Smell2   sig_Colour2 sig_Deadwood2
+asc_C             -0.004135     -0.017633     -0.005537
+mu_Tax             0.001085      0.003734   -6.5482e-04
+mu_Sound          -0.039259     -0.260077     -0.092603
+mu_Smell          -0.052073     -0.154974      0.046309
+mu_Colour          0.147765      0.605764      0.131989
+mu_Deadwood        0.060535      0.320122      0.114327
+sig_Tax            0.009507      0.043778      0.009219
+sig_Sound         -0.015965     -0.066826     -0.020271
+sig_Smell          0.014061      0.086833      0.057437
+sig_Colour        -0.012970     -0.040915     -0.011345
+sig_Deadwood      -0.040234     -0.159989     -0.041460
+mu_Sound2          0.100314      0.281192      0.053495
+mu_Smell2          0.120631      0.542099      0.161364
+mu_Colour2         0.214021      0.943979      0.165901
+mu_Deadwood2      -0.042918     -0.190334      0.121900
+sig_Sound2         0.120351      0.453561      0.123256
+sig_Smell2         0.043067      0.131520      0.006481
+sig_Colour2        0.131520      0.579542      0.121084
+sig_Deadwood2      0.006481      0.121084      0.203390
+
+Classical correlation matrix:
+                      asc_C        mu_Tax      mu_Sound      mu_Smell
+asc_C              1.000000     -0.210208       0.16792     -0.008310
+mu_Tax            -0.210208      1.000000      -0.04844     -0.029528
+mu_Sound           0.167925     -0.048444       1.00000     -0.104655
+mu_Smell          -0.008310     -0.029528      -0.10466      1.000000
+mu_Colour         -0.327458      0.044552      -0.38636     -0.455943
+mu_Deadwood       -0.299307      0.092629      -0.53904      0.155532
+sig_Tax           -0.225568      0.508192      -0.08396      0.063686
+sig_Sound          0.078369   -3.1025e-04      -0.19762      0.033104
+sig_Smell         -0.130317      0.005595      -0.02655      0.458916
+sig_Colour         0.052551    3.4821e-04    3.6517e-04     -0.012367
+sig_Deadwood       0.258990     -0.047296       0.11281      0.182484
+mu_Sound2         -0.168601     -0.065416       0.14542     -0.125573
+mu_Smell2         -0.379052      0.069170      -0.59121      0.074640
+mu_Colour2        -0.295946      0.013096      -0.25815     -0.152366
+mu_Deadwood2       0.003899     -0.126264       0.07845      0.119373
+sig_Sound2        -0.350056     -0.004669      -0.26477     -0.034023
+sig_Smell2        -0.131587      0.002586       0.01372     -0.065853
+sig_Colour2       -0.338536      0.027792      -0.37930     -0.097900
+sig_Deadwood2     -0.164220     -0.042674      -0.26127      0.116562
+                  mu_Colour   mu_Deadwood       sig_Tax     sig_Sound
+asc_C              -0.32746     -0.299307      -0.22557       0.07837
+mu_Tax              0.04455      0.092629       0.50819   -3.1025e-04
+mu_Sound           -0.38636     -0.539039      -0.08396      -0.19762
+mu_Smell           -0.45594      0.155532       0.06369       0.03310
+mu_Colour           1.00000      0.237347       0.22980      -0.10351
+mu_Deadwood         0.23735      1.000000       0.29469      -0.03830
+sig_Tax             0.22980      0.294687       1.00000      -0.05435
+sig_Sound          -0.10351     -0.038305      -0.05435       1.00000
+sig_Smell           0.04371      0.184973       0.07390       0.03129
+sig_Colour         -0.05539     -0.099422      -0.16723       0.10114
+sig_Deadwood       -0.48423     -0.434192      -0.18720      -0.11339
+mu_Sound2           0.34347     -0.205215       0.06225      -0.01524
+mu_Smell2           0.48767      0.674697       0.27235      -0.07751
+mu_Colour2          0.48155      0.398880       0.19281      -0.07105
+mu_Deadwood2       -0.01895     -0.002296      -0.05814      -0.01942
+sig_Sound2          0.53618      0.278723       0.21392      -0.06688
+sig_Smell2          0.17471      0.035681       0.04885       0.07758
+sig_Colour2         0.50756      0.503613       0.19785      -0.07027
+sig_Deadwood2       0.19750      0.316304       0.05984      -0.08249
+                  sig_Smell    sig_Colour  sig_Deadwood     mu_Sound2
+asc_C             -0.130317      0.052551      0.258990      -0.16860
+mu_Tax             0.005595    3.4821e-04     -0.047296      -0.06542
+mu_Sound          -0.026548    3.6517e-04      0.112807       0.14542
+mu_Smell           0.458916     -0.012367      0.182484      -0.12557
+mu_Colour          0.043713     -0.055395     -0.484231       0.34347
+mu_Deadwood        0.184973     -0.099422     -0.434192      -0.20522
+sig_Tax            0.073900     -0.167234     -0.187197       0.06225
+sig_Sound          0.031286      0.101142     -0.113389      -0.01524
+sig_Smell          1.000000      0.665544     -0.009734       0.02622
+sig_Colour         0.665544      1.000000     -0.057365      -0.01130
+sig_Deadwood      -0.009734     -0.057365      1.000000      -0.26121
+mu_Sound2          0.026218     -0.011297     -0.261206       1.00000
+mu_Smell2          0.171650     -0.074342     -0.354917       0.12095
+mu_Colour2         0.116987     -0.024155     -0.342812       0.16188
+mu_Deadwood2       0.102846      0.006159     -0.032066       0.08733
+sig_Sound2         0.124838     -0.055138     -0.402290       0.78869
+sig_Smell2         0.035030     -0.019440     -0.171365       0.27889
+sig_Colour2        0.136875     -0.035001     -0.363897       0.16016
+sig_Deadwood2      0.155163      0.004650     -0.147799       0.05015
+                  mu_Smell2    mu_Colour2  mu_Deadwood2    sig_Sound2
+asc_C              -0.37905      -0.29595      0.003899     -0.350056
+mu_Tax              0.06917       0.01310     -0.126264     -0.004669
+mu_Sound           -0.59121      -0.25815      0.078449     -0.264773
+mu_Smell            0.07464      -0.15237      0.119373     -0.034023
+mu_Colour           0.48767       0.48155     -0.018948      0.536182
+mu_Deadwood         0.67470       0.39888     -0.002296      0.278723
+sig_Tax             0.27235       0.19281     -0.058140      0.213919
+sig_Sound          -0.07751      -0.07105     -0.019425     -0.066884
+sig_Smell           0.17165       0.11699      0.102846      0.124838
+sig_Colour         -0.07434      -0.02416      0.006159     -0.055138
+sig_Deadwood       -0.35492      -0.34281     -0.032066     -0.402290
+mu_Sound2           0.12095       0.16188      0.087332      0.788694
+mu_Smell2           1.00000       0.53386     -0.070365      0.683480
+mu_Colour2          0.53386       1.00000     -0.165828      0.426852
+mu_Deadwood2       -0.07036      -0.16583      1.000000      0.028796
+sig_Sound2          0.68348       0.42685      0.028796      1.000000
+sig_Smell2          0.27188       0.28283     -0.062563      0.275550
+sig_Colour2         0.71857       0.91564     -0.130021      0.533287
+sig_Deadwood2       0.39362       0.07441      0.652418      0.302702
+                 sig_Smell2   sig_Colour2 sig_Deadwood2
+asc_C             -0.131587      -0.33854     -0.164220
+mu_Tax             0.002586       0.02779     -0.042674
+mu_Sound           0.013718      -0.37930     -0.261274
+mu_Smell          -0.065853      -0.09790      0.116562
+mu_Colour          0.174709       0.50756      0.197504
+mu_Deadwood        0.035681       0.50361      0.316304
+sig_Tax            0.048848       0.19785      0.059843
+sig_Sound          0.077577      -0.07027     -0.082485
+sig_Smell          0.035030       0.13687      0.155163
+sig_Colour        -0.019440      -0.03500      0.004650
+sig_Deadwood      -0.171365      -0.36390     -0.147799
+mu_Sound2          0.278886       0.16016      0.050153
+mu_Smell2          0.271885       0.71857      0.393619
+mu_Colour2         0.282835       0.91564      0.074415
+mu_Deadwood2      -0.062563      -0.13002      0.652418
+sig_Sound2         0.275550       0.53329      0.302702
+sig_Smell2         1.000000       0.34069     -0.210877
+sig_Colour2        0.340690       1.00000      0.176271
+sig_Deadwood2     -0.210877       0.17627      1.000000
+
+Robust correlation matrix:
+                      asc_C        mu_Tax      mu_Sound      mu_Smell
+asc_C                1.0000     -0.119698       0.25606       0.11015
+mu_Tax              -0.1197      1.000000      -0.01741      -0.06033
+mu_Sound             0.2561     -0.017407       1.00000       0.05138
+mu_Smell             0.1101     -0.060327       0.05138       1.00000
+mu_Colour           -0.3947      0.047701      -0.58952      -0.53292
+mu_Deadwood         -0.3984      0.078285      -0.72490      -0.07916
+sig_Tax             -0.1797      0.466244      -0.28950      -0.10786
+sig_Sound            0.2510     -0.034651       0.02032       0.27646
+sig_Smell           -0.2457      0.003879      -0.26715       0.43929
+sig_Colour           0.1612     -0.011252       0.11056      -0.05200
+sig_Deadwood         0.4215     -0.070939       0.48080       0.40428
+mu_Sound2           -0.2869     -0.001858      -0.11907      -0.47205
+mu_Smell2           -0.4254      0.063655      -0.71788      -0.25982
+mu_Colour2          -0.3679      0.043157      -0.65153      -0.37526
+mu_Deadwood2         0.1890     -0.097292       0.30456       0.39126
+sig_Sound2          -0.4090      0.036840      -0.49869      -0.39735
+sig_Smell2          -0.3363      0.052298      -0.37658      -0.43698
+sig_Colour2         -0.3909      0.049048      -0.68005      -0.35452
+sig_Deadwood2       -0.2072     -0.014520      -0.40874       0.17882
+                  mu_Colour   mu_Deadwood       sig_Tax     sig_Sound
+asc_C              -0.39469      -0.39844       -0.1797       0.25095
+mu_Tax              0.04770       0.07829        0.4662      -0.03465
+mu_Sound           -0.58952      -0.72490       -0.2895       0.02032
+mu_Smell           -0.53292      -0.07916       -0.1079       0.27646
+mu_Colour           1.00000       0.67845        0.4607      -0.49971
+mu_Deadwood         0.67845       1.00000        0.4556      -0.34524
+sig_Tax             0.46072       0.45564        1.0000      -0.28454
+sig_Sound          -0.49971      -0.34524       -0.2845       1.00000
+sig_Smell           0.32857       0.49711        0.1723      -0.24065
+sig_Colour         -0.25975      -0.30686       -0.4319       0.23326
+sig_Deadwood       -0.89870      -0.80756       -0.4581       0.46850
+mu_Sound2           0.70607       0.30717        0.2972      -0.37874
+mu_Smell2           0.84583       0.89630        0.4664      -0.44715
+mu_Colour2          0.85221       0.79603        0.4108      -0.41266
+mu_Deadwood2       -0.39856      -0.32241       -0.2999       0.17968
+sig_Sound2          0.88011       0.70673        0.4424      -0.47069
+sig_Smell2          0.77255       0.57966        0.3355      -0.37557
+sig_Colour2         0.86335       0.83561        0.4212      -0.42854
+sig_Deadwood2       0.31754       0.50375        0.1497      -0.21943
+                  sig_Smell    sig_Colour  sig_Deadwood     mu_Sound2
+asc_C             -0.245672       0.16119       0.42148     -0.286943
+mu_Tax             0.003879      -0.01125      -0.07094     -0.001858
+mu_Sound          -0.267149       0.11056       0.48080     -0.119065
+mu_Smell           0.439294      -0.05200       0.40428     -0.472046
+mu_Colour          0.328569      -0.25975      -0.89870      0.706073
+mu_Deadwood        0.497107      -0.30686      -0.80756      0.307165
+sig_Tax            0.172250      -0.43190      -0.45810      0.297156
+sig_Sound         -0.240646       0.23326       0.46850     -0.378743
+sig_Smell          1.000000       0.16926      -0.41645      0.157430
+sig_Colour         0.169264       1.00000       0.30477     -0.217081
+sig_Deadwood      -0.416448       0.30477       1.00000     -0.725221
+mu_Sound2          0.157430      -0.21708      -0.72522      1.000000
+mu_Smell2          0.440650      -0.29738      -0.87855      0.565378
+mu_Colour2         0.378409      -0.21104      -0.84501      0.556806
+mu_Deadwood2       0.059324       0.08677       0.34826     -0.205545
+sig_Sound2         0.354394      -0.29468      -0.91160      0.866269
+sig_Smell2         0.236313      -0.27103      -0.80056      0.746024
+sig_Colour2        0.397814      -0.23308      -0.86781      0.570065
+sig_Deadwood2      0.444188      -0.10909      -0.37961      0.183068
+                  mu_Smell2    mu_Colour2  mu_Deadwood2    sig_Sound2
+asc_C              -0.42540      -0.36790       0.18904      -0.40899
+mu_Tax              0.06366       0.04316      -0.09729       0.03684
+mu_Sound           -0.71788      -0.65153       0.30456      -0.49869
+mu_Smell           -0.25982      -0.37526       0.39126      -0.39735
+mu_Colour           0.84583       0.85221      -0.39856       0.88011
+mu_Deadwood         0.89630       0.79603      -0.32241       0.70673
+sig_Tax             0.46639       0.41084      -0.29994       0.44237
+sig_Sound          -0.44715      -0.41266       0.17968      -0.47069
+sig_Smell           0.44065       0.37841       0.05932       0.35439
+sig_Colour         -0.29738      -0.21104       0.08677      -0.29468
+sig_Deadwood       -0.87855      -0.84501       0.34826      -0.91160
+mu_Sound2           0.56538       0.55681      -0.20554       0.86627
+mu_Smell2           1.00000       0.91101      -0.40164       0.90105
+mu_Colour2          0.91101       1.00000      -0.44368       0.83731
+mu_Deadwood2       -0.40164      -0.44368       1.00000      -0.34701
+sig_Sound2          0.90105       0.83731      -0.34701       1.00000
+sig_Smell2          0.77666       0.82563      -0.35675       0.84661
+sig_Colour2         0.95144       0.99271      -0.43129       0.86976
+sig_Deadwood2       0.47806       0.29450       0.46627       0.39898
+                 sig_Smell2   sig_Colour2 sig_Deadwood2
+asc_C              -0.33626      -0.39093      -0.20721
+mu_Tax              0.05230       0.04905      -0.01452
+mu_Sound           -0.37658      -0.68005      -0.40874
+mu_Smell           -0.43698      -0.35452       0.17882
+mu_Colour           0.77255       0.86335       0.31754
+mu_Deadwood         0.57966       0.83561       0.50375
+sig_Tax             0.33551       0.42117       0.14972
+sig_Sound          -0.37557      -0.42854      -0.21943
+sig_Smell           0.23631       0.39781       0.44419
+sig_Colour         -0.27103      -0.23308      -0.10909
+sig_Deadwood       -0.80056      -0.86781      -0.37961
+mu_Sound2           0.74602       0.57006       0.18307
+mu_Smell2           0.77666       0.95144       0.47806
+mu_Colour2          0.82563       0.99271       0.29450
+mu_Deadwood2       -0.35675      -0.43129       0.46627
+sig_Sound2          0.84661       0.86976       0.39898
+sig_Smell2          1.00000       0.83249       0.06925
+sig_Colour2         0.83249       1.00000       0.35268
+sig_Deadwood2       0.06925       0.35268       1.00000
+
+ 20 worst outliers in terms of lowest average per choice prediction:
+   ID Avg prob per choice
+  745           0.1086514
+  624           0.1199429
+  442           0.1248479
+ 1263           0.1320074
+ 1834           0.1351548
+  964           0.1418162
+ 1388           0.1425643
+ 1261           0.1434336
+  474           0.1464879
+   24           0.1513921
+  370           0.1532189
+  364           0.1543726
+  750           0.1563823
+  137           0.1583057
+ 1197           0.1726064
+ 1031           0.1743118
+   28           0.1773555
+ 1320           0.1775888
+ 1128           0.1788147
+  665           0.1791318
+
+Changes in parameter estimates from starting values:
+                  Initial    Estimate  Difference
+asc_A               0.000      0.0000      0.0000
+asc_B               0.000      0.0000      0.0000
+asc_C               0.000     -2.0574     -2.0574
+mu_Tax             -3.000     -3.9038     -0.9038
+mu_Sound            0.000     -1.5492     -1.5492
+mu_Smell            0.000     -0.4604     -0.4604
+mu_Colour           0.000      3.8545      3.8545
+mu_Deadwood         0.000      1.5104      1.5104
+sig_Tax             0.000     -3.0774     -3.0774
+sig_Sound           0.000     -0.5833     -0.5833
+sig_Smell           0.000      1.0690      1.0690
+sig_Colour          0.000     -0.4216     -0.4216
+sig_Deadwood        0.000     -1.5304     -1.5304
+mu_Sound2           0.000      2.7415      2.7415
+mu_Smell2           0.000      3.4731      3.4731
+mu_Colour2          0.000      7.0321      7.0321
+mu_Deadwood2        0.000     -4.5593     -4.5593
+sig_Sound2          0.000      4.5731      4.5731
+sig_Smell2          0.000      1.1024      1.1024
+sig_Colour2         0.000      5.8303      5.8303
+sig_Deadwood2       0.000      4.2480      4.2480
+
+Settings and functions used in model definition:
+
+apollo_control
+--------------
+                       Value                
+nCores                 "1"                  
+mixing                 "TRUE"               
+modelDescr             "Winter_MXL_ModelOne"
+modelName              "Winter_MXL_ModelOne"
+indivID                "Respondent"         
+outputDirectory        "CEoutput/ModelOne/" 
+debug                  "FALSE"              
+workInLogs             "FALSE"              
+seed                   "13"                 
+HB                     "FALSE"              
+noValidation           "FALSE"              
+noDiagnostics          "FALSE"              
+calculateLLC           "TRUE"               
+panelData              "TRUE"               
+analyticGrad           "TRUE"               
+analyticGrad_manualSet "FALSE"              
+
+Hessian routines attempted
+--------------
+numerical jacobian of LL analytical gradient
+
+Scaling in estimation
+--------------
+                  Value
+asc_C         2.0580956
+mu_Tax        3.9041938
+mu_Sound      1.5857389
+mu_Smell      0.4470194
+mu_Colour     3.8662510
+mu_Deadwood   1.5296296
+sig_Tax       3.0776350
+sig_Sound     0.5927813
+sig_Smell     1.0772310
+sig_Colour    0.4125639
+sig_Deadwood  1.5299780
+mu_Sound2     2.7291777
+mu_Smell2     3.4746328
+mu_Colour2    7.0753035
+mu_Deadwood2  4.5347132
+sig_Sound2    4.5788892
+sig_Smell2    1.0565538
+sig_Colour2   5.9700897
+sig_Deadwood2 4.2827611
+
+Scaling used in computing Hessian
+--------------
+                  Value
+asc_C         2.0573792
+mu_Tax        3.9038191
+mu_Sound      1.5492412
+mu_Smell      0.4604387
+mu_Colour     3.8544666
+mu_Deadwood   1.5103881
+sig_Tax       3.0774106
+sig_Sound     0.5833291
+sig_Smell     1.0689928
+sig_Colour    0.4216463
+sig_Deadwood  1.5303935
+mu_Sound2     2.7414604
+mu_Smell2     3.4731369
+mu_Colour2    7.0321284
+mu_Deadwood2  4.5592850
+sig_Sound2    4.5731275
+sig_Smell2    1.1023535
+sig_Colour2   5.8302508
+sig_Deadwood2 4.2479803
+
+
+apollo_randCoeff
+----------------
+function (apollo_beta, apollo_inputs) 
+{
+    randcoeff = list()
+    randcoeff[["beta_Tax"]] = -exp(mu_Tax + sig_Tax * draws_Tax)
+    randcoeff[["b_Smell"]] = (mu_Smell + sig_Smell * draws_Smell)
+    randcoeff[["b_Sound"]] = (mu_Sound + sig_Sound * draws_Sound)
+    randcoeff[["b_Colour"]] = (mu_Colour + sig_Colour * draws_Colour)
+    randcoeff[["b_Deadwood"]] = (mu_Deadwood + sig_Deadwood * 
+        draws_Deadwood)
+    randcoeff[["b_Smell2"]] = (mu_Smell2 + sig_Smell2 * draws_Smell2)
+    randcoeff[["b_Sound2"]] = (mu_Sound2 + sig_Sound2 * draws_Sound2)
+    randcoeff[["b_Colour2"]] = (mu_Colour2 + sig_Colour2 * draws_Colour2)
+    randcoeff[["b_Deadwood2"]] = (mu_Deadwood2 + sig_Deadwood2 * 
+        draws_Deadwood2)
+    return(randcoeff)
+}
+<bytecode: 0x55d4e05e5c40>
+
+
+apollo_probabilities
+--------------------
+function (apollo_beta, apollo_inputs, functionality = "estimate") 
+{
+    apollo_attach(apollo_beta, apollo_inputs)
+    on.exit(apollo_detach(apollo_beta, apollo_inputs))
+    P = list()
+    V = list()
+    V[["A"]] = asc_A + beta_Tax * (Tax1 + b_Sound * (Sound1 == 
+        1) + b_Sound2 * (Sound1 == 2) + b_Smell * (Smell1 == 
+        1) + b_Smell2 * (Smell1 == 2) + b_Colour * (Colour1 == 
+        1) + b_Colour2 * (Colour1 == 2) + b_Deadwood * (Deadwood1 == 
+        7) + b_Deadwood2 * (Deadwood1 == 15))
+    V[["B"]] = asc_B + beta_Tax * (Tax2 + b_Sound * (Sound2 == 
+        1) + b_Sound2 * (Sound2 == 2) + b_Smell * (Smell2 == 
+        1) + b_Smell2 * (Smell2 == 2) + b_Colour * (Colour2 == 
+        1) + b_Colour2 * (Colour2 == 2) + b_Deadwood * (Deadwood2 == 
+        7) + b_Deadwood2 * (Deadwood2 == 15))
+    V[["C"]] = asc_C
+    mnl_settings = list(alternatives = c(A = 1, B = 2, C = 3), 
+        avail = list(A = 1, B = 1, C = 1), choiceVar = Choice, 
+        V = V)
+    P[["model"]] = apollo_mnl(mnl_settings, functionality)
+    P = apollo_panelProd(P, apollo_inputs, functionality)
+    P = apollo_avgInterDraws(P, apollo_inputs, functionality)
+    P = apollo_prepareProb(P, apollo_inputs, functionality)
+    return(P)
+}
+<bytecode: 0x55d4da1ae4b8>
