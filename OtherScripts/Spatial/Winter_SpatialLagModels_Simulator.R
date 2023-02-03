@@ -87,6 +87,17 @@ rm(list=ls())
 Winter <- data.frame(fread(here("OtherData","Winter_Step4.csv")))
 Draws <- data.frame(fread(here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv")))
 
+
+
+## Drop rows that have missing data in any of the following we use in the models:
+Winter <- Winter %>% drop_na(Colour_WTP_Medium,WoodlandsScore,
+                      MilesDistance,MostRecentVisit,
+                      DummyAge,Gender,
+                      IncomeDummy, Impairment,
+                      GDHI,Density,Area_ha_median)
+
+
+
 Data_Combined <- bind_cols(
   Winter, Draws
 )
