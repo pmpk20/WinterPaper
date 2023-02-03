@@ -68,9 +68,9 @@ library(Rfast)
 #----------------------------------------------------------------------------------------------------------
 
 
-## The latest version with WTP appended is 2022_01_07
+## Use step three and add unconditionals rather than use Step4.csv with conditionals
 here()
-Winter <- data.frame(fread(here("WinterReplication/OtherData","Winter_dataframe_Step3.csv")))
+Winter <- data.frame(fread(here("OtherData","Winter_dataframe_Step3.csv")))
 
 
 ## This is the WTP from the model itself:
@@ -85,12 +85,14 @@ WTP <- data.frame(fread(here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.c
 ## If the conditionals are imported then run this to recover only useful variables
 WTP <- WTP[WTP %>% select(-ends_with(c(".ID",".post.sd"))) %>% colnames()] %>% data.frame()
 
+
 #----------------------------------------------------------------------------------------------------------
 # Section 2: Summarise Unconditionals by attribute ####
 #----------------------------------------------------------------------------------------------------------
 
 ## So this function calculates one stat per attribute per season
 ### So: rowmeans() not rowMeans() is actually insanely fast if you can be bothered to transform to and from matrices.
+## This function selects the variable from WTP and calculates summary stats from it.
 Summarizer <- function(i) {
 
   bind_cols(
@@ -122,11 +124,12 @@ Summaries <- matrix(0,length(Attribute),5) %>% data.frame()
 
 
 ## Loop through each variable and produce summaries.
-### There must be a way to use foreach() but I can't figure out how to include my custom function
+## If you have time rewrite this with foreach() using .export=c("Summarizer")
 for (i in 1:length(Attribute)){
   Summaries[i,] <- Summarizer(Attribute[i])
 
 }
+
 
 
 
@@ -157,11 +160,14 @@ Labels <- gsub(pattern = "Medium",replacement = "\n Medium",x = Names) %>%
   gsub(pattern = "High",replacement = "\n High") %>%
   c()
 
+
 ## Bind the results with variable and season ID for ease later
 NewerData <- bind_cols(
   Summaries,
   "variable"=Names)
 
+
+## Clearly label which column represents which stat
 colnames(NewerData) <- c("y0",
              "y25",
              "y50",
@@ -173,6 +179,10 @@ colnames(NewerData) <- c("y0",
 #### Section 3: Create Plot ####
 #----------------------------------------------------------------------------------------------------------
 
+
+## I got these from RColorBrewer but adding specifically here to
+### (a) see the colours in the console with new RStudio,
+### (b) make scale_fill_manual() easier
 Colours <- c(
   "#C6DBEF",
            "#C6DBEF",
@@ -185,6 +195,10 @@ Colours <- c(
            "#F7FBFF"
 )
 
+
+
+## here is the final plot I use.
+## I put Newerdata in then use the columns to specify the points of the boxplot
 Figure2 <-
   ggplot(NewerData,aes(x=rev(variable), fill=as.factor(variable))) +
   geom_boxplot(varwidth = 0.5,outlier.shape = NA,
@@ -195,8 +209,9 @@ Figure2 <-
                  upper=y75,
                  ymax=y100,
                ),stat="identity")+
-  scale_x_discrete(name="Attribute",label=rev(Labels),limits= Names)+
-  theme_bw()+geom_hline(yintercept=0)+
+  scale_x_discrete(name="Attribute",label=rev(Labels),limits= Names)+ ## Using rev() to make the order I want
+  theme_bw()+ ## Just looks nicer imo
+  geom_hline(yintercept=0)+ ## I like the zero line for ease of comparison
   ylab("Marginal WTP in \U00a3 GBP per Household per annum in local tax.")+
   scale_y_continuous(limits=c(-10,25)
                      ,breaks = seq(-10,25,1))+

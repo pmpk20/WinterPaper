@@ -1,9 +1,42 @@
 #### RELATE WP5: Replication code to perform validity checks on WTP  ###############
 # Script author: Peter King (p.m.king@kent.ac.uk)
-# Last Edited: 30/01/2023
+# Last Edited: 03/02/2023
 # Based on Sarrias (2020) https://doi.org/10.1016/j.jocm.2020.100224
 
 
+## sessionInfo() ---------------------------------------------------------------
+# > sessionInfo()
+# R version 4.2.0 (2022-04-22 ucrt)
+# Platform: x86_64-w64-mingw32/x64 (64-bit)
+# Running under: Windows 10 x64 (build 19044)
+#
+# Matrix products: default
+#
+# locale:
+#   [1] LC_COLLATE=English_United Kingdom.utf8  LC_CTYPE=English_United Kingdom.utf8    LC_MONETARY=English_United Kingdom.utf8
+# [4] LC_NUMERIC=C                            LC_TIME=English_United Kingdom.utf8
+#
+# attached base packages:
+#   [1] stats     graphics  grDevices utils     datasets  methods   base
+#
+# other attached packages:
+#   [1] stringr_1.5.0     data.table_1.14.6 mded_0.1-2        reshape2_1.4.4    ggridges_0.5.4    ggplot2_3.4.0     magrittr_2.0.3
+# [8] dplyr_1.0.10      apollo_0.2.8      here_1.0.1
+#
+# loaded via a namespace (and not attached):
+#   [1] tidyselect_1.2.0    zoo_1.8-11          xfun_0.36           splines_4.2.0       lattice_0.20-45     colorspace_2.0-3    generics_0.1.3
+# [8] vctrs_0.5.1         htmltools_0.5.4     yaml_2.3.6          MCMCpack_1.6-3      utf8_1.2.2          survival_3.3-1      rlang_1.0.6
+# [15] pillar_1.8.1        withr_2.5.0         DBI_1.1.3           glue_1.6.2          plyr_1.8.8          matrixStats_0.63.0  lifecycle_1.0.3
+# [22] MatrixModels_0.5-1  munsell_0.5.0       gtable_0.3.1        mvtnorm_1.1-3       coda_0.19-4         evaluate_0.20       knitr_1.41
+# [29] miscTools_0.6-26    fastmap_1.1.0       SparseM_1.81        RSGHB_1.2.2         quantreg_5.94       parallel_4.2.0      fansi_1.0.3
+# [36] Rcpp_1.0.9          scales_1.2.1        mcmc_0.9-7          maxLik_1.5-2        mnormt_2.1.1        digest_0.6.31       stringi_1.7.12
+# [43] numDeriv_2016.8-1.1 grid_4.2.0          rprojroot_2.0.3     cli_3.6.0           tools_4.2.0         sandwich_3.0-2      tibble_3.1.8
+# [50] pkgconfig_2.0.3     MASS_7.3-56         Matrix_1.5-3        randtoolbox_2.0.3   assertthat_0.2.1    rmarkdown_2.20      rstudioapi_0.14
+# [57] R6_2.5.1            rngWELL_0.10-9      compiler_4.2.0
+
+
+
+## Libraries: ---------------------------------------------------------------
 library(apollo)
 library(dplyr)
 library(magrittr)
@@ -21,7 +54,7 @@ library(stringr)
 #----------------------------------------------------------------------------------------------------------
 
 
-
+## Basic model, no covariates, in WTP-space.
 ModelOne_WTP <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_ConWTP.csv") %>% fread() %>% data.frame()
 ModelOne_Estimates <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_estimates.csv") %>% fread() %>% data.frame()
 
@@ -38,7 +71,8 @@ ModelTwo_Estimates <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_estimates.cs
 
 
 ## For the means we test whether the mean conditional WTP is more than 90% of the
-### parameter estimate from the model
+### parameter estimate from the model.
+## Example: SarriasTestMeans(ModelOne_WTP, ModelOne_Estimates,"beta_Tax")
 SarriasTestMeans <- function(WTP, Estimates,Variable) {
 
   ifelse(
@@ -59,13 +93,15 @@ SarriasTestMeans <- function(WTP, Estimates,Variable) {
 
 ## For the variances  we test whether the variance of the
 ### conditional WTP is more than 60% of the
-### parameter estimate from the model
+### parameter estimate from the model.
+## Example: SarriasTestVariances(ModelOne_WTP, ModelOne_Estimates,"beta_Tax")
 SarriasTestVariances <- function(WTP, Estimates,Variable) {
 
   ifelse(
     WTP %>% select(paste0("b_",Variable,".post.sd"))  %>%
       summarise(across(everything(),list(mean))) %>%
-      as.numeric() >= Estimates %>%
+      as.numeric() >=
+      Estimates %>%
       filter(V1==paste0("sig_",Variable)) %>%
       select("Estimate") %>%
       divide_by(100) %>%
@@ -76,6 +112,9 @@ SarriasTestVariances <- function(WTP, Estimates,Variable) {
 
 
 ## For the distribution we use the Kolmogorov-Smirnov test:
+## Example:  SarriasTestDistributions(ModelOne_WTP, ModelOne_Estimates,"b_Colour")
+## Using ks.test() with four arguments: the distribution of WTP by attribute,
+# "Pnorm", Variable specific estimate and variable specific variance
 SarriasTestDistributions <- function(WTP, Estimates,Variable) {
 
   ifelse(ks.test(
