@@ -34,7 +34,7 @@ Sys.setlocale("LC_ALL","C")
 ## Note: My working directory is the zip file and then
 ###I specify extensions when running scripts or importing data:
 # setwd("K:/WinterAnalysis1307/WP5/WinterReplication")
-print(sessionInfo())
+
 
 
 
@@ -72,7 +72,7 @@ apollo_initialise()
 
 ## Note 10 cores as I'm using the University of Kent 'Tesla' HPC:
 apollo_control = list(
-  nCores    = 10,
+  nCores    = 1,
   mixing    = TRUE,
   modelDescr = "Winter_MXL_ModelTwo",
   modelName  = "Winter_MXL_ModelTwo", ## Added dates last verified
@@ -232,12 +232,12 @@ apollo_probabilities=function(apollo_beta, apollo_inputs, functionality="estimat
 
 
 ## Actually estimates the model
-Winter_MXL_ModelTwo = apollo_estimate(apollo_beta, apollo_fixed, apollo_probabilities, apollo_inputs)
-
-# Model output and results here alongside saving information
-apollo_modelOutput(Winter_MXL_ModelTwo,modelOutput_settings = list(printPVal=TRUE))
-apollo_saveOutput(Winter_MXL_ModelTwo,saveOutput_settings = list(printPVal=TRUE))
-saveRDS(Winter_MXL_ModelTwo, file="Winter_MXL_ModelTwo.rds")
+# Winter_MXL_ModelTwo = apollo_estimate(apollo_beta, apollo_fixed, apollo_probabilities, apollo_inputs)
+#
+# # Model output and results here alongside saving information
+# apollo_modelOutput(Winter_MXL_ModelTwo,modelOutput_settings = list(printPVal=TRUE))
+# apollo_saveOutput(Winter_MXL_ModelTwo,saveOutput_settings = list(printPVal=TRUE))
+# saveRDS(Winter_MXL_ModelTwo, here("CEoutput/ModelTwo","Winter_MXL_ModelTwo.rds"))
 
 
 #------------------------------
@@ -250,17 +250,19 @@ Model <- readRDS(here("CEoutput/ModelTwo","Winter_MXL_ModelTwo.rds")) ## Enter m
 
 ## Calculate conditional WTP:
 Winter_MXL_ModelTwo_ConWTP <- apollo_conditionals(Model,apollo_probabilities,apollo_inputs )
-fwrite(Winter_MXL_ModelTwo_ConWTP,here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_ConWTP.csv"))
+fwrite(Winter_MXL_ModelTwo_ConWTP %>% data.frame(),sep=",",
+       here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_ConWTP.csv"))
 
 
 ## Calculate unconditional WTP: (Needed for Fig.2. of the paper) [NOTE: Unconditionals make v large dataframes]
 Winter_MXL_ModelTwo_UnconWTP <- apollo_unconditionals(Model,apollo_probabilities,apollo_inputs )
-fwrite(Winter_MXL_ModelTwo_UnconWTP,here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv"))
+fwrite(Winter_MXL_ModelTwo_UnconWTP %>% data.frame(),sep=",",
+       here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv"))
 
 
 
 ## Output a summary table:
-Winter_MXL_ModelTwo_WTP <- data.frame(fread(here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_WTP.csv")))
+Winter_MXL_ModelTwo_WTP <- data.frame(fread(here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_ConWTP.csv")))
 Winter_MXL_ModelTwoSummary <-data.frame(cbind("TaxWTP_Test"=Winter_MXL_ModelTwo_WTP$beta_Tax.post.mean,
                                                              "SmellWTP_Test"=Winter_MXL_ModelTwo_WTP$b_Smell.post.mean,
                                                              "SmellWTP2_Test"=Winter_MXL_ModelTwo_WTP$b_Smell2.post.mean,

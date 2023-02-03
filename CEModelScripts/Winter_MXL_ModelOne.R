@@ -45,6 +45,7 @@ library(ggridges)
 library(reshape2)
 library(mded)
 library(here)
+library(data.table)
 
 #------------------------------
 # Import Data: ####
@@ -61,7 +62,7 @@ apollo_initialise()
 
 ## Note 10 cores as I'm using the University of Kent 'Tesla' HPC:
 apollo_control = list(
-  nCores    = 10,
+  nCores    = 1,
   mixing    = TRUE,
   modelDescr = "Winter_MXL_ModelOne",
   modelName  = "Winter_MXL_ModelOne", ## Added dates last verified
@@ -198,7 +199,7 @@ Winter_MXL_ModelOne = apollo_estimate(apollo_beta, apollo_fixed, apollo_probabil
 # Model output and results here alongside saving information
 apollo_modelOutput(Winter_MXL_ModelOne,modelOutput_settings = list(printPVal=TRUE))
 apollo_saveOutput(Winter_MXL_ModelOne,saveOutput_settings = list(printPVal=TRUE))
-saveRDS(Winter_MXL_ModelOne, file="Winter_MXL_ModelOne.rds")
+saveRDS(Winter_MXL_ModelOne, here("CEoutput/ModelOne","Winter_MXL_ModelOne.rds"))
 
 
 #------------------------------
@@ -212,17 +213,19 @@ Model <- readRDS(here("CEoutput/ModelOne","Winter_MXL_ModelOne.rds")) ## Enter m
 
 ## Calculate conditional WTP:
 Winter_MXL_ModelOne_ConWTP <- apollo_conditionals(Model,apollo_probabilities,apollo_inputs )
-fwrite(Winter_MXL_ModelOne_ConWTP,here("CEoutput/ModelOne","Winter_MXL_ModelOne_ConWTP.csv"))
+fwrite(Winter_MXL_ModelOne_ConWTP %>% data.frame(),sep=",",
+       here("CEoutput/ModelOne","Winter_MXL_ModelOne_ConWTP.csv"))
 
 
 ## Calculate unconditional WTP: (Needed for Fig.2. of the paper) [NOTE: Unconditionals make v large dataframes]
 Winter_MXL_ModelOne_UnconWTP <- apollo_unconditionals(Model,apollo_probabilities,apollo_inputs )
-fwrite(Winter_MXL_ModelOne_UnconWTP,here("CEoutput/ModelOne","Winter_MXL_ModelOne_UnconWTP.csv"))
+fwrite(Winter_MXL_ModelOne_UnconWTP %>% data.frame(),sep=",",
+       here("CEoutput/ModelOne","Winter_MXL_ModelOne_UnconWTP.csv"))
 
 
 
 ## Output a summary table:
-Winter_MXL_ModelOne_WTP <- data.frame(fread(here("CEoutput/ModelOne","Winter_MXL_ModelOne_WTP.csv")))
+Winter_MXL_ModelOne_WTP <- data.frame(fread(here("CEoutput/ModelOne","Winter_MXL_ModelOne_ConWTP.csv")))
 Winter_MXL_ModelOneSummary <-data.frame(cbind("TaxWTP_Test"=Winter_MXL_ModelOne_WTP$beta_Tax.post.mean,
                                                                          "SmellWTP_Test"=Winter_MXL_ModelOne_WTP$b_Smell.post.mean,
                                                                          "SmellWTP2_Test"=Winter_MXL_ModelOne_WTP$b_Smell2.post.mean,
