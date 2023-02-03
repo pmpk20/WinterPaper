@@ -1,0 +1,19 @@
+Variable,Low:Low,Not Signif.,X5,High:High
+1,Tax,5,1315,NA,NA
+2,Tax,(0.38%),(99.62%),NA,NA
+3,Colour: Medium,NA,NA,1320,NA
+4,Colour: Medium,NA,NA,(100%),NA
+5,Colour: High,23,1282,NA,15
+6,Colour: High,(1.74%),(97.12%),NA,(1.14%)
+7,Smell: Medium,NA,1320,NA,NA
+8,Smell: Medium,NA,(100%),NA,NA
+9,Smell: High,23,1282,NA,15
+10,Smell: High,(1.74%),(97.12%),NA,(1.14%)
+11,Sound: Medium,25,1282,NA,13
+12,Sound: Medium,(1.89%),(97.12%),NA,(0.98%)
+13,Sound: High,26,1269,NA,25
+14,Sound: High,(1.97%),(96.14%),NA,(1.89%)
+15,Deadwood: Medium,8,1302,NA,10
+16,Deadwood: Medium,(0.61%),(98.64%),NA,(0.76%)
+17,Deadwood: High,15,1283,NA,22
+18,Deadwood: High,(1.14%),(97.2%),NA,(1.67%)
