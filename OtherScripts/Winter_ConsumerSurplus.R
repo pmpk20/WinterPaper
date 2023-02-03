@@ -1,7 +1,7 @@
 #### RELATE WP5: Replication code to summarise all models  ###############
 # Script author: Peter King (p.m.king@kent.ac.uk)
 # Last Edited: 30/01/2023
-# This is the easiest way to see all the models run
+# Bit inelegant but it works
 
 
 #----------------------------------------------------------------------------------------------------------

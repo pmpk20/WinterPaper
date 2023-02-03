@@ -847,10 +847,6 @@ colnames(database)[which(names(database)=="Spring20210WoodlandVisitDummy")] <- "
 
 
 ## These are the only ones we actually end up using
-<<<<<<< Updated upstream
-write.csv(database, file = "database_Winter_Step1.csv", fileEncoding = "latin1")
-write.csv(Winter,  file = "Winter_dataframe_Step1.csv", fileEncoding = "latin1")
-=======
 ## Also fwrite() is much faster
 # write.csv(database, file = "database_Winter_Step1.csv", fileEncoding = "latin1")
 # write.csv(Winter,  file = "Winter_dataframe_Step1.csv", fileEncoding = "latin1")
@@ -862,8 +858,6 @@ fwrite(database %>% data.frame(),
 fwrite(Winter %>% data.frame(),
        sep=",",
        here("OtherData","Winter_dataframe_Step1.csv"))
-
->>>>>>> Stashed changes
 
 # write.csv(database_Truncated, file = "database_Truncated_Winter.csv", fileEncoding = "latin1")
 
