@@ -38,43 +38,42 @@ source("CEModelScripts/Winter_MXL_ModelOne_PrefSpace.R")
 source("CEModelScripts/Winter_MXL_ModelTwo.R")
 
 
-```
-
-
-
-```{r Step Two: Choice Models Output}
-
-
-## Model outputs and append WTP to data to create "Winter_dataframe_Step4.csv"
-source("CEModelScripts/Winter_MXLSummary.R")
-
-## Check Sarrias (2020) validity
-source("CEModelScripts/Winter_WTPValidity.R")
-
+## MUST RUN THIS FOR THE REST TO WORK:
+source(here("OtherScripts","Winter_MergeSurveyAndWTP.R"))
 
 ```
 
 
-```{r Step Two B: Choice Models Output of WTP}
+
+```{r Step Two: Check WTP from the Choice Models Output}
 
 
-## Create table
-source("OtherScripts/Winter_WTPSummary.R")
+## Check WTP distributions:
+source(here("CEModelScripts","Winter_SarriasTests.R"))
 
 
-## Estimate CS using the preference-space model
-source("OtherScripts/Winter_ConsumerSurplus.R")
+## Calculate CS measures:
+source(here("CEModelScripts","Winter_ConsumerSurplus.R"))
+
+
+
+```
+
+
+```{r Step Two B: Plot WTP}
 
 
 ## Plot distribution of WTP
-source("OtherScripts/Figures/Winter_Figure2_Boxplot_Unconditionals_Parellel.R")
+source(here("OtherScripts/Figures","Winter_Figure2_Boxplot_Unconditionals_Parellel.R"))
+
 
 ## Plot distribution of WTP by impairments
-source("OtherScripts/Figures/Winter_PlotDistributions_Impairments.R")
+source(here("OtherScripts/Figures","Winter_Figure2_Impairments.R"))
 
 
-## Plot distribution of WTP by visitfrequency
-source("OtherScripts/Figures/Winter_PlotDistributions_VisitFrequency.R")
+## Plot distribution of WTP by visit frequency
+source(here("OtherScripts/Figures","Winter_Figure2_VisitFrequency.R"))
+
 
 ```
 
@@ -87,7 +86,9 @@ source("OtherScripts/Figures/Winter_PlotDistributions_VisitFrequency.R")
 source("OtherScripts/Spatial/Winter_GlobalMorans.R")
 
 ## Local Moran's I for autocorrelation
-source("OtherScripts/Spatial/Winter_LocalMorans.R")
+source(here("OtherScripts/Spatial","Winter_LocalMorans_Plots.R"))
+source(here("OtherScripts/Spatial","Winter_LocalMorans_Table.R"))
+
 
 ## Spatial Lag Model simulate P values
 source("OtherScripts/Spatial/WP5_Winter_SpatialLagModels_Simulator.R")
