@@ -53,7 +53,7 @@ source(here("CEModelScripts","Winter_SarriasTests.R"))
 
 
 ## Calculate CS measures:
-source(here("CEModelScripts","Winter_ConsumerSurplus.R"))
+source(here("OtherScripts","Winter_ConsumerSurplus.R"))
 
 
 
@@ -91,10 +91,10 @@ source(here("OtherScripts/Spatial","Winter_LocalMorans_Table.R"))
 
 
 ## Spatial Lag Model simulate P values
-source("OtherScripts/Spatial/WP5_Winter_SpatialLagModels_Simulator.R")
+source(here("OtherScripts/Spatial","Winter_SpatialLagModels_Simulator.R"))
 
 ## Spatial Lag Model all outputs
-source("OtherScripts/Spatial/Winter_SpatialLagModels.R")
+source(here("OtherScripts/Spatial","Winter_SpatialLagModels.R"))
 
 
 ```
