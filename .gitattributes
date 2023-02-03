@@ -1,0 +1,4 @@
+CEoutput/ModelOne/Winter_MXL_ModelOne.rds filter=lfs diff=lfs merge=lfs -text
+CEoutput/ModelOne/Winter_MXL_ModelOne_PrefSpace.rds filter=lfs diff=lfs merge=lfs -text
+CEoutput/ModelOne/Winter_MXL_ModelOne_PrefSpace_UnconWTP.csv filter=lfs diff=lfs merge=lfs -text
+CEoutput/ModelOne/Winter_MXL_ModelOne_UnconWTP.csv filter=lfs diff=lfs merge=lfs -text
