@@ -1,0 +1,9 @@
+Variables,Means,Variances,Distributions
+1,Colour,Pass,Pass,Pass
+2,Colour2,Pass,Pass,Pass
+3,Smell,Fail,Pass,Pass
+4,Smell2,Pass,Pass,Pass
+5,Sound,Fail,Pass,Pass
+6,Sound2,Pass,Pass,Pass
+7,Deadwood,Pass,Pass,Pass
+8,Deadwood2,Fail,Pass,Pass
