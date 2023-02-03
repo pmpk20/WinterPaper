@@ -11,7 +11,16 @@
 ## NOTES: This is just importing packages.
 #----------------------------------------------------------------------------------------------------------
 
-
+#
+# install.packages("here")
+# install.packages("readxl")
+# install.packages("magrittr")
+# install.packages("psych")
+# install.packages("dplyr")
+# install.packages("geosphere")
+# install.packages("PostcodesioR")
+# install.packages("udunits2")
+# renv::snapshot()
 
 ## Setting up libraries in order of use in the script
 library(here)
@@ -27,6 +36,7 @@ library(udunits2)
 ## Setting working directory
 # here()
 ## Yes, I'm using here() for all imports and exports
+## I'm also trying to use renv() which is not as easy as first indicated
 
 
 
@@ -476,6 +486,7 @@ rownames(Housing1) <- Winter$ID
 ## Putting all the distance measures in one for now.
 DistancesReported <- (cbind(Woodland1,Housing1))
 DistancesReported <- data.frame(DistancesReported)
+Winter <- cbind(Winter,DistancesReported)
 ## Calculate distance between points in miles (formula uses (Lon,Lat))
 # distm(c(as.numeric(DistancesReported[,2]),as.numeric(DistancesReported[,1])), c(as.numeric(DistancesReported[,4]),as.numeric(DistancesReported[,3])), fun = distHaversine)[,1]/1609
 
@@ -802,6 +813,9 @@ database<- database[!is.na(database$MilesDistance),] ## Drop missing distances
 database<- database[!is.na(database$Overall),] ## Drop respondents not completing BIOWELL
 
 
+## Might as well do the same truncation here for consistency:
+Winter<- Winter[!is.na(Winter$MilesDistance),] ## Drop missing distances
+Winter<- Winter[!is.na(Winter$Overall),]
 
 
 #----------------------------------------------------------------------------------------------------------
@@ -833,8 +847,23 @@ colnames(database)[which(names(database)=="Spring20210WoodlandVisitDummy")] <- "
 
 
 ## These are the only ones we actually end up using
+<<<<<<< Updated upstream
 write.csv(database, file = "database_Winter_Step1.csv", fileEncoding = "latin1")
 write.csv(Winter,  file = "Winter_dataframe_Step1.csv", fileEncoding = "latin1")
+=======
+## Also fwrite() is much faster
+# write.csv(database, file = "database_Winter_Step1.csv", fileEncoding = "latin1")
+# write.csv(Winter,  file = "Winter_dataframe_Step1.csv", fileEncoding = "latin1")
+
+fwrite(database %>% data.frame(),
+       sep=",",
+       here("OtherData","database_Winter_Step1.csv"))
+
+fwrite(Winter %>% data.frame(),
+       sep=",",
+       here("OtherData","Winter_dataframe_Step1.csv"))
+
+>>>>>>> Stashed changes
 
 # write.csv(database_Truncated, file = "database_Truncated_Winter.csv", fileEncoding = "latin1")
 
