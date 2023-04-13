@@ -1,13 +1,14 @@
 #### RELATE Winter Paper ####
 ## Function: Literally plots one figure: distributions of each attributes' WTP
 ## Author: Dr Peter King (p.m.king@kent.ac.uk)
-## Last change: 30/01/2023
+## Last change: 13/04/2023
+## Change: Changing X limit, y labels, and investigating tax bars.
 ## TODO: Trying to use foreach() to speed up the loop
 
 
-#------------------------------
+# ******************************
 # Replication Information: ####
-#------------------------------
+# ******************************
 
 
 # R version 4.2.0 (2022-04-22 ucrt)
@@ -47,9 +48,9 @@
 
 
 
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************
 # Setup Environment: ####
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************
 
 
 library(tidyverse)
@@ -63,9 +64,9 @@ library(data.table)
 library(Rfast)
 
 
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************
 # Section 1: Import Data ####
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************
 
 
 ## Use step three and add unconditionals rather than use Step4.csv with conditionals
@@ -79,16 +80,16 @@ Winter <- data.frame(fread(here("OtherData","Winter_dataframe_Step3.csv")))
 # WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelOne_2022_07_29_WTP.csv")))
 # WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelOne_2022_07_29_UCWTP.csv")))
 # WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelTwo_2022_07_29_WTP.csv")))
-WTP <- data.frame(fread(here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv")))
+WTP <- data.frame(fread(here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_UnconWTP.csv")))
 
 
 ## If the conditionals are imported then run this to recover only useful variables
-WTP <- WTP[WTP %>% select(-ends_with(c(".ID",".post.sd"))) %>% colnames()] %>% data.frame()
+WTP <- WTP[WTP %>% select(-ends_with(c(".ID", ".post.sd"))) %>% colnames()] %>% data.frame()
 
 
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************
 # Section 2: Summarise Unconditionals by attribute ####
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************
 
 ## So this function calculates one stat per attribute per season
 ### So: rowmeans() not rowMeans() is actually insanely fast if you can be bothered to transform to and from matrices.
@@ -96,11 +97,11 @@ WTP <- WTP[WTP %>% select(-ends_with(c(".ID",".post.sd"))) %>% colnames()] %>% d
 Summarizer <- function(i) {
 
   bind_cols(
-    "y0"=  WTP %>% select(starts_with(i)) %>% summarise_all(quantile,c(0.05)) %>% as.matrix() %>% rowmeans(),
-    "y25"= WTP %>% select(starts_with(i)) %>% summarise_all(quantile,c(0.25)) %>% as.matrix() %>% rowmeans(),
-    "y50"= WTP %>% select(starts_with(i)) %>% summarise_all(mean) %>% as.matrix() %>% rowmeans(),
-    "y75"= WTP %>% select(starts_with(i)) %>% summarise_all(quantile,c(0.75)) %>% as.matrix() %>% rowmeans() ,
-    "y100"=WTP %>% select(starts_with(i)) %>% summarise_all(quantile,c(0.95)) %>% as.matrix() %>% rowmeans()) %>% data.frame()
+    "y0" =  WTP %>% select(starts_with(i)) %>% summarise_all(quantile, c(0.05)) %>% as.matrix() %>% rowmeans(),
+    "y25" = WTP %>% select(starts_with(i)) %>% summarise_all(quantile, c(0.25)) %>% as.matrix() %>% rowmeans(),
+    "y50" = WTP %>% select(starts_with(i)) %>% summarise_all(median) %>% as.matrix() %>% rowmeans(),
+    "y75" = WTP %>% select(starts_with(i)) %>% summarise_all(quantile, c(0.75)) %>% as.matrix() %>% rowmeans() ,
+    "y100" = WTP %>% select(starts_with(i)) %>% summarise_all(quantile, c(0.95)) %>% as.matrix() %>% rowmeans()) %>% data.frame()
 
 }
 
@@ -125,59 +126,72 @@ Summaries <- matrix(0,length(Attribute),5) %>% data.frame()
 
 ## Loop through each variable and produce summaries.
 ## If you have time rewrite this with foreach() using .export=c("Summarizer")
-for (i in 1:length(Attribute)){
-  Summaries[i,] <- Summarizer(Attribute[i])
+for (i in 1:length(Attribute)) {
+  Summaries[i, ] <- Summarizer(Attribute[i])
 
 }
 
 
 
 
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************
 #### Section 2B: Additional wrangling and setup of labels ####
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************
 
 
 ## I want this order on the plot:
-Names <- c("Tax",
-           "ColourHigh",
-           "ColourMedium",
-           "SmellHigh",
-           "SmellMedium",
-           "SoundHigh",
-           "SoundMedium",
-           "DeadwoodHigh",
-           "DeadwoodMedium")
+Names <- c(
+  "Tax",
+  "ColourHigh",
+  "ColourMedium",
+  "SmellHigh",
+  "SmellMedium",
+  "SoundHigh",
+  "SoundMedium",
+  "DeadwoodHigh",
+  "DeadwoodMedium"
+)
 
 
 
 ## Label X axis of ggplot boxplots
 ## Using gsub() to add spaces to the list
-Names <- gsub(pattern = "Deadwood",replacement = "Decomposing Trees ",x = Names)
+Names <-
+  gsub(pattern = "Deadwood",
+       replacement = "Deadwood\nDecomposition ",
+       x = Names)
 
 
-Labels <- gsub(pattern = "Medium",replacement = "\n Medium",x = Names) %>%
-  gsub(pattern = "High",replacement = "\n High") %>%
+Labels <-
+  gsub(pattern = "Medium",
+       replacement = "\n Medium",
+       x = Names) %>%
+  gsub(pattern = "High", replacement = "\n High") %>%
   c()
 
 
 ## Bind the results with variable and season ID for ease later
-NewerData <- bind_cols(
-  Summaries,
-  "variable"=Names)
+NewerData <- bind_cols(Summaries,
+                       "variable" = Names)
 
 
 ## Clearly label which column represents which stat
 colnames(NewerData) <- c("y0",
-             "y25",
-             "y50",
-             "y75",
-             "y100","variable")
+                         "y25",
+                         "y50",
+                         "y75",
+                         "y100", "variable")
 
 
-#----------------------------------------------------------------------------------------------------------
+NewerData %>%
+  fwrite(sep=",",
+         here("OtherOutput",
+              "Figure2_PlotData.csv"))
+
+
+# **********************************************************
 #### Section 3: Create Plot ####
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************
 
 
 ## I got these from RColorBrewer but adding specifically here to
@@ -200,47 +214,71 @@ Colours <- c(
 ## here is the final plot I use.
 ## I put Newerdata in then use the columns to specify the points of the boxplot
 Figure2 <-
-  ggplot(NewerData,aes(x=rev(variable), fill=as.factor(variable))) +
-  geom_boxplot(varwidth = 0.5,outlier.shape = NA,
-               aes(
-                 ymin=y0,
-                 lower=y25,
-                 middle=y50,
-                 upper=y75,
-                 ymax=y100,
-               ),stat="identity")+
-  scale_x_discrete(name="Attribute",label=rev(Labels),limits= Names)+ ## Using rev() to make the order I want
-  theme_bw()+ ## Just looks nicer imo
-  geom_hline(yintercept=0)+ ## I like the zero line for ease of comparison
-  ylab("Marginal WTP in \U00a3 GBP per Household per annum in local tax.")+
-  scale_y_continuous(limits=c(-10,25)
-                     ,breaks = seq(-10,25,1))+
-  scale_fill_manual(name="Attributes",
-                    label=Labels,
-                    values=Colours)+
-  theme(legend.position = "none",
-        legend.background=element_blank(),
-        legend.box.background = element_rect(colour="black"),
-        panel.grid.major.x=element_blank(),
-        panel.grid.minor.x=element_blank(),
-        panel.grid.major.y=element_blank(),
-        panel.grid.minor.y=element_blank())+coord_flip()
+  ggplot(NewerData, aes(x = rev(variable), fill = as.factor(variable))) +
+  geom_errorbar(aes(
+    ymin = y0,
+    ymax = y100,
+  ),width = 0.2)+ ## errorbar means you can have the nicer whiskers
+  geom_boxplot(
+    varwidth = 0.5,
+    outlier.shape = NA,
+    aes(
+      ymin = y0,
+      lower = y25,
+      middle = y50,
+      upper = y75,
+      ymax = y100,
+    ),
+    stat = "identity" ## means you can specify moments as in AES()
+  ) +
+  scale_x_discrete(name = "Attribute",
+                   label = rev(Labels),
+                   limits = Names) + ## Using rev() to make the order I want
+  theme_bw() + ## Just looks nicer imo
+  geom_hline(yintercept = 0) + ## I like the zero line for ease of comparison
+  ylab("Marginal WTP in \U00a3 GBP per Household per annum in local tax.") +
+  scale_y_continuous(limits = c(-10, 20)
+                     , breaks = seq(-10, 20, 5)) +
+  scale_fill_manual(name = "Attributes",
+                    label = Labels,
+                    values = Colours) +
+  theme(
+    legend.position = "none",
+    legend.background = element_blank(),
+    legend.box.background = element_rect(colour = "black"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.text.x = element_text(size = 10,
+                               colour = "black"), ## Change text to be clearer for reader
+    axis.text.y = element_text(size = 10,
+                               colour = "black")
+  ) +
+  coord_flip()
 
 
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************
 #### Section 3: Export Plot ####
-#----------------------------------------------------------------------------------------------------------
+## Removed sys.date() and changed save location
+# **********************************************************
 
-
-## Okay this is silly but I like filenames with "_" not "-"
-### Anyway the point is to add a date to the plot to know which version we're using
-Date <- gsub(pattern = "-",replacement = "_",Sys.Date())
 
 
 ## Save output in highest DPI
-ggsave(Figure2, device = "png",
-       filename = paste0(here(),"/WinterReplication/","Winter_Figure2_BW_",Date,".png"),
-       width=20,height=15,units = "cm",dpi=500)
+ggsave(
+  Figure2,
+  device = "png",
+  filename = paste0(
+    here(),
+    "/OtherOutput/Figures/",
+    "Winter_Figure2_BW.png"
+  ),
+  width = 20,
+  height = 15,
+  units = "cm",
+  dpi = 500
+)
 
 
-# End Of Script ----------------------------------------------------------------
+# End Of Script ****************************************************
