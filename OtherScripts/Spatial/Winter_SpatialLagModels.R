@@ -83,11 +83,11 @@ Winter <- data.frame(fread(here("OtherData","Winter_dataframe_Step4.csv")))
 
 
 ## Drop rows that have missing data in any of the following we use in the models:
-GB_Winter <- GB_Winter %>% drop_na(Colour_WTP_Medium,WoodlandsScore,
-                      MilesDistance,MostRecentVisit,
-                      DummyAge,Gender,
-                      IncomeDummy, Impairment,
-                      GDHI,Density,Area_ha_median)
+GB_Winter <- GB_Winter %>% drop_na(Colour_WTP_Medium, WoodlandsScore,
+                                   MilesDistance, MostRecentVisit,
+                                   DummyAge, Gender,
+                                   IncomeDummy, Impairment,
+                                   GDHI,Density, Area_ha_median)
 
 
 ## Leftover from old versions is that I mix these two up
@@ -96,8 +96,8 @@ Data <- GB_Winter
 Data_Winter <- Data
 
 
-
-#----------------------------------------------------------------------------------------------------------
+%>% %>% %>%
+  #----------------------------------------------------------------------------------------------------------
 # Section 2: Define Nearest Neighbours ####
 ## I actually redefine these later but this section is a warning -
 ## if this doesn't work then the function in Section3 won't either.
@@ -178,7 +178,7 @@ SpatialLagModel <- function(Model, WTP,Data, K) {
   # Using lagsarlm() and lm() to calculate and compare models
   SLM_dummy_Attribute <- lagsarlm(Model, data=Data, NearestNeighbour)
   SLM_dummy_Attribute_S <- summary(SLM_dummy_Attribute)
-  OLS_dummy_Attribute<-lm(Model, data=Data) # Dummy regression
+  OLS_dummy_Attribute <- lm(Model, data=Data) # Dummy regression
   logLik(OLS_dummy_Attribute) ## Does this need to be printed?
   OLS_dummy_Attribute_S <- summary(OLS_dummy_Attribute)
 
@@ -197,8 +197,8 @@ SpatialLagModel <- function(Model, WTP,Data, K) {
   ## For easy inference just output the results like this:
   Result <- ifelse(
     Test_Attribute$LMlag$p.value < 0.05,
-    paste0("Missing Spatial Lag with P: ",round(Test_Attribute$LMlag$p.value,3)),
-    paste0("No Spatial Lag with P: ",round(Test_Attribute$LMlag$p.value,3))
+    paste0("Missing Spatial Lag with P: ", round(Test_Attribute$LMlag$p.value,3)),
+    paste0("No Spatial Lag with P: ", round(Test_Attribute$LMlag$p.value,3))
   )
 
 
@@ -363,41 +363,41 @@ DecompositionWTP2Result <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Deadwoo
 ModelOutput <- function(Model,Result) {
   Estimates <- summary(Model)
   rbind(
-      data.frame(
-        "Value" = rownames(Estimates$Coef),
-        "Data" = paste(ifelse(
-          Estimates$Coef[, 4] < 0.01,
-          paste0(round(Estimates$Coef[, 1], 3), "***"),
+    data.frame(
+      "Value" = rownames(Estimates$Coef),
+      "Data" = paste(ifelse(
+        Estimates$Coef[, 4] < 0.01,
+        paste0(round(Estimates$Coef[, 1], 3), "***"),
+        ifelse(
+          Estimates$Coef[, 4] < 0.05,
+          paste0(round(Estimates$Coef[, 1], 3), "**"),
           ifelse(
-            Estimates$Coef[, 4] < 0.05,
-            paste0(round(Estimates$Coef[, 1], 3), "**"),
-            ifelse(
-              Estimates$Coef[, 4] < 0.1,
-              paste0(round(Estimates$Coef[, 1], 3), "*"),
-              round(Estimates$Coef[, 4], 3)))),
-          "(",round(Estimates$Coef[,3],3),")")),
+            Estimates$Coef[, 4] < 0.1,
+            paste0(round(Estimates$Coef[, 1], 3), "*"),
+            round(Estimates$Coef[, 4], 3)))),
+        "(",round(Estimates$Coef[,3],3),")")),
 
-      data.frame("Value"=c("Stat"),"Data"=round(Result$LMlag$statistic,3)),
+    data.frame("Value"=c("Stat"),"Data"=round(Result$LMlag$statistic,3)),
 
-      data.frame("Value"=c("LR"),
-                 "Data"=paste(ifelse(
-                   Estimates$LR1$p.value < 0.01,
-                   paste0(round(Estimates$rho, 3), "***"),
+    data.frame("Value"=c("LR"),
+               "Data"=paste(ifelse(
+                 Estimates$LR1$p.value < 0.01,
+                 paste0(round(Estimates$rho, 3), "***"),
+                 ifelse(
+                   Estimates$LR1$p.value < 0.05,
+                   paste0(round(Estimates$rho, 3), "**"),
                    ifelse(
-                     Estimates$LR1$p.value < 0.05,
-                     paste0(round(Estimates$rho, 3), "**"),
-                     ifelse(
-                       Estimates$LR1$p.value < 0.1,
-                       paste0(round(Estimates$rho, 3), "*"),
-                       round(Estimates$LR1$p.value, 3)
-                     )
+                     Estimates$LR1$p.value < 0.1,
+                     paste0(round(Estimates$rho, 3), "*"),
+                     round(Estimates$LR1$p.value, 3)
                    )
-                 ),
-                 paste0("(", round(Estimates$rho.se, 3),")")))[1,],
+                 )
+               ),
+               paste0("(", round(Estimates$rho.se, 3),")")))[1,],
 
-      data.frame("Value"=c("logLik"),"Data"=round(logLik(Estimates),3)),
-      data.frame("Value"=c("AIC"),"Data"=round(AIC(Estimates),3)))
-  }
+    data.frame("Value"=c("logLik"),"Data"=round(logLik(Estimates),3)),
+    data.frame("Value"=c("AIC"),"Data"=round(AIC(Estimates),3)))
+}
 
 
 

@@ -135,13 +135,13 @@ LegendLabels <- c(
 
 ## So this function calculates one stat per attribute per Impairment
 ### So: rowmeans() not rowMeans() is actually insanely fast if you can be bothered to transform to and from matrices.
-### Function: selects relevant columns from the dataste then calculates summary stats for each group.
+### Function: selects relevant columns from the dataset then calculates summary stats for each group.
 Summarizer <- function(Attribute) {
 
   bind_cols(
     "y0"=  WinterWTPCombined %>% select(starts_with(Attribute),"Impairment")  %>% group_by(Impairment) %>% summarise_all(quantile,c(0.05)) %>% as.matrix() %>% rowmeans(),
     "y25"= WinterWTPCombined %>% select(starts_with(Attribute),"Impairment")  %>% group_by(Impairment) %>% summarise_all(quantile,c(0.25)) %>% as.matrix() %>% rowmeans(),
-    "y50"= WinterWTPCombined %>% select(starts_with(Attribute),"Impairment")  %>% group_by(Impairment) %>% summarise_all(mean) %>% as.matrix() %>% rowmeans(),
+    "y50"= WinterWTPCombined %>% select(starts_with(Attribute),"Impairment")  %>% group_by(Impairment) %>% summarise_all(median) %>% as.matrix() %>% rowmeans(),
     "y75"= WinterWTPCombined %>% select(starts_with(Attribute),"Impairment")  %>% group_by(Impairment) %>% summarise_all(quantile,c(0.75)) %>% as.matrix() %>% rowmeans() ,
     "y100"=WinterWTPCombined %>% select(starts_with(Attribute),"Impairment")  %>% group_by(Impairment) %>% summarise_all(quantile,c(0.95)) %>% as.matrix() %>% rowmeans()) %>% data.frame()
 

@@ -1,6 +1,6 @@
 #### RELATE WP5: Winter Spatial Lag Models  ###############
 # Script author: Peter King (p.m.king@kent.ac.uk)
-# Last Edited: 03/02/2023
+# Last Edited: 14/04/2023
 # Here I estimate the spatial lag model for each attribute for 1000 draws.
 
 
@@ -49,9 +49,19 @@
 # [79] survival_3.3-1       modelr_0.1.10        crayon_1.5.2         KernSmooth_2.23-20   utf8_1.2.2           tzdb_0.3.0
 # [85] rmarkdown_2.20       maxLik_1.5-2         grid_4.2.0           readxl_1.4.1         classInt_0.4-8       reprex_2.0.2
 # [91] digest_0.6.31        numDeriv_2016.8-1.1  MCMCpack_1.6-3       munsell_0.5.0
-# install.packages(c("doSNOW","doParallel","doMPI","foreach"),repos="http://cran.us.r-project.org")
 
 
+# install.packages(c("sf"),
+#                  repos="http://cran.us.r-project.org")
+
+# install.packages(c("libgdal"),
+#                  lib = "/shared/home/pk372/anaconda3/envs/WinterEnv/lib/R/library",
+#                  repos="http://cran.us.r-project.org")
+
+
+install.packages("sf",repos="http://cran.us.r-project.org",
+                 lib = "/shared/home/pk372/anaconda3/envs/WinterEnv/lib/R/library",
+                 type = "source", dependencies = TRUE)
 
 ## Libraries: ---------------------------------------------------------------
 library(parallel)
@@ -60,11 +70,8 @@ library(dplyr)
 library(sf)
 library(stringi)
 library(stringr)
-library(PostcodesioR)
-library(lubridate)
 library(spdep)
 library(spatialreg)
-library(xtable)
 library(here)
 library(data.table)
 library(Rfast)
@@ -82,30 +89,46 @@ rm(list=ls())
 #### Step One: Read in data frame with all respondents ####
 ##----------------------------------------------------------------------------------------------------------
 
-
 # Data Import: ----
-Winter <- data.frame(fread(here("OtherData","Winter_Step4.csv")))
-Draws <- data.frame(fread(here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv")))
+Winter <- here("OtherData","Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
+GB_Winter <- here("OtherData","GB_Winter_Final.gpkg") %>% st_read()
+Draws <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv") %>% fread() %>% data.frame()
 
 
 
 ## Drop rows that have missing data in any of the following we use in the models:
 Winter <- Winter %>% drop_na(Colour_WTP_Medium,WoodlandsScore,
-                      MilesDistance,MostRecentVisit,
-                      DummyAge,Gender,
-                      IncomeDummy, Impairment,
-                      GDHI,Density,Area_ha_median)
+                             MilesDistance,MostRecentVisit,
+                             DummyAge,Gender,
+                             IncomeDummy, Impairment)
 
+
+## ORIGINAL CODE
+GB_Winter_Trim <- GB_Winter %>% drop_na(Colour_WTP_Medium,WoodlandsScore,
+                                        MilesDistance,MostRecentVisit,
+                                        DummyAge,Gender,
+                                        IncomeDummy, Impairment,
+                                        GDHI,Density,Area_ha_median)
 
 
 Data_Combined <- bind_cols(
   Winter, Draws
 )
 
-# GB_Winter <- st_read("GB_Winter_2022_07_30.gpkg")
+GB_Necessary <- GB_Winter_Trim[,c("Area..sq.km.", "Area_ha_mean",
+                                  "Area_ha_median", "Area_ha_stddev",
+                                  "GDHI", "Density", "ID")]
 
-Data <- Data_Combined
-Data_Winter <- Data_Combined
+
+GB_Combined <- left_join(x = GB_Necessary,Data_Combined,by=c("ID"="ID"))
+
+
+#
+# # GB_Winter <- st_read("GB_Winter_2022_07_30.gpkg")
+#
+Data <- GB_Combined
+Data_Winter <- GB_Combined
+
 
 
 #-----------------------------------------
@@ -208,22 +231,36 @@ PVSimulator <- function(Model,Data) {
 }
 
 
+
 ## Calculates 1000 values the slow way:
 PoeTester <- function(Attribute) {
   PValues <- matrix(0,1000,1) %>% as.data.frame()
   PValues <- foreach(i = 1:1000,.combine=c,.export=c("PVSimulator","PValues",
-                                          "Data","NearestNeighbours"),
-          .packages = list.of.packages)%dopar% {
-  PVSimulator(as.formula(paste0(Attribute,i,"~WoodlandsScore+
-                     MilesDistance+MostRecentVisit+DummyAge+
-                     Gender+IncomeDummy")), Data) %>% as.numeric()
-  }
+                                                     "Data","NearestNeighbours"),
+                     .packages = list.of.packages)%dopar% {
+                       PVSimulator(as.formula(
+                         paste0(
+                           Attribute,
+                           i,
+                           "~ WoodlandsScore +
+                     MilesDistance +
+                     MostRecentVisit +
+                     DummyAge +
+                     Gender +
+                     IncomeDummy +
+                     GDHI +
+                     Density +
+                     Area_ha_median"
+                         )
+                       ), Data) %>% as.numeric()
+                     }
   PValues %>% as.data.frame()
 }
 
 
 
-# ## Calculates 1000 values the slow way:
+
+# ## Calculates 1000 values the slowest way:
 # PoeTester <- function(Attribute) {
 #   PValues <- matrix(0,1000,1) %>% as.data.frame()
 #   for (i in 1:1000){

@@ -199,14 +199,14 @@ NewerData %>%
 ### (b) make scale_fill_manual() easier
 Colours <- c(
   "#C6DBEF",
-           "#C6DBEF",
-           "#08306B",
-           "#08306B",
-           "#6BAED6",
-           "#6BAED6",
-           "#2171B5",
-           "#2171B5",
-           "#F7FBFF"
+  "#C6DBEF",
+  "#08306B",
+  "#08306B",
+  "#6BAED6",
+  "#6BAED6",
+  "#2171B5",
+  "#2171B5",
+  "#F7FBFF"
 )
 
 
