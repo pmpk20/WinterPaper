@@ -40,34 +40,35 @@
 library(apollo)
 library(dplyr)
 library(magrittr)
-library(ggplot2)
-library(ggridges)
 library(reshape2)
 library(mded)
 library(here)
 library(data.table)
 library(stringr)
+library(Rfast)
 
 
-#----------------------------------------------------------------------------------------------------------
+# *********************************************************************************************************
 #### Section 0: Importing Model,  Estimates,  and WTP for FULL SAMPLE models ####
-#----------------------------------------------------------------------------------------------------------
+# *********************************************************************************************************
 
 
 ## Basic model, no covariates, in WTP-space.
-ModelOne_WTP <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_ConWTP.csv") %>% fread() %>% data.frame()
-ModelOne_Estimates <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_estimates.csv") %>% fread() %>% data.frame()
+# ModelOne_WTP <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_ConWTP.csv") %>% fread() %>% data.frame()
+# ModelOne_Estimates <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_estimates.csv") %>% fread() %>% data.frame()
+# ModelOne_UC <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_UnconWTP.csv") %>% fread() %>% data.frame()
 
 
 ## Model with covariates
 ModelTwo_WTP <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_ConWTP.csv") %>% fread() %>% data.frame()
 ModelTwo_Estimates <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_estimates.csv") %>% fread() %>% data.frame()
+ModelTwo_UC <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv") %>% fread() %>% data.frame()
 
 
 
-#----------------------------------------------------------------------------------------------------------
+# *********************************************************************************************************
 #### Section 1: Define summary functions ####
-#----------------------------------------------------------------------------------------------------------
+# *********************************************************************************************************
 
 
 ## For the means we test whether the mean conditional WTP is more than 90% of the
@@ -75,20 +76,28 @@ ModelTwo_Estimates <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_estimates.cs
 ## Example: SarriasTestMeans(ModelOne_WTP, ModelOne_Estimates,"beta_Tax")
 SarriasTestMeans <- function(WTP, Estimates,Variable) {
 
+  A <- WTP %>%
+    select(paste0("b_",Variable,".post.mean")) %>%
+    summarise(across(everything(),list(mean))) %>%
+    as.numeric()
+  B <- Estimates %>%
+    filter(V1==paste0("b_",Variable)) %>%
+    select("Estimate") %>%
+    abs() %>%
+    divide_by(100) %>%
+    multiply_by(90) %>%
+    as.numeric()
+
   ifelse(
-    WTP %>%
-      select(paste0("b_",Variable,".post.mean")) %>%
-      summarise(across(everything(),list(mean))) %>%
-      as.numeric() >= Estimates %>%
-      filter(V1==paste0("b_",Variable)) %>%
-      select("Estimate") %>%
-      abs() %>%
-      divide_by(100) %>%
-      multiply_by(90) %>%
-      as.numeric(),"Pass","Fail") %>% c()
+    A >= B ,
+    paste0("Pass: Mean of conditional WTP (",
+           A %>% round(3), ") >= 90% of mu parameter (", B %>% round(3), ")"),
+    paste0("Fail: Mean of conditional WTP (",
+           A %>% round(3), ") < 90% of mu parameter (", B %>% round(3), ")")
+  ) %>%
+    c()
 
 }
-
 
 
 ## For the variances  we test whether the variance of the
@@ -97,56 +106,86 @@ SarriasTestMeans <- function(WTP, Estimates,Variable) {
 ## Example: SarriasTestVariances(ModelOne_WTP, ModelOne_Estimates,"beta_Tax")
 SarriasTestVariances <- function(WTP, Estimates,Variable) {
 
+  A <- WTP %>% select(paste0("b_",Variable,".post.sd"))  %>%
+    summarise(across(everything(),list(mean))) %>%
+    as.numeric()
+
+
+  B <- Estimates %>%
+    filter(V1==paste0("sig_",Variable)) %>%
+    select("Estimate") %>%
+    divide_by(100) %>%
+    multiply_by(60) %>%
+    as.numeric()
+
   ifelse(
-    WTP %>% select(paste0("b_",Variable,".post.sd"))  %>%
-      summarise(across(everything(),list(mean))) %>%
-      as.numeric() >=
-      Estimates %>%
-      filter(V1==paste0("sig_",Variable)) %>%
-      select("Estimate") %>%
-      divide_by(100) %>%
-      multiply_by(60) %>%
-      as.numeric(),"Pass","Fail") %>% c()
+    A >= B ,
+    paste0("Pass: Variance of conditional WTP (",
+           A %>% round(3), ") >= 60% of sigma parameter (", B %>% round(3), ")"),
+    paste0("Fail: Variance of conditional WTP (",
+           A %>% round(3), ") < 60% of sigma parameter (", B %>% round(3), ")")
+  ) %>%
+    c()
 
 }
+
 
 
 ## For the distribution we use the Kolmogorov-Smirnov test:
 ## Example:  SarriasTestDistributions(ModelOne_WTP, ModelOne_Estimates,"b_Colour")
 ## Using ks.test() with four arguments: the distribution of WTP by attribute,
 # "Pnorm", Variable specific estimate and variable specific variance
-SarriasTestDistributions <- function(WTP, Estimates,Variable) {
+SarriasTestDistributions <- function(Conditionals, Unconditionals, Variable) {
 
-  ifelse(ks.test(
-    WTP %>% select(paste0("b_",Variable,".post.mean")),
-    "pnorm",
+  Q <- Conditionals %>% nrow()
 
-    Estimates %>%
-      filter(V1==paste0("b_",Variable)) %>%
-      select("Estimate") %>% as.numeric(),
+  ## SO firstly simulate a distribution of WTP with the mean and SD of the conditionals:
+  X_Dist <- pnorm(
+    q = Q,
+    mean = Conditionals %>%
+      select(paste0("b_", Variable, ".post.mean")) %>% unlist() %>% as.numeric(),
+    sd = Conditionals %>%
+      select(paste0("b_", Variable, ".post.sd")) %>% unlist() %>% as.numeric()
+  )
 
-    Estimates %>%
-      filter(V1==paste0("sig_",Variable)) %>%
-      select("Estimate")  %>% as.numeric() %>% abs()
-    )$p.value < 0.05,
-    "Pass",
-    "Fail") %>% c()
+  ## Then simulate a distribution of WTP using moments from the UNconditionals
+  Y_Mean <-
+    Unconditionals %>% select(starts_with(paste0("b_", Variable, "."))) %>%
+    summarise_all(mean) %>% as.matrix() %>% rowmeans()
+
+  Y_SD <-
+    Unconditionals %>% select(starts_with(paste0("b_", Variable, "."))) %>%
+    summarise_all(sd) %>% as.matrix() %>% rowmeans()
+
+  Y_Dist <- pnorm(q = Q, mean = Y_Mean, sd = Y_SD)
+
+
+  ## NOW use the KS test to
+  # " test whether the distribution of the conditional means equals the estimated unconditional distribution"
+  Test2 <- ks.test(
+    X_Dist, Y_Dist)
+
+
+  ## Output Result with some text:
+  # Sarris (2020) notes that:
+  # "Failure to reject the null hypothesis is a conservative indicator
+  # that the distribution selected for the parameter is correct"
+  ifelse(
+    Test2$p.value > 0.05,
+    paste0("Pass (KS test stat = ", Test2$statistic %>% round(3), ", P = ", Test2$p.value %>% round(3),")"),
+    paste0("Fail (KS test stat = ", Test2$statistic %>% round(3), ", P = ", Test2$p.value %>% round(3),")")) %>% c()
+
 
 }
 
 
-#----------------------------------------------------------------------------------------------------------
+# *********************************************************************************************************
 #### Section 1B: Initialising variables ####
-#----------------------------------------------------------------------------------------------------------
+# *********************************************************************************************************
 
 
 ## Changing variable names to make the function easier to write
-ModelOne_Estimates$V1 <- ModelOne_Estimates$V1 %>%
-  c() %>%
-  str_replace_all(c(mu_="b_",
-                    b_Tax="beta_Tax"))
-
-## Changing variable names to make the function easier to write
+## Also using ModelTwo as it's the WTP-space with covariates one
 ModelTwo_Estimates$V1 <- ModelTwo_Estimates$V1 %>%
   c() %>%
   str_replace_all(c(mu_="b_",
@@ -166,26 +205,26 @@ VarTests <- matrix(0,8,1) %>% data.frame()
 DistTests <- matrix(0,8,1) %>% data.frame()
 
 
-#----------------------------------------------------------------------------------------------------------
+# *********************************************************************************************************
 #### Section 2: Use a loop to do all the tests ####
 ## Conditional Mean should be within 90% of Model mean
 ## Conditional variance should be within 60% of Model variance
 ## Distribution test must not fail KS test
-#----------------------------------------------------------------------------------------------------------
+# *********************************************************************************************************
 
 
 ## Loop through each attribute and output both test
 ### If you can work out how to put custom functions into foreach() this would be even faster
 for (i in Index){
-  MeanTests[match(i,Index),] <- SarriasTestMeans(ModelOne_WTP, ModelOne_Estimates,Index[match(i,Index)])
-  VarTests[match(i,Index),] <- SarriasTestVariances(ModelOne_WTP, ModelOne_Estimates,Index[match(i,Index)])
-  DistTests[match(i,Index),] <- SarriasTestDistributions(ModelOne_WTP, ModelOne_Estimates,Index[match(i,Index)])
+  MeanTests[match(i,Index),] <- SarriasTestMeans(ModelTwo_WTP, ModelTwo_Estimates,Index[match(i,Index)])
+  VarTests[match(i,Index),] <- SarriasTestVariances(ModelTwo_WTP, ModelTwo_Estimates,Index[match(i,Index)])
+  DistTests[match(i,Index),] <- SarriasTestDistributions(ModelTwo_WTP, ModelTwo_UC,Index[match(i,Index)])
 }
 
 
-#----------------------------------------------------------------------------------------------------------
+# *********************************************************************************************************
 #### Section 4: Output tables ####
-#----------------------------------------------------------------------------------------------------------
+# *********************************************************************************************************
 
 
 
@@ -207,6 +246,134 @@ write.table(SarriasTests,
 
 
 
-#----------------------------------------------------------------------------------------------------------
-#### END OF SCRIPT ####
-#----------------------------------------------------------------------------------------------------------
+# *********************************************************************************************************
+#### END OF SCRIPT / OLD CODE ####
+# *********************************************************************************************************
+
+
+#
+# SarriasTestDistributions <- function(WTP, Estimates,Variable) {
+#
+#   ifelse(ks.test(
+#     WTP %>% select(paste0("b_",Variable,".post.mean")),
+#     "pnorm",
+#
+#     Estimates %>%
+#       filter(V1==paste0("b_",Variable)) %>%
+#       select("Estimate") %>% as.numeric(),
+#
+#     Estimates %>%
+#       filter(V1==paste0("sig_",Variable)) %>%
+#       select("Estimate")  %>% as.numeric() %>% abs()
+#     )$p.value < 0.05,
+#     "Pass",
+#     "Fail") %>% c()
+#
+## OLD CODE FOR REFERENCE
+
+# Y_Mean <- Estimates %>%
+#   filter(V1==paste0("b_",Variable)) %>%
+#   select("Estimate") %>% as.numeric()
+# #
+# Y_SD <- Estimates %>%
+#   filter(V1==paste0("sig_",Variable)) %>%
+#   select("Estimate")  %>% as.numeric() %>% abs()
+
+# Test1 <- ks.test(
+#   X,
+#   "pnorm",
+#   Mu, Sigma)
+#
+# ifelse(
+#   Test1$p.value > 0.05,
+#   paste0("Pass: ", Test1$statistic %>% round(3), " (P = ", Test1$p.value %>% round(3),")"),
+#   paste0("Fail: ", Test1$statistic %>% round(3), " (P = ", Test1$p.value %>% round(3),")")) %>% c()
+#
+
+## Second approach
+
+# Test2 <- ks.test(
+#   X,"pnorm", Y_Mean, Y_SD)
+# }
+
+
+
+#
+# SarriasTestDistributions <- function(WTP, Estimates,Variable) {
+#
+#   ifelse(ks.test(
+#     WTP %>% select(paste0("b_",Variable,".post.mean")),
+#     "pnorm",
+#
+#     Estimates %>%
+#       filter(V1==paste0("b_",Variable)) %>%
+#       select("Estimate") %>% as.numeric(),
+#
+#     Estimates %>%
+#       filter(V1==paste0("sig_",Variable)) %>%
+#       select("Estimate")  %>% as.numeric() %>% abs()
+#     )$p.value < 0.05,
+#     "Pass",
+#     "Fail") %>% c()
+#
+## OLD CODE FOR REFERENCE
+
+# Y_Mean <- Estimates %>%
+#   filter(V1==paste0("b_",Variable)) %>%
+#   select("Estimate") %>% as.numeric()
+# #
+# Y_SD <- Estimates %>%
+#   filter(V1==paste0("sig_",Variable)) %>%
+#   select("Estimate")  %>% as.numeric() %>% abs()
+
+# Test1 <- ks.test(
+#   X,
+#   "pnorm",
+#   Mu, Sigma)
+#
+# ifelse(
+#   Test1$p.value > 0.05,
+#   paste0("Pass: ", Test1$statistic %>% round(3), " (P = ", Test1$p.value %>% round(3),")"),
+#   paste0("Fail: ", Test1$statistic %>% round(3), " (P = ", Test1$p.value %>% round(3),")")) %>% c()
+#
+
+## Second approach
+
+# Test2 <- ks.test(
+#   X,"pnorm", Y_Mean, Y_SD)
+# }
+
+
+# SarriasTestMeans <- function(WTP, Estimates,Variable) {
+#
+#   ifelse(
+#     WTP %>%
+#       select(paste0("b_",Variable,".post.mean")) %>%
+#       summarise(across(everything(),list(mean))) %>%
+#       as.numeric() >= Estimates %>%
+#       filter(V1==paste0("b_",Variable)) %>%
+#       select("Estimate") %>%
+#       abs() %>%
+#       divide_by(100) %>%
+#       multiply_by(90) %>%
+#       as.numeric(),"Pass","Fail") %>% c()
+#
+# }
+
+
+# SarriasTestVariances <- function(WTP, Estimates,Variable) {
+#
+#   ifelse(
+#     WTP %>% select(paste0("b_",Variable,".post.sd"))  %>%
+#       summarise(across(everything(),list(mean))) %>%
+#       as.numeric() >=
+#       Estimates %>%
+#       filter(V1==paste0("sig_",Variable)) %>%
+#       select("Estimate") %>%
+#       divide_by(100) %>%
+#       multiply_by(60) %>%
+#       as.numeric(),"Pass","Fail") %>% c()
+#
+# }
+
+
