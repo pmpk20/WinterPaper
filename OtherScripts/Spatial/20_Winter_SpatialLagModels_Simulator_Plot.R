@@ -4,9 +4,9 @@
 # Here I estimate the spatial lag model for each attribute for 1000 draws.
 
 
-#----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 #### Section 0: Setup ####
-#----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 
 
 
@@ -51,17 +51,6 @@
 # [91] digest_0.6.31        numDeriv_2016.8-1.1  MCMCpack_1.6-3       munsell_0.5.0
 
 
-# install.packages(c("sf"),
-#                  repos="http://cran.us.r-project.org")
-
-# install.packages(c("libgdal"),
-#                  lib = "/shared/home/pk372/anaconda3/envs/WinterEnv/lib/R/library",
-#                  repos="http://cran.us.r-project.org")
-
-
-install.packages("sf",repos="http://cran.us.r-project.org",
-                 lib = "/shared/home/pk372/anaconda3/envs/WinterEnv/lib/R/library",
-                 type = "source", dependencies = TRUE)
 
 ## Libraries: ---------------------------------------------------------------
 library(parallel)
@@ -81,81 +70,113 @@ library(ggdist)
 library(ggplot2)
 library(ggridges)
 library(foreach)
-rm(list=ls())
+rm(list = ls())
 
 
 
-##----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 #### Step One: Read in data frame with all respondents ####
-##----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 
-# Data Import: ----
-Winter <- here("OtherData","Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
-GB_Winter <- here("OtherData","GB_Winter_Final.gpkg") %>% st_read()
-Draws <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv") %>% fread() %>% data.frame()
 
+## Survey and WTP data
+Winter <-
+  here("OtherData", "Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
+
+
+## Spatial version
+GB_Winter <- here("OtherData", "GB_Winter_Final.gpkg") %>% st_read()
+
+
+## Unconditional WTP
+Draws <-
+  here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_UnconWTP.csv") %>% fread() %>% data.frame()
+
+
+# *************************************************************************
+#### Step Two: Trim data ####
+# *************************************************************************
 
 
 ## Drop rows that have missing data in any of the following we use in the models:
-Winter <- Winter %>% drop_na(Colour_WTP_Medium,WoodlandsScore,
-                             MilesDistance,MostRecentVisit,
-                             DummyAge,Gender,
-                             IncomeDummy, Impairment)
+Winter <- Winter %>% drop_na(
+  Colour_WTP_Medium,
+  WoodlandsScore,
+  MilesDistance,
+  MostRecentVisit,
+  DummyAge,
+  Gender,
+  IncomeDummy,
+  Impairment
+)
 
 
 ## ORIGINAL CODE
-GB_Winter_Trim <- GB_Winter %>% drop_na(Colour_WTP_Medium,WoodlandsScore,
-                                        MilesDistance,MostRecentVisit,
-                                        DummyAge,Gender,
-                                        IncomeDummy, Impairment,
-                                        GDHI,Density,Area_ha_median)
+GB_Winter_Trim <-
+  GB_Winter %>% drop_na(
+    Colour_WTP_Medium,
+    WoodlandsScore,
+    MilesDistance,
+    MostRecentVisit,
+    DummyAge,
+    Gender,
+    IncomeDummy,
+    Impairment,
+    GDHI,
+    Density,
+    Area_ha_median
+  )
 
 
-Data_Combined <- bind_cols(
-  Winter, Draws
-)
+Data_Combined <- bind_cols(Winter, Draws)
 
-GB_Necessary <- GB_Winter_Trim[,c("Area..sq.km.", "Area_ha_mean",
-                                  "Area_ha_median", "Area_ha_stddev",
-                                  "GDHI", "Density", "ID")]
+GB_Necessary <- GB_Winter_Trim[, c(
+  "Area..sq.km.",
+  "Area_ha_mean",
+  "Area_ha_median",
+  "Area_ha_stddev",
+  "GDHI",
+  "Density",
+  "ID"
+)]
 
 
-GB_Combined <- left_join(x = GB_Necessary,Data_Combined,by=c("ID"="ID"))
+## Merging data here for ease
+GB_Combined <-
+  left_join(x = GB_Necessary, Data_Combined, by = c("ID" = "ID"))
 
 
-#
-# # GB_Winter <- st_read("GB_Winter_2022_07_30.gpkg")
-#
+
 Data <- GB_Combined
-Data_Winter <- GB_Combined
 
 
 
-#-----------------------------------------
+
+# *************************************************************************
 # Section 2: Define Nearest Neighbours ####
-#-----------------------------------------
+# *************************************************************************
 
 
 
 K = sqrt(nrow(Data))
-Data <- Data[!is.na(Data$LonH),]
-Data <- Data[!is.na(Data$LatH),]
-Data <- Data[which(!duplicated(Data$LatH)),]
-Data <- Data[which(!duplicated(Data$LonH)),]
+Data <- Data[!is.na(Data$LonH), ]
+Data <- Data[!is.na(Data$LatH), ]
+Data <- Data[which(!duplicated(Data$LatH)), ]
+Data <- Data[which(!duplicated(Data$LonH)), ]
 
 
-if(missing(K)) {
+if (missing(K)) {
   K = sqrt(nrow(Data))
 } else {
   K
 }
 
-Woodlands <- data.frame(cbind(Data$LatH,abs(Data$LonH)))
-coords <-data.matrix(Woodlands) #converting into matrix class
+Woodlands <- data.frame(cbind(Data$LatH, abs(Data$LonH)))
+coords <- data.matrix(Woodlands) #converting into matrix class
 # coords <- st_centroid(st_geometry(Data), of_largest_polygon=TRUE)
 
 ## This creates the spatial weights:
-kw10 <- knearneigh(coords, k=K)
+kw10 <- knearneigh(coords, k = K)
 kw10kmnb <- knn2nb(kw10)
 dist <- nbdists(kw10kmnb, coords)
 dist2 <- lapply(dist, function(x)
@@ -165,45 +186,52 @@ NearestNeighbours <-
 
 
 
-#----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 # #### Section Alpha: Setup parallelisation ####
-# #----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 
 list.of.packages <- c(
-  "mded", "here","magrittr","dplyr",
+  "mded",
+  "here",
+  "magrittr",
+  "dplyr",
   "microbenchmark",
   "foreach",
   "doParallel",
   "ranger",
   "palmerpenguins",
-  "tidyverse","svMisc",
-  "kableExtra","Rfast","matrixStats",
-  "parallel","spacetime",
-  "sf","stringi","stringr","PostcodesioR","lubridate",
-  "spdep","spatialreg",
+  "tidyverse",
+  "svMisc",
+  "kableExtra",
+  "Rfast",
+  "matrixStats",
+  "parallel",
+  "spacetime",
+  "sf",
+  "stringi",
+  "stringr",
+  "PostcodesioR",
+  "lubridate",
+  "spdep",
+  "spatialreg",
   "data.table"
 )
 #
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+new.packages <-
+  list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
 
-if(length(new.packages) > 0){
-  install.packages(new.packages, dep=TRUE,repos="http://cran.us.r-project.org")
+if (length(new.packages) > 0) {
+  install.packages(new.packages, dep = TRUE, repos = "http://cran.us.r-project.org")
 }
 #
 #loading packages
-for(package.i in list.of.packages){
-  suppressPackageStartupMessages(
-    library(
-      package.i,
-      character.only = TRUE
-    )
-  )
+for (package.i in list.of.packages) {
+  suppressPackageStartupMessages(library(package.i,
+                                         character.only = TRUE))
 }
 #
-my.cluster <- parallel::makeCluster(
-  10,
-  type = "PSOCK"
-)
+my.cluster <- parallel::makeCluster(10,
+                                    type = "PSOCK")
 #
 #check cluster definition (optional)
 print(my.cluster)
@@ -213,18 +241,17 @@ doParallel::registerDoParallel(cl = my.cluster)
 foreach::getDoParRegistered()
 
 
-# #----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 # #### Section 2: Define functions ####
-# #----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 #
 
 ## Repeats LM tests
-PVSimulator <- function(Model,Data) {
-
-
+PVSimulator <- function(Model, Data) {
   # SLModel <- lagsarlm(Model, data=Data, NearestNeighbours) # Spatial lag model
-  OLS_dummy_Attribute<-lm(Model, data=Data) # Dummy regression
-  Test_Attribute <- lm.LMtests(OLS_dummy_Attribute,NearestNeighbours, test = "LMlag" )
+  OLS_dummy_Attribute <- lm(Model, data = Data) # Dummy regression
+  Test_Attribute <-
+    lm.LMtests(OLS_dummy_Attribute, NearestNeighbours, test = "LMlag")
 
   Test_Attribute$LMlag$p.value
 
@@ -234,15 +261,20 @@ PVSimulator <- function(Model,Data) {
 
 ## Calculates 1000 values the slow way:
 PoeTester <- function(Attribute) {
-  PValues <- matrix(0,1000,1) %>% as.data.frame()
-  PValues <- foreach(i = 1:1000,.combine=c,.export=c("PVSimulator","PValues",
-                                                     "Data","NearestNeighbours"),
-                     .packages = list.of.packages)%dopar% {
-                       PVSimulator(as.formula(
-                         paste0(
-                           Attribute,
-                           i,
-                           "~ WoodlandsScore +
+  PValues <- matrix(0, 1000, 1) %>% as.data.frame()
+  PValues <-
+    foreach(
+      i = 1:1000,
+      .combine = c,
+      .export = c("PVSimulator", "PValues",
+                  "Data", "NearestNeighbours"),
+      .packages = list.of.packages
+    ) %dopar% {
+      PVSimulator(as.formula(
+        paste0(
+          Attribute,
+          i,
+          "~ WoodlandsScore +
                      MilesDistance +
                      MostRecentVisit +
                      DummyAge +
@@ -251,9 +283,9 @@ PoeTester <- function(Attribute) {
                      GDHI +
                      Density +
                      Area_ha_median"
-                         )
-                       ), Data) %>% as.numeric()
-                     }
+        )
+      ), Data) %>% as.numeric()
+    }
   PValues %>% as.data.frame()
 }
 
@@ -274,9 +306,9 @@ PoeTester <- function(Attribute) {
 
 
 
-# #----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 # #### Section 3: Repeat test per variable ####
-# #----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 #
 
 
@@ -323,50 +355,68 @@ SpatialLags <- bind_cols(
 
 
 ## Export values:
-fwrite(SpatialLags %>% data.frame(),sep=",",
-       here("OtherOutput/Spatial","Table7_Simulations.csv"))
+fwrite(
+  SpatialLags %>% data.frame(),
+  sep = ",",
+  here("OtherOutput/Spatial", "Table7_Simulations.csv")
+)
 # parallel::stopCluster(cl = my.cluster)
 
 
 
 
 
-# #----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 # #### Section 4: Now repeat for plots ####
-# #----------------------------------------------------------------------------------------------------------
+# *************************************************************************
 #
 
 
 ## Plot the distribution of P values here:
 SpatialLagsPlot <- SpatialLags %>%
   reshape2::melt() %>%
-  ggplot(aes(x=value,y=variable,group=variable,fill=variable))+
-  stat_dist_halfeye()+ ## Love halfeye() from GGDist
-  scale_x_continuous(name="P Values", limits=c(0,1),breaks = seq(0,1,0.05))+
-  theme(legend.position = "none")+
-  geom_vline(xintercept = 0.10)+
-  geom_vline(xintercept = 0.05)+
-  geom_vline(xintercept = 0.01)+
-  theme_bw()+
-  scale_y_discrete(name="Variables",
-                   labels=c(
-                     "Tax",
-                     "ColourMedium",
-                     "ColourHigh",
-                     "SoundMedium",
-                     "SoundHigh",
-                     "SmellMedium",
-                     "SmellHigh",
-                     "DeadwoodMedium",
-                     "DeadwoodHigh"
-                   ))+
+  ggplot(aes(
+    x = value,
+    y = variable,
+    group = variable,
+    fill = variable
+  )) +
+  stat_dist_halfeye() + ## Love halfeye() from GGDist
+  scale_x_continuous(name = "P Values",
+                     limits = c(0, 1),
+                     breaks = seq(0, 1, 0.05)) +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0.10) +
+  geom_vline(xintercept = 0.05) +
+  geom_vline(xintercept = 0.01) +
+  theme_bw() +
+  scale_y_discrete(
+    name = "Variables",
+    labels = c(
+      "Tax",
+      "ColourMedium",
+      "ColourHigh",
+      "SoundMedium",
+      "SoundHigh",
+      "SmellMedium",
+      "SmellHigh",
+      "DeadwoodMedium",
+      "DeadwoodHigh"
+    )
+  ) +
   ggtitle("Distribution of calculated spatial lag P values.")
 
 
 ## Export with high dpi, png format, and in correct location:
-ggsave(SpatialLagsPlot, device = "png",
-       filename = here("OtherOutput/Figures","Table7_Plots.png"),
-       width=20,height=15,units = "cm",dpi=1000)
+ggsave(
+  SpatialLagsPlot,
+  device = "png",
+  filename = here("OtherOutput/Figures", "Table7_Plots.png"),
+  width = 20,
+  height = 15,
+  units = "cm",
+  dpi = 1000
+)
 
 
 ## End of script -------------------------------------------

@@ -76,15 +76,17 @@ rm(list=ls())
 
 
 
-Winter <- data.frame(fread(here("OtherData","Winter_dataframe_Step4.csv")))
+Winter <-
+  here("OtherData", "Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
 
 
 
 ## ****************************************************************************
-#### Step Two ####
+#### Step Two: Construct table variable by variable ####
 ## ****************************************************************************
 
 
+## Total number of respondents. Defined here for repeated later use
 Total <- Winter %>% nrow()
 
 
@@ -93,9 +95,10 @@ Total <- Winter %>% nrow()
 #### Gender ####
 
 
+## G test of frequencies of male/female sample vs population
 Test_Gender <- g.test(
-  Winter$Gender%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total),
-  p = c(49,51),
+  Winter$Gender %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total),
+  p = c(49, 51),
   rescale.p = TRUE
 )
 
@@ -103,8 +106,10 @@ Test_Gender <- g.test(
 Row1_Gender <- cbind(
   "Variable" = "Gender",
   "Category" = "Male",
-  "N" = data.frame(Winter$Gender%>% table() %>% as.numeric())[1,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$Gender%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,1] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$Gender %>% table() %>% as.numeric())[1, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$Gender %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 1] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 49,
   "PV" = Test_Gender$statistic %>% as.numeric() %>% round(3)
 )
@@ -113,13 +118,16 @@ Row1_Gender <- cbind(
 Row2_Gender <- cbind(
   "Variable" = "Gender",
   "Category" = "Female",
-  "N" = data.frame(Winter$Gender%>% table() %>% as.numeric())[2,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$Gender%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,2] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$Gender %>% table() %>% as.numeric())[2, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$Gender %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 2] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 51,
   "PV" = paste0("PV: ", Test_Gender$p.value %>% as.numeric() %>% round(3))
 )
 
 
+## Add all rows together here
 Rows_Gender <- rbind(Row1_Gender, Row2_Gender)
 
 
@@ -127,17 +135,27 @@ Rows_Gender <- rbind(Row1_Gender, Row2_Gender)
 #### ExactAge ####
 
 
+
 ## Code as categories here for ease
-Winter$AgeCategory <- ifelse(Winter$ExactAge <= 29, 0,
-                             ifelse(Winter$ExactAge <= 39,1,
-                                    ifelse(Winter$ExactAge <= 49, 2,
-                                           ifelse(Winter$ExactAge <= 59, 3,
-                                                  ifelse(Winter$ExactAge <= 69, 4, 5)))))
+Winter$AgeCategory <- ifelse(Winter$ExactAge <= 29,
+                             0,
+                             ifelse(
+                               Winter$ExactAge <= 39,
+                               1,
+                               ifelse(
+                                 Winter$ExactAge <= 49,
+                                 2,
+                                 ifelse(Winter$ExactAge <= 59, 3,
+                                        ifelse(Winter$ExactAge <= 69, 4, 5))
+                               )
+                             ))
 
 
 
+## G test here
+## P are given frequency
 Test_ExactAge <- g.test(
-  Winter$AgeCategory%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total),
+  Winter$AgeCategory %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total),
   p = c(16.2, 13.3, 14.6, 12.1, 10.80, 11.7),
   rescale.p = TRUE
 )
@@ -146,8 +164,10 @@ Test_ExactAge <- g.test(
 Row1_ExactAge <- cbind(
   "Variable" = "AgeCategory",
   "Category" = "18 - 29",
-  "N" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric())[1,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,1] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$AgeCategory %>% table() %>% as.numeric())[1, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$AgeCategory %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 1] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 16.2,
   "PV" = Test_ExactAge$statistic %>% as.numeric() %>% round(3)
 )
@@ -156,8 +176,10 @@ Row1_ExactAge <- cbind(
 Row2_ExactAge <- cbind(
   "Variable" = "AgeCategory",
   "Category" = "30 - 39",
-  "N" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric())[2,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,2] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$AgeCategory %>% table() %>% as.numeric())[2, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$AgeCategory %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 2] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 13.3,
   "PV" = Test_ExactAge$statistic %>% as.numeric() %>% round(3)
 )
@@ -165,8 +187,10 @@ Row2_ExactAge <- cbind(
 Row3_ExactAge <- cbind(
   "Variable" = "AgeCategory",
   "Category" = "40 - 49",
-  "N" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric())[3,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,3] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$AgeCategory %>% table() %>% as.numeric())[3, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$AgeCategory %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 3] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 14.6,
   "PV" = Test_ExactAge$statistic %>% as.numeric() %>% round(3)
 )
@@ -174,8 +198,10 @@ Row3_ExactAge <- cbind(
 Row4_ExactAge <- cbind(
   "Variable" = "AgeCategory",
   "Category" = "50 - 59",
-  "N" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric())[4,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,4] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$AgeCategory %>% table() %>% as.numeric())[4, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$AgeCategory %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 4] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 12.1,
   "PV" = Test_ExactAge$statistic %>% as.numeric() %>% round(3)
 )
@@ -184,8 +210,10 @@ Row4_ExactAge <- cbind(
 Row5_ExactAge <- cbind(
   "Variable" = "AgeCategory",
   "Category" = "60 - 69",
-  "N" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric())[5,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,5] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$AgeCategory %>% table() %>% as.numeric())[5, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$AgeCategory %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 5] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 10.80,
   "PV" = Test_ExactAge$statistic %>% as.numeric() %>% round(3)
 )
@@ -193,16 +221,24 @@ Row5_ExactAge <- cbind(
 Row6_ExactAge <- cbind(
   "Variable" = "AgeCategory",
   "Category" = "70+",
-  "N" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric())[6,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$AgeCategory%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,6] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$AgeCategory %>% table() %>% as.numeric())[6, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$AgeCategory %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 6] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 11.7,
   "PV" = paste0("PV: ", Test_ExactAge$p.value %>% as.numeric() %>% round(3))
 )
 
 
-Rows_ExactAge <- rbind(Row1_ExactAge, Row2_ExactAge,
-                       Row3_ExactAge, Row4_ExactAge,
-                       Row5_ExactAge, Row6_ExactAge)
+## Combine all rows here
+Rows_ExactAge <- rbind(
+  Row1_ExactAge,
+  Row2_ExactAge,
+  Row3_ExactAge,
+  Row4_ExactAge,
+  Row5_ExactAge,
+  Row6_ExactAge
+)
 
 
 
@@ -213,8 +249,9 @@ Rows_ExactAge <- rbind(Row1_ExactAge, Row2_ExactAge,
 #### EthnicityDummyWhite ####
 
 
+
 Test_EthnicityDummyWhite <- g.test(
-  Winter$EthnicityDummyWhite%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total),
+  Winter$EthnicityDummyWhite %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total),
   p = c(87, 13),
   rescale.p = TRUE
 )
@@ -223,8 +260,10 @@ Test_EthnicityDummyWhite <- g.test(
 Row1_EthnicityDummyWhite <- cbind(
   "Variable" = "EthnicityDummyWhite",
   "Category" = "Non-white",
-  "N" = data.frame(Winter$EthnicityDummyWhite%>% table() %>% as.numeric())[1,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$EthnicityDummyWhite%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,1] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$EthnicityDummyWhite %>% table() %>% as.numeric())[1, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$EthnicityDummyWhite %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 1] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 13,
   "PV" = Test_EthnicityDummyWhite$statistic %>% as.numeric() %>% round(3)
 )
@@ -233,14 +272,20 @@ Row1_EthnicityDummyWhite <- cbind(
 Row2_EthnicityDummyWhite <- cbind(
   "Variable" = "EthnicityDummyWhite",
   "Category" = "White",
-  "N" = data.frame(Winter$EthnicityDummyWhite%>% table() %>% as.numeric())[2,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$EthnicityDummyWhite%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,2] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$EthnicityDummyWhite %>% table() %>% as.numeric())[2, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$EthnicityDummyWhite %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 2] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 87,
-  "PV" = paste0("PV: ", Test_EthnicityDummyWhite$p.value %>% as.numeric() %>% round(3))
+  "PV" = paste0(
+    "PV: ",
+    Test_EthnicityDummyWhite$p.value %>% as.numeric() %>% round(3)
+  )
 )
 
 
-Rows_EthnicityDummyWhite <- rbind(Row1_EthnicityDummyWhite, Row2_EthnicityDummyWhite)
+Rows_EthnicityDummyWhite <-
+  rbind(Row1_EthnicityDummyWhite, Row2_EthnicityDummyWhite)
 
 
 
@@ -249,7 +294,7 @@ Rows_EthnicityDummyWhite <- rbind(Row1_EthnicityDummyWhite, Row2_EthnicityDummyW
 
 
 Test_Urbanicity <- g.test(
-  Winter$Urbanicity%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total),
+  Winter$Urbanicity %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total),
   p = c(18.5, 81.5),
   rescale.p = TRUE
 )
@@ -258,8 +303,10 @@ Test_Urbanicity <- g.test(
 Row1_Urbanicity <- cbind(
   "Variable" = "Urbanicity",
   "Category" = "Rural",
-  "N" = data.frame(Winter$Urbanicity%>% table() %>% as.numeric())[1,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$Urbanicity%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,1] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$Urbanicity %>% table() %>% as.numeric())[1, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$Urbanicity %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 1] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 18.5,
   "PV" = Test_Urbanicity$statistic %>% as.numeric() %>% round(3)
 )
@@ -268,8 +315,10 @@ Row1_Urbanicity <- cbind(
 Row2_Urbanicity <- cbind(
   "Variable" = "Urbanicity",
   "Category" = "Urban",
-  "N" = data.frame(Winter$Urbanicity%>% table() %>% as.numeric())[2,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$Urbanicity%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,2] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$Urbanicity %>% table() %>% as.numeric())[2, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$Urbanicity %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 2] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 81.5,
   "PV" = paste0("PV: ", Test_Urbanicity$p.value %>% as.numeric() %>% round(3))
 )
@@ -283,16 +332,24 @@ Rows_Urbanicity <- rbind(Row1_Urbanicity, Row2_Urbanicity)
 #### Occupation ####
 
 
-Winter$Occupation <- Winter$Now..thinking.of.the.chief..income.earner.in.your.household..which.might.be.you.or.somebody.else.in.the..household..which.of.these.best.describes.the.current.status.of.the.chief.income..earner.
+Winter$Occupation <-
+  Winter$Now..thinking.of.the.chief..income.earner.in.your.household..which.might.be.you.or.somebody.else.in.the..household..which.of.these.best.describes.the.current.status.of.the.chief.income..earner.
 
 
-Winter$Occupation <- ifelse(Winter$Occupation == "Student/Full time education", 1,
-                            ifelse(Winter$Occupation == "Unemployed/on benefit", 2,
-                                   ifelse(Winter$Occupation == "Retired", 3, 4)))
+Winter$Occupation <-
+  ifelse(
+    Winter$Occupation == "Student/Full time education",
+    1,
+    ifelse(
+      Winter$Occupation == "Unemployed/on benefit",
+      2,
+      ifelse(Winter$Occupation == "Retired", 3, 4)
+    )
+  )
 
 
 Test_Occupation <- g.test(
-  Winter$Occupation%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total),
+  Winter$Occupation %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total),
   p = c(8.2, 4,  24, 76),
   rescale.p = TRUE
 )
@@ -301,8 +358,10 @@ Test_Occupation <- g.test(
 Row1_Occupation <- cbind(
   "Variable" = "Occupation",
   "Category" = "Student",
-  "N" = data.frame(Winter$Occupation%>% table() %>% as.numeric())[1,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$Occupation%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,1] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$Occupation %>% table() %>% as.numeric())[1, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$Occupation %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 1] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 8.2,
   "PV" = Test_Occupation$statistic %>% as.numeric() %>% round(3)
 )
@@ -311,8 +370,10 @@ Row1_Occupation <- cbind(
 Row2_Occupation <- cbind(
   "Variable" = "Occupation",
   "Category" = "Unemployed",
-  "N" = data.frame(Winter$Occupation%>% table() %>% as.numeric())[1,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$Occupation%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,1] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$Occupation %>% table() %>% as.numeric())[1, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$Occupation %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 1] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 4,
   "PV" = Test_Occupation$statistic %>% as.numeric() %>% round(3)
 )
@@ -321,8 +382,10 @@ Row2_Occupation <- cbind(
 Row3_Occupation <- cbind(
   "Variable" = "Occupation",
   "Category" = "Retired",
-  "N" = data.frame(Winter$Occupation%>% table() %>% as.numeric())[1,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$Occupation%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,1] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$Occupation %>% table() %>% as.numeric())[1, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$Occupation %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 1] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 24,
   "PV" = Test_Occupation$statistic %>% as.numeric() %>% round(3)
 )
@@ -331,15 +394,19 @@ Row3_Occupation <- cbind(
 Row4_Occupation <- cbind(
   "Variable" = "Occupation",
   "Category" = "Employed",
-  "N" = data.frame(Winter$Occupation%>% table() %>% as.numeric())[2,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$Occupation%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,2] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$Occupation %>% table() %>% as.numeric())[2, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$Occupation %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 2] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 76,
   "PV" = paste0("PV: ", Test_Occupation$p.value %>% as.numeric() %>% round(3))
 )
 
 
-Rows_Occupation <- rbind(Row1_Occupation, Row2_Occupation,
-                         Row3_Occupation, Row4_Occupation)
+Rows_Occupation <- rbind(Row1_Occupation,
+                         Row2_Occupation,
+                         Row3_Occupation,
+                         Row4_Occupation)
 
 
 
@@ -377,29 +444,35 @@ Freq <-  c(6,
 
 
 
-Income <- data.frame(Weekly,Freq)
+Income <- data.frame(Weekly, Freq)
 
-Income$Weekly <- Income$Weekly*4*12
+Income$Weekly <- Income$Weekly * 4 * 12
 
 
 Groups <-
-  c(Income[2,1],
-    Income[3,1],
-    Income[5,1],
-    Income[6,1])
+  c(Income[2, 1],
+    Income[3, 1],
+    Income[5, 1],
+    Income[6, 1])
 
-Freqs <- c(
-  Income[1,2]+Income[2,2],
-  Income[3,2],
-  Income[4,2]+Income[5,2],
-  Income[6:11,2] %>% sum())
+Freqs <- c(Income[1, 2] + Income[2, 2],
+           Income[3, 2],
+           Income[4, 2] + Income[5, 2],
+           Income[6:11, 2] %>% sum())
 
 Population <- data.frame(Groups, Freqs)
 
 
-Winter$IncomeCategories <- ifelse(Winter$IncomeLevels < Population$Groups[1], 0,
-                                  ifelse(Winter$IncomeLevels < Population$Groups[2], 1,
-                                         ifelse(Winter$IncomeLevels < Population$Groups[3], 2, 3)))
+Winter$IncomeCategories <-
+  ifelse(
+    Winter$IncomeLevels < Population$Groups[1],
+    0,
+    ifelse(
+      Winter$IncomeLevels < Population$Groups[2],
+      1,
+      ifelse(Winter$IncomeLevels < Population$Groups[3], 2, 3)
+    )
+  )
 
 
 Test_IncomeCategories <- g.test(
@@ -412,8 +485,10 @@ Test_IncomeCategories <- g.test(
 Row1_IncomeCategories <- cbind(
   "Variable" = "IncomeCategories",
   "Category" = "£0 – £20,500",
-  "N" = data.frame(Winter$IncomeCategories%>% table() %>% as.numeric())[1,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$IncomeCategories%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,1] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$IncomeCategories %>% table() %>% as.numeric())[1, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$IncomeCategories %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 1] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 26,
   "PV" = Test_IncomeCategories$statistic %>% as.numeric() %>% round(3)
 )
@@ -422,35 +497,55 @@ Row1_IncomeCategories <- cbind(
 Row2_IncomeCategories <- cbind(
   "Variable" = "IncomeCategories",
   "Category" = "£20,501 – £26,800",
-  "N" = data.frame(Winter$IncomeCategories%>% table() %>% as.numeric())[2,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$IncomeCategories%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,2] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$IncomeCategories %>% table() %>% as.numeric())[2, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$IncomeCategories %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 2] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 19,
-  "PV" = paste0("PV: ", Test_IncomeCategories$p.value %>% as.numeric() %>% round(3))
+  "PV" = paste0(
+    "PV: ",
+    Test_IncomeCategories$p.value %>% as.numeric() %>% round(3)
+  )
 )
 
 
 Row3_IncomeCategories <- cbind(
   "Variable" = "IncomeCategories",
   "Category" = "£26,801 – £54,000",
-  "N" = data.frame(Winter$IncomeCategories%>% table() %>% as.numeric())[3,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$IncomeCategories%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,3] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$IncomeCategories %>% table() %>% as.numeric())[3, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$IncomeCategories %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 3] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 25,
-  "PV" = paste0("PV: ", Test_IncomeCategories$p.value %>% as.numeric() %>% round(3))
+  "PV" = paste0(
+    "PV: ",
+    Test_IncomeCategories$p.value %>% as.numeric() %>% round(3)
+  )
 )
 
 
 Row4_IncomeCategories <- cbind(
   "Variable" = "IncomeCategories",
   "Category" = "£54,000+",
-  "N" = data.frame(Winter$IncomeCategories%>% table() %>% as.numeric())[4,] %>% round(3),
-  "Sample (%)" = data.frame(Winter$IncomeCategories%>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total))[,4] %>% round(3) %>% multiply_by(100),
+  "N" = data.frame(Winter$IncomeCategories %>% table() %>% as.numeric())[4, ] %>% round(3),
+  "Sample (%)" = data.frame(
+    Winter$IncomeCategories %>% table() %>% as.numeric() %>% data.frame() %>% t() %>% divide_by(Total)
+  )[, 4] %>% round(3) %>% multiply_by(100),
   "Population (%)" = 30,
-  "PV" = paste0("PV: ", Test_IncomeCategories$p.value %>% as.numeric() %>% round(3))
+  "PV" = paste0(
+    "PV: ",
+    Test_IncomeCategories$p.value %>% as.numeric() %>% round(3)
+  )
 )
 
 
-Rows_IncomeCategories <- rbind(Row1_IncomeCategories, Row2_IncomeCategories,
-                               Row3_IncomeCategories, Row4_IncomeCategories)
+Rows_IncomeCategories <-
+  rbind(
+    Row1_IncomeCategories,
+    Row2_IncomeCategories,
+    Row3_IncomeCategories,
+    Row4_IncomeCategories
+  )
 
 
 # ****************************************************************************
@@ -470,10 +565,12 @@ Table1 <- rbind(
 
 ## Export
 Table1 %>%
-  fwrite(sep=",",
-         here("OtherOutput/Tables","Table1.txt"),
-         row.names = TRUE,
-         quote = FALSE)
+  fwrite(
+    sep = ",",
+    here("OtherOutput/Tables", "Table1.txt"),
+    row.names = TRUE,
+    quote = FALSE
+  )
 
 
 # End Of Script **************************************************************

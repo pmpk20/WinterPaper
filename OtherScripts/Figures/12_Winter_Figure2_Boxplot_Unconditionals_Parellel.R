@@ -71,7 +71,7 @@ library(Rfast)
 
 ## Use step three and add unconditionals rather than use Step4.csv with conditionals
 here()
-Winter <- data.frame(fread(here("OtherData","Winter_dataframe_Step3.csv")))
+Winter <- here("OtherData","Winter_dataframe_Step3.csv") %>% fread() %>% data.frame()
 
 
 ## This is the WTP from the model itself:
@@ -80,7 +80,7 @@ Winter <- data.frame(fread(here("OtherData","Winter_dataframe_Step3.csv")))
 # WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelOne_2022_07_29_WTP.csv")))
 # WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelOne_2022_07_29_UCWTP.csv")))
 # WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelTwo_2022_07_29_WTP.csv")))
-WTP <- data.frame(fread(here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_UnconWTP.csv")))
+WTP <- here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_UnconWTP.csv") %>% fread() %>% data.frame()
 
 
 ## If the conditionals are imported then run this to recover only useful variables
@@ -127,7 +127,7 @@ Summaries <- matrix(0,length(Attribute),5) %>% data.frame()
 ## Loop through each variable and produce summaries.
 ## If you have time rewrite this with foreach() using .export=c("Summarizer")
 for (i in 1:length(Attribute)) {
-  Summaries[i, ] <- Summarizer(Attribute[i])
+  Summaries[i,] <- Summarizer(Attribute[i])
 
 }
 
@@ -214,7 +214,7 @@ Colours <- c(
 ## here is the final plot I use.
 ## I put Newerdata in then use the columns to specify the points of the boxplot
 Figure2 <-
-  ggplot(NewerData, aes(x = rev(variable), fill = as.factor(variable))) +
+  ggplot(NewerData, aes(x = rev(variable), fill = as.factor(variable)))+
   geom_errorbar(aes(
     ymin = y0,
     ymax = y100,

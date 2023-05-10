@@ -5,9 +5,9 @@
 ## TODO: My god this is a mess but it works
 
 
-#------------------------------
+# *****************************
 # Replication Information: ####
-#------------------------------
+# *****************************
 
 
 # R version 4.2.0 (2022-04-22 ucrt)
@@ -47,9 +47,9 @@
 
 
 
-#----------------------------------------------------------------------------------------------------------
+# *****************************
 # Setup Environment: ####
-#----------------------------------------------------------------------------------------------------------
+# *****************************
 
 
 library(plyr) # Watch for this causing problems against dplyr
@@ -68,52 +68,45 @@ library(RColorBrewer)
 library(tmap)
 
 
-#----------------------------------------------------------------------------------------------------------
+# *****************************
 # Section 1: Import Data ####
-#----------------------------------------------------------------------------------------------------------
+# *****************************
 
 
-Winter <- data.frame(fread(here("OtherData","Winter_dataframe_Step3.csv")))
-Winter<- Winter[!is.na(Winter$MilesDistance),] ## Drop missing distances
-Winter<- Winter[!is.na(Winter$Overall),] ## Drop respondents not completing BIOWELL
-WTP <- data.frame(fread(here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_ConWTP.csv")))
-## If the conditionals are imported then run this to recover only useful variables
-WTP <- WTP[WTP %>% select(-ends_with(c(".ID",".post.sd"))) %>% colnames()] %>% data.frame()
+## Import step4 which has WTP already appended
+Winter <- here("OtherData", "Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
 
 
+## Remove potentially tricky observations
+Winter <-
+  Winter[!is.na(Winter$MilesDistance), ] ## Drop missing distances
+Winter <-
+  Winter[!is.na(Winter$Overall), ] ## Drop respondents not completing BIOWELL
 
-#----------------------------------------------------------------------------------------------------------
+
+# *****************************
 # Section 1B: Clean Data ####
-#----------------------------------------------------------------------------------------------------------
-
-
-## Renaming variables here to make more sense:
-colnames(WTP) <- WTP %>% colnames() %>%
-  c() %>%
-  str_replace_all(c(beta_Tax="Tax",
-                    b_="",
-                    "2.post.mean"="_WTP_High",
-                    ".post.mean"="_WTP_Medium"))
+# *****************************
 
 
 ## Other renaming:
-colnames(Winter)[which(names(Winter)=="Deadwood_WTP_Medium")] <- "Decomposition_WTP_Medium"
-colnames(Winter)[which(names(Winter)=="Deadwood_WTP_High")] <- "Decomposition_WTP_High"
+colnames(Winter)[which(names(Winter) == "Deadwood_WTP_Medium")] <-
+  "Decomposition_WTP_Medium"
+
+colnames(Winter)[which(names(Winter) == "Deadwood_WTP_High")] <-
+  "Decomposition_WTP_High"
 
 
-
-## Adding calculated WTP to the participant survey data
-Winter <- cbind(Winter,
-                WTP)
 
 
 ##Trim crazy WTPs
-Data <- Winter[Winter$Tax_WTP_Medium >-50,]
+Data <- Winter[Winter$Tax_WTP_Medium > -50, ]
 Data <- Winter
 
-#-----------------------------------------
+
+# *****************************
 # Section 2: Define Nearest Neighbours ####
-#-----------------------------------------
+# *****************************
 
 
 K = sqrt(nrow(Data))
@@ -125,6 +118,7 @@ Data <-
   Data[which(!duplicated(Data$LatH)),]
 Data <-
   Data[which(!duplicated(Data$LonH)),]
+
 
 
 K = sqrt(nrow(Data))
@@ -140,15 +134,19 @@ KNN_Weights <- nb2listw(KNN_ToNBs, glist = Distances_Inverse)
 
 
 
-#----------------------------------------------------------------------
+# *****************************
 ## Tax:
-#----------------------------------------------------------------------
+# *****************************
 
 
-LocalMoran_Tax <- localmoran(as.data.frame(Data[, c("Tax_WTP_Medium")])[, 1], KNN_Weights)
+
+LocalMoran_Tax <-
+  localmoran(as.data.frame(Data[, c("Tax_WTP_Medium")])[, 1], KNN_Weights)
 Data$ScaleWTP_Tax <-
   as.numeric(scale(as.data.frame(Data[, c("Tax_WTP_Medium")])[, 1]))
-Data$lag_WTP_Tax <- as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_Tax))
+Data$lag_WTP_Tax <-
+  as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_Tax))
+
 
 
 ## Classify categories:
@@ -181,37 +179,47 @@ Data[(Data$ScaleWTP_Tax <= 0 &
        (LocalMoran_Tax[, 5] <= 0.05), "quad_sig_WTP_Tax"] <- 5
 
 
+## Impute anything missing
 Data$quad_sig_WTP_Tax <-
   ifelse(is.na(Data$quad_sig_WTP_Tax) == TRUE, 5, Data$quad_sig_WTP_Tax)
+
+
+
 
 ## Labels for the plots
 breaks <- seq(1, 5, 1)
 labels <-
   c("High-High", "Low-Low", "High-Low", "Low-High", "Not Signif.")
 np <- findInterval(Data$quad_sig_WTP_Tax, breaks)
-colors <- c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])
-Data$Colors_Tax <- as.character(col2hex(c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])[np]))
+colors <- c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])
+Data$Colors_Tax <-
+  as.character(col2hex(c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])[np]))
 
-Data$quad_sig_WTP_Tax <- recode(Data$quad_sig_WTP_Tax,
-                                '5'="Not Signif.",
-                                '4'="Low-High",
-                                '3'="High-Low",
-                                '2'="Low-Low",
-                                '1'="High-High")
+Data$quad_sig_WTP_Tax <- recode(
+  Data$quad_sig_WTP_Tax,
+  '5' = "Not Signif.",
+  '4' = "Low-High",
+  '3' = "High-Low",
+  '2' = "Low-Low",
+  '1' = "High-High"
+)
 
 
 
 
 
-#----------------------------------------------------------------------
+# *****************************
 ## Colour:
-#----------------------------------------------------------------------
+# *****************************
 
 
-LocalMoran_Colour <- localmoran(as.data.frame(Data[, c("Colour_WTP_Medium")])[, 1], KNN_Weights)
+
+LocalMoran_Colour <-
+  localmoran(as.data.frame(Data[, c("Colour_WTP_Medium")])[, 1], KNN_Weights)
 Data$ScaleWTP_Colour <-
   as.numeric(scale(as.data.frame(Data[, c("Colour_WTP_Medium")])[, 1]))
-Data$lag_WTP_Colour <- as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_Colour))
+Data$lag_WTP_Colour <-
+  as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_Colour))
 
 
 ## Classify categories:
@@ -245,34 +253,41 @@ Data[(Data$ScaleWTP_Colour <= 0 &
 
 
 Data$quad_sig_WTP_Colour <-
-  ifelse(is.na(Data$quad_sig_WTP_Colour) == TRUE, 5, Data$quad_sig_WTP_Colour)
+  ifelse(is.na(Data$quad_sig_WTP_Colour) == TRUE,
+         5,
+         Data$quad_sig_WTP_Colour)
 
 ## Labels for the plots
 breaks <- seq(1, 5, 1)
 labels <-
   c("High-High", "Low-Low", "High-Low", "Low-High", "Not Signif.")
 np <- findInterval(Data$quad_sig_WTP_Colour, breaks)
-colors <- c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])
-Data$Colors_Colour <- as.character(col2hex(c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])[np]))
+colors <- c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])
+Data$Colors_Colour <-
+  as.character(col2hex(c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])[np]))
 
-Data$quad_sig_WTP_Colour <- recode(Data$quad_sig_WTP_Colour,
-                                   '5'="Not Signif.",
-                                   '4'="Low-High",
-                                   '3'="High-Low",
-                                   '2'="Low-Low",
-                                   '1'="High-High")
+Data$quad_sig_WTP_Colour <- recode(
+  Data$quad_sig_WTP_Colour,
+  '5' = "Not Signif.",
+  '4' = "Low-High",
+  '3' = "High-Low",
+  '2' = "Low-Low",
+  '1' = "High-High"
+)
 
 
-
-#----------------------------------------------------------------------
+# *****************************
 ## Smell:
-#----------------------------------------------------------------------
+# *****************************
 
 
-LocalMoran_Smell <- localmoran(as.data.frame(Data[, c("Smell_WTP_Medium")])[, 1], KNN_Weights)
+
+LocalMoran_Smell <-
+  localmoran(as.data.frame(Data[, c("Smell_WTP_Medium")])[, 1], KNN_Weights)
 Data$ScaleWTP_Smell <-
   as.numeric(scale(as.data.frame(Data[, c("Smell_WTP_Medium")])[, 1]))
-Data$lag_WTP_Smell <- as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_Smell))
+Data$lag_WTP_Smell <-
+  as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_Smell))
 
 
 ## Classify categories:
@@ -292,33 +307,40 @@ Data[(Data$ScaleWTP_Smell <= 0 &
         Data$lag_WTP_Smell <= 0) &
        (LocalMoran_Smell[, 5] <= 0.05), "quad_sig_WTP_Smell"] <- 2
 Data$quad_sig_WTP_Smell <-
-  ifelse(is.na(Data$quad_sig_WTP_Smell) == TRUE, 5, Data$quad_sig_WTP_Smell)
+  ifelse(is.na(Data$quad_sig_WTP_Smell) == TRUE,
+         5,
+         Data$quad_sig_WTP_Smell)
 
 ## Labels for the plots
 breaks <- seq(1, 5, 1)
 labels <-
   c("High-High", "Low-Low", "High-Low", "Low-High", "Not Signif.")
 np <- findInterval(Data$quad_sig_WTP_Smell, breaks)
-colors <- c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])
-Data$Colors_Smell <- as.character(col2hex(c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])[np]))
+colors <- c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])
+Data$Colors_Smell <-
+  as.character(col2hex(c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])[np]))
 
-Data$quad_sig_WTP_Smell <- recode(Data$quad_sig_WTP_Smell,
-                                  '5'="Not Signif.",
-                                  '4'="Low-High",
-                                  '3'="High-Low",
-                                  '2'="Low-Low",
-                                  '1'="High-High")
+Data$quad_sig_WTP_Smell <- recode(
+  Data$quad_sig_WTP_Smell,
+  '5' = "Not Signif.",
+  '4' = "Low-High",
+  '3' = "High-Low",
+  '2' = "Low-Low",
+  '1' = "High-High"
+)
 
 
-#----------------------------------------------------------------------
+# *****************************
 ## Sound:
-#----------------------------------------------------------------------
+# *****************************
 
 
-LocalMoran_Sound <- localmoran(as.data.frame(Data[, c("Sound_WTP_Medium")])[, 1], KNN_Weights)
+LocalMoran_Sound <-
+  localmoran(as.data.frame(Data[, c("Sound_WTP_Medium")])[, 1], KNN_Weights)
 Data$ScaleWTP_Sound <-
   as.numeric(scale(as.data.frame(Data[, c("Sound_WTP_Medium")])[, 1]))
-Data$lag_WTP_Sound <- as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_Sound))
+Data$lag_WTP_Sound <-
+  as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_Sound))
 
 
 ## Classify categories:
@@ -338,298 +360,376 @@ Data[(Data$ScaleWTP_Sound <= 0 &
         Data$lag_WTP_Sound <= 0) &
        (LocalMoran_Sound[, 5] <= 0.05), "quad_sig_WTP_Sound"] <- 2
 Data$quad_sig_WTP_Sound <-
-  ifelse(is.na(Data$quad_sig_WTP_Sound) == TRUE, 5, Data$quad_sig_WTP_Sound)
+  ifelse(is.na(Data$quad_sig_WTP_Sound) == TRUE,
+         5,
+         Data$quad_sig_WTP_Sound)
 
 ## Labels for the plots
 breaks <- seq(1, 5, 1)
 labels <-
   c("High-High", "Low-Low", "High-Low", "Low-High", "Not Signif.")
 np <- findInterval(Data$quad_sig_WTP_Sound, breaks)
-colors <- c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])
-Data$Colors_Sound <- as.character(col2hex(c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])[np]))
+colors <- c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])
+Data$Colors_Sound <-
+  as.character(col2hex(c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])[np]))
 
-Data$quad_sig_WTP_Sound <- recode(Data$quad_sig_WTP_Sound,
-                                  '5'="Not Signif.",
-                                  '4'="Low-High",
-                                  '3'="High-Low",
-                                  '2'="Low-Low",
-                                  '1'="High-High")
+Data$quad_sig_WTP_Sound <- recode(
+  Data$quad_sig_WTP_Sound,
+  '5' = "Not Signif.",
+  '4' = "Low-High",
+  '3' = "High-Low",
+  '2' = "Low-Low",
+  '1' = "High-High"
+)
 
 
 
-#----------------------------------------------------------------------
+# *****************************
 ## Decomposition:
-#----------------------------------------------------------------------
+# *****************************
 
 
-LocalMoran_Decomposition <- localmoran(as.data.frame(Data[, c("Deadwood_WTP_Medium")])[, 1], KNN_Weights)
+LocalMoran_Decomposition <-
+  localmoran(as.data.frame(Data[, c("Decomposition_WTP_Medium")])[, 1], KNN_Weights)
 Data$ScaleWTP_Decomposition <-
-  as.numeric(scale(as.data.frame(Data[, c("Deadwood_WTP_Medium")])[, 1]))
-Data$lag_WTP_Decomposition <- as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_Decomposition))
+  as.numeric(scale(as.data.frame(Data[, c("Decomposition_WTP_Medium")])[, 1]))
+Data$lag_WTP_Decomposition <-
+  as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_Decomposition))
 
 
 ## Classify categories:
 Data[(Data$ScaleWTP_Decomposition >= 0 &
         Data$lag_WTP_Decomposition <= 0) &
-       (LocalMoran_Decomposition[, 5] <= 0.05), "quad_sig_WTP_Decomposition"] <- 3
+       (LocalMoran_Decomposition[, 5] <= 0.05), "quad_sig_WTP_Decomposition"] <-
+  3
 Data[(Data$ScaleWTP_Decomposition >= 0 &
         Data$lag_WTP_Decomposition <= 0) &
-       (LocalMoran_Decomposition[, 5] <= 0.05), "quad_sig_WTP_Decomposition"] <- 4
+       (LocalMoran_Decomposition[, 5] <= 0.05), "quad_sig_WTP_Decomposition"] <-
+  4
 Data[(Data$ScaleWTP_Decomposition <= 0 &
         Data$lag_WTP_Decomposition >= 0) &
-       (LocalMoran_Decomposition[, 5] <= 0.05), "quad_sig_WTP_Decomposition"] <- 5
+       (LocalMoran_Decomposition[, 5] <= 0.05), "quad_sig_WTP_Decomposition"] <-
+  5
 Data[(Data$ScaleWTP_Decomposition >= 0 &
         Data$lag_WTP_Decomposition >= 0) &
-       (LocalMoran_Decomposition[, 5] <= 0.05), "quad_sig_WTP_Decomposition"] <- 1
+       (LocalMoran_Decomposition[, 5] <= 0.05), "quad_sig_WTP_Decomposition"] <-
+  1
 Data[(Data$ScaleWTP_Decomposition <= 0 &
         Data$lag_WTP_Decomposition <= 0) &
-       (LocalMoran_Decomposition[, 5] <= 0.05), "quad_sig_WTP_Decomposition"] <- 2
+       (LocalMoran_Decomposition[, 5] <= 0.05), "quad_sig_WTP_Decomposition"] <-
+  2
 Data$quad_sig_WTP_Decomposition <-
-  ifelse(is.na(Data$quad_sig_WTP_Decomposition) == TRUE, 5, Data$quad_sig_WTP_Decomposition)
+  ifelse(is.na(Data$quad_sig_WTP_Decomposition) == TRUE,
+         5,
+         Data$quad_sig_WTP_Decomposition)
 
 ## Labels for the plots
 breaks <- seq(1, 5, 1)
 labels <-
   c("High-High", "Low-Low", "High-Low", "Low-High", "Not Signif.")
 np <- findInterval(Data$quad_sig_WTP_Decomposition, breaks)
-colors <- c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])
-Data$Colors_Decomposition <- as.character(col2hex(c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])[np]))
+colors <- c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])
+Data$Colors_Decomposition <-
+  as.character(col2hex(c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])[np]))
 
-Data$quad_sig_WTP_Decomposition <- recode(Data$quad_sig_WTP_Decomposition,
-                                          '5'="Not Signif.",
-                                          '4'="Low-High",
-                                          '3'="High-Low",
-                                          '2'="Low-Low",
-                                          '1'="High-High")
+Data$quad_sig_WTP_Decomposition <-
+  recode(
+    Data$quad_sig_WTP_Decomposition,
+    '5' = "Not Signif.",
+    '4' = "Low-High",
+    '3' = "High-Low",
+    '2' = "Low-Low",
+    '1' = "High-High"
+  )
 
 
-#----------------------------------------------------------------------
+# *****************************
 ## Colour High:
-#----------------------------------------------------------------------
+# *****************************
 
 
-LocalMoran_ColourHigh <- localmoran(as.data.frame(Data[, c("Colour_WTP_High")])[, 1], KNN_Weights)
+LocalMoran_ColourHigh <-
+  localmoran(as.data.frame(Data[, c("Colour_WTP_High")])[, 1], KNN_Weights)
 Data$ScaleWTP_ColourHigh <-
   as.numeric(scale(as.data.frame(Data[, c("Colour_WTP_High")])[, 1]))
-Data$lag_WTP_ColourHigh <- as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_ColourHigh))
+Data$lag_WTP_ColourHigh <-
+  as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_ColourHigh))
 
 
 ## Classify categories:
 Data[(Data$ScaleWTP_ColourHigh >= 0 &
         Data$lag_WTP_ColourHigh <= 0) &
-       (LocalMoran_ColourHigh[, 5] <= 0.05), "quad_sig_WTP_ColourHigh"] <- 3
+       (LocalMoran_ColourHigh[, 5] <= 0.05), "quad_sig_WTP_ColourHigh"] <-
+  3
 Data[(Data$ScaleWTP_ColourHigh >= 0 &
         Data$lag_WTP_ColourHigh <= 0) &
-       (LocalMoran_ColourHigh[, 5] <= 0.05), "quad_sig_WTP_ColourHigh"] <- 4
+       (LocalMoran_ColourHigh[, 5] <= 0.05), "quad_sig_WTP_ColourHigh"] <-
+  4
 Data[(Data$ScaleWTP_ColourHigh <= 0 &
         Data$lag_WTP_ColourHigh >= 0) &
-       (LocalMoran_ColourHigh[, 5] <= 0.05), "quad_sig_WTP_ColourHigh"] <- 5
+       (LocalMoran_ColourHigh[, 5] <= 0.05), "quad_sig_WTP_ColourHigh"] <-
+  5
 Data[(Data$ScaleWTP_ColourHigh >= 0 &
         Data$lag_WTP_ColourHigh >= 0) &
-       (LocalMoran_ColourHigh[, 5] <= 0.05), "quad_sig_WTP_ColourHigh"] <- 1
+       (LocalMoran_ColourHigh[, 5] <= 0.05), "quad_sig_WTP_ColourHigh"] <-
+  1
 Data[(Data$ScaleWTP_ColourHigh <= 0 &
         Data$lag_WTP_ColourHigh <= 0) &
-       (LocalMoran_ColourHigh[, 5] <= 0.05), "quad_sig_WTP_ColourHigh"] <- 2
+       (LocalMoran_ColourHigh[, 5] <= 0.05), "quad_sig_WTP_ColourHigh"] <-
+  2
 Data$quad_sig_WTP_ColourHigh <-
-  ifelse(is.na(Data$quad_sig_WTP_ColourHigh) == TRUE, 5, Data$quad_sig_WTP_ColourHigh)
+  ifelse(is.na(Data$quad_sig_WTP_ColourHigh) == TRUE,
+         5,
+         Data$quad_sig_WTP_ColourHigh)
 
 ## Labels for the plots
 breaks <- seq(1, 5, 1)
 labels <-
   c("High-High", "Low-Low", "High-Low", "Low-High", "Not Signif.")
 np <- findInterval(Data$quad_sig_WTP_ColourHigh, breaks)
-colors <- c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])
-Data$Colors_ColourHigh <- as.character(col2hex(c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])[np]))
+colors <- c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])
+Data$Colors_ColourHigh <-
+  as.character(col2hex(c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])[np]))
 
-Data$quad_sig_WTP_ColourHigh <- recode(Data$quad_sig_WTP_ColourHigh,
-                                       '5'="Not Signif.",
-                                       '4'="Low-High",
-                                       '3'="High-Low",
-                                       '2'="Low-Low",
-                                       '1'="High-High")
+Data$quad_sig_WTP_ColourHigh <- recode(
+  Data$quad_sig_WTP_ColourHigh,
+  '5' = "Not Signif.",
+  '4' = "Low-High",
+  '3' = "High-Low",
+  '2' = "Low-Low",
+  '1' = "High-High"
+)
 
 
 
-#----------------------------------------------------------------------
+# *****************************
 ## Smell High:
-#----------------------------------------------------------------------
+# *****************************
 
 
-LocalMoran_SmellHigh <- localmoran(as.data.frame(Data[, c("Smell_WTP_High")])[, 1], KNN_Weights)
+LocalMoran_SmellHigh <-
+  localmoran(as.data.frame(Data[, c("Smell_WTP_High")])[, 1], KNN_Weights)
 Data$ScaleWTP_SmellHigh <-
   as.numeric(scale(as.data.frame(Data[, c("Smell_WTP_High")])[, 1]))
-Data$lag_WTP_SmellHigh <- as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_SmellHigh))
+Data$lag_WTP_SmellHigh <-
+  as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_SmellHigh))
 
 
 ## Classify categories:
 Data[(Data$ScaleWTP_SmellHigh >= 0 &
         Data$lag_WTP_SmellHigh <= 0) &
-       (LocalMoran_SmellHigh[, 5] <= 0.05), "quad_sig_WTP_SmellHigh"] <- 3
+       (LocalMoran_SmellHigh[, 5] <= 0.05), "quad_sig_WTP_SmellHigh"] <-
+  3
 Data[(Data$ScaleWTP_SmellHigh >= 0 &
         Data$lag_WTP_SmellHigh <= 0) &
-       (LocalMoran_SmellHigh[, 5] <= 0.05), "quad_sig_WTP_SmellHigh"] <- 4
+       (LocalMoran_SmellHigh[, 5] <= 0.05), "quad_sig_WTP_SmellHigh"] <-
+  4
 Data[(Data$ScaleWTP_SmellHigh <= 0 &
         Data$lag_WTP_SmellHigh >= 0) &
-       (LocalMoran_SmellHigh[, 5] <= 0.05), "quad_sig_WTP_SmellHigh"] <- 5
+       (LocalMoran_SmellHigh[, 5] <= 0.05), "quad_sig_WTP_SmellHigh"] <-
+  5
 Data[(Data$ScaleWTP_SmellHigh >= 0 &
         Data$lag_WTP_SmellHigh >= 0) &
-       (LocalMoran_SmellHigh[, 5] <= 0.05), "quad_sig_WTP_SmellHigh"] <- 1
+       (LocalMoran_SmellHigh[, 5] <= 0.05), "quad_sig_WTP_SmellHigh"] <-
+  1
 Data[(Data$ScaleWTP_SmellHigh <= 0 &
         Data$lag_WTP_SmellHigh <= 0) &
-       (LocalMoran_SmellHigh[, 5] <= 0.05), "quad_sig_WTP_SmellHigh"] <- 2
+       (LocalMoran_SmellHigh[, 5] <= 0.05), "quad_sig_WTP_SmellHigh"] <-
+  2
 Data$quad_sig_WTP_SmellHigh <-
-  ifelse(is.na(Data$quad_sig_WTP_SmellHigh) == TRUE, 5, Data$quad_sig_WTP_SmellHigh)
+  ifelse(is.na(Data$quad_sig_WTP_SmellHigh) == TRUE,
+         5,
+         Data$quad_sig_WTP_SmellHigh)
 
 ## Labels for the plots
 breaks <- seq(1, 5, 1)
 labels <-
   c("High-High", "Low-Low", "High-Low", "Low-High", "Not Signif.")
 np <- findInterval(Data$quad_sig_WTP_SmellHigh, breaks)
-colors <- c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])
-Data$Colors_SmellHigh <- as.character(col2hex(c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])[np]))
+colors <- c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])
+Data$Colors_SmellHigh <-
+  as.character(col2hex(c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])[np]))
 
-Data$quad_sig_WTP_SmellHigh <- recode(Data$quad_sig_WTP_SmellHigh,
-                                      '5'="Not Signif.",
-                                      '4'="Low-High",
-                                      '3'="High-Low",
-                                      '2'="Low-Low",
-                                      '1'="High-High")
+Data$quad_sig_WTP_SmellHigh <- recode(
+  Data$quad_sig_WTP_SmellHigh,
+  '5' = "Not Signif.",
+  '4' = "Low-High",
+  '3' = "High-Low",
+  '2' = "Low-Low",
+  '1' = "High-High"
+)
 
 
-#----------------------------------------------------------------------
+# *****************************
 ## Sound High:
-#----------------------------------------------------------------------
+# *****************************
 
 
-LocalMoran_SoundHigh <- localmoran(as.data.frame(Data[, c("Sound_WTP_High")])[, 1], KNN_Weights)
+LocalMoran_SoundHigh <-
+  localmoran(as.data.frame(Data[, c("Sound_WTP_High")])[, 1], KNN_Weights)
 Data$ScaleWTP_SoundHigh <-
   as.numeric(scale(as.data.frame(Data[, c("Sound_WTP_High")])[, 1]))
-Data$lag_WTP_SoundHigh <- as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_SoundHigh))
+Data$lag_WTP_SoundHigh <-
+  as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_SoundHigh))
 
 
 ## Classify categories:
 Data[(Data$ScaleWTP_SoundHigh >= 0 &
         Data$lag_WTP_SoundHigh <= 0) &
-       (LocalMoran_SoundHigh[, 5] <= 0.05), "quad_sig_WTP_SoundHigh"] <- 3
+       (LocalMoran_SoundHigh[, 5] <= 0.05), "quad_sig_WTP_SoundHigh"] <-
+  3
 Data[(Data$ScaleWTP_SoundHigh >= 0 &
         Data$lag_WTP_SoundHigh <= 0) &
-       (LocalMoran_SoundHigh[, 5] <= 0.05), "quad_sig_WTP_SoundHigh"] <- 4
+       (LocalMoran_SoundHigh[, 5] <= 0.05), "quad_sig_WTP_SoundHigh"] <-
+  4
 Data[(Data$ScaleWTP_SoundHigh <= 0 &
         Data$lag_WTP_SoundHigh >= 0) &
-       (LocalMoran_SoundHigh[, 5] <= 0.05), "quad_sig_WTP_SoundHigh"] <- 5
+       (LocalMoran_SoundHigh[, 5] <= 0.05), "quad_sig_WTP_SoundHigh"] <-
+  5
 Data[(Data$ScaleWTP_SoundHigh >= 0 &
         Data$lag_WTP_SoundHigh >= 0) &
-       (LocalMoran_SoundHigh[, 5] <= 0.05), "quad_sig_WTP_SoundHigh"] <- 1
+       (LocalMoran_SoundHigh[, 5] <= 0.05), "quad_sig_WTP_SoundHigh"] <-
+  1
 Data[(Data$ScaleWTP_SoundHigh <= 0 &
         Data$lag_WTP_SoundHigh <= 0) &
-       (LocalMoran_SoundHigh[, 5] <= 0.05), "quad_sig_WTP_SoundHigh"] <- 2
+       (LocalMoran_SoundHigh[, 5] <= 0.05), "quad_sig_WTP_SoundHigh"] <-
+  2
 Data$quad_sig_WTP_SoundHigh <-
-  ifelse(is.na(Data$quad_sig_WTP_SoundHigh) == TRUE, 5, Data$quad_sig_WTP_SoundHigh)
+  ifelse(is.na(Data$quad_sig_WTP_SoundHigh) == TRUE,
+         5,
+         Data$quad_sig_WTP_SoundHigh)
 
 ## Labels for the plots
 breaks <- seq(1, 5, 1)
 labels <-
   c("High-High", "Low-Low", "High-Low", "Low-High", "Not Signif.")
 np <- findInterval(Data$quad_sig_WTP_SoundHigh, breaks)
-colors <- c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])
-Data$Colors_SoundHigh <- as.character(col2hex(c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])[np]))
+colors <- c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])
+Data$Colors_SoundHigh <-
+  as.character(col2hex(c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])[np]))
 
-Data$quad_sig_WTP_SoundHigh <- recode(Data$quad_sig_WTP_SoundHigh,
-                                      '5'="Not Signif.",
-                                      '4'="Low-High",
-                                      '3'="High-Low",
-                                      '2'="Low-Low",
-                                      '1'="High-High")
+Data$quad_sig_WTP_SoundHigh <- recode(
+  Data$quad_sig_WTP_SoundHigh,
+  '5' = "Not Signif.",
+  '4' = "Low-High",
+  '3' = "High-Low",
+  '2' = "Low-Low",
+  '1' = "High-High"
+)
 
-#----------------------------------------------------------------------
+# *****************************
 ## Decomposition High:
-#----------------------------------------------------------------------
+# *****************************
 
 
-LocalMoran_DecompositionHigh <- localmoran(as.data.frame(Data[, c("Deadwood_WTP_High")])[, 1], KNN_Weights)
+LocalMoran_DecompositionHigh <-
+  localmoran(as.data.frame(Data[, c("Decomposition_WTP_High")])[, 1], KNN_Weights)
 Data$ScaleWTP_DecompositionHigh <-
-  as.numeric(scale(as.data.frame(Data[, c("Deadwood_WTP_High")])[, 1]))
-Data$lag_WTP_DecompositionHigh <- as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_DecompositionHigh))
+  as.numeric(scale(as.data.frame(Data[, c("Decomposition_WTP_High")])[, 1]))
+Data$lag_WTP_DecompositionHigh <-
+  as.numeric(lag.listw(KNN_Weights, Data$ScaleWTP_DecompositionHigh))
 
 
 ## Classify categories:
 Data[(Data$ScaleWTP_DecompositionHigh >= 0 &
         Data$lag_WTP_DecompositionHigh <= 0) &
-       (LocalMoran_DecompositionHigh[, 5] <= 0.05), "quad_sig_WTP_DecompositionHigh"] <- 3
+       (LocalMoran_DecompositionHigh[, 5] <= 0.05), "quad_sig_WTP_DecompositionHigh"] <-
+  3
 Data[(Data$ScaleWTP_DecompositionHigh >= 0 &
         Data$lag_WTP_DecompositionHigh <= 0) &
-       (LocalMoran_DecompositionHigh[, 5] <= 0.05), "quad_sig_WTP_DecompositionHigh"] <- 4
+       (LocalMoran_DecompositionHigh[, 5] <= 0.05), "quad_sig_WTP_DecompositionHigh"] <-
+  4
 Data[(Data$ScaleWTP_DecompositionHigh <= 0 &
         Data$lag_WTP_DecompositionHigh >= 0) &
-       (LocalMoran_DecompositionHigh[, 5] <= 0.05), "quad_sig_WTP_DecompositionHigh"] <- 5
+       (LocalMoran_DecompositionHigh[, 5] <= 0.05), "quad_sig_WTP_DecompositionHigh"] <-
+  5
 Data[(Data$ScaleWTP_DecompositionHigh >= 0 &
         Data$lag_WTP_DecompositionHigh >= 0) &
-       (LocalMoran_DecompositionHigh[, 5] <= 0.05), "quad_sig_WTP_DecompositionHigh"] <- 1
+       (LocalMoran_DecompositionHigh[, 5] <= 0.05), "quad_sig_WTP_DecompositionHigh"] <-
+  1
 Data[(Data$ScaleWTP_DecompositionHigh <= 0 &
         Data$lag_WTP_DecompositionHigh <= 0) &
-       (LocalMoran_DecompositionHigh[, 5] <= 0.05), "quad_sig_WTP_DecompositionHigh"] <- 2
+       (LocalMoran_DecompositionHigh[, 5] <= 0.05), "quad_sig_WTP_DecompositionHigh"] <-
+  2
 Data$quad_sig_WTP_DecompositionHigh <-
-  ifelse(is.na(Data$quad_sig_WTP_DecompositionHigh) == TRUE, 5, Data$quad_sig_WTP_DecompositionHigh)
+  ifelse(
+    is.na(Data$quad_sig_WTP_DecompositionHigh) == TRUE,
+    5,
+    Data$quad_sig_WTP_DecompositionHigh
+  )
 
 ## Labels for the plots
 breaks <- seq(1, 5, 1)
 labels <-
   c("High-High", "Low-Low", "High-Low", "Low-High", "Not Signif.")
 np <- findInterval(Data$quad_sig_WTP_DecompositionHigh, breaks)
-colors <- c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])
-Data$Colors_DecompositionHigh <- as.character(col2hex(c(RColorBrewer::brewer.pal(9,"Blues")[c(9,7,5,3,1)])[np]))
+colors <- c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])
+Data$Colors_DecompositionHigh <-
+  as.character(col2hex(c(RColorBrewer::brewer.pal(9, "Blues")[c(9, 7, 5, 3, 1)])[np]))
 
-Data$quad_sig_WTP_DecompositionHigh <- recode(Data$quad_sig_WTP_DecompositionHigh,
-                                              '5'="Not Signif.",
-                                              '4'="Low-High",
-                                              '3'="High-Low",
-                                              '2'="Low-Low",
-                                              '1'="High-High")
+Data$quad_sig_WTP_DecompositionHigh <-
+  recode(
+    Data$quad_sig_WTP_DecompositionHigh,
+    '5' = "Not Signif.",
+    '4' = "Low-High",
+    '3' = "High-Low",
+    '2' = "Low-Low",
+    '1' = "High-High"
+  )
 
 
-#----------------------------------------------------------------------
+# *****************************
 ## Plotting setup:
-#----------------------------------------------------------------------
+# *****************************
 
-GB <- st_read(here("OtherData","Counties_and_Unitary_Authorities_(December_2019)_Boundaries_UK_BUC.shp"))
-GB <- st_transform(GB,crs=4326) ## Comes in BNG so convert to LatLon
+GB <-
+  st_read(
+    here(
+      "OtherData",
+      "Counties_and_Unitary_Authorities_(December_2019)_Boundaries_UK_BUC.shp"
+    )
+  )
+GB <- st_transform(GB, crs = 4326) ## Comes in BNG so convert to LatLon
 
-Data$County <- ifelse(
-  Data$County == "West Northamptonshire",
-  "Northamptonshire",
-  Data$County)
+
+Data$County <- ifelse(Data$County == "West Northamptonshire",
+                      "Northamptonshire",
+                      Data$County)
 
 ## Join county name to county name
-GB_New <- left_join(x = GB,Data,by=c("ctyua19nm"="County"))
+GB_New <- left_join(x = GB, Data, by = c("ctyua19nm" = "County"))
 
 
 GB_New <-
-  GB_New[!is.na(GB_New$LonH),]
+  GB_New[!is.na(GB_New$LonH), ]
 GB_New <-
-  GB_New[!is.na(GB_New$LatH),]
+  GB_New[!is.na(GB_New$LatH), ]
 GB_New <-
-  GB_New[which(!duplicated(GB_New$LatH)),]
+  GB_New[which(!duplicated(GB_New$LatH)), ]
 GB_New <-
-  GB_New[which(!duplicated(GB_New$LonH)),]
-GB_New <- GB_New[!GB_New$ctyua19nm=="Belfast",]
+  GB_New[which(!duplicated(GB_New$LonH)), ]
+GB_New <- GB_New[!GB_New$ctyua19nm == "Belfast", ]
 
 
-#----------------------------------------------------------------------
+# *****************************
 ## Plotting making each plot individually then stitch together:
-#----------------------------------------------------------------------
+# *****************************
+
 
 
 
 
 ## Tax:
-Plot_Tax <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+Plot_Tax <-
+  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
   tm_polygons(col = "Colors_Tax") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
     legend.height = 0.5,
     legend.just = "right",
     legend.text.size = 0.5,
-    panel.label.size = 0.5,panel.label.height=5
+    panel.label.size = 0.5,
+    panel.label.height = 5
   ) +
   tm_add_legend(title = "Cluster Type",
                 labels = labels,
@@ -637,28 +737,32 @@ Plot_Tax <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat
 
 
 ## Colour: Medium
-Plot_Colour_Medium <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+Plot_Colour_Medium <-
+  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
   tm_polygons(col = "Colors_Colour") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
     legend.height = 0.5,
     legend.just = "right",
     legend.text.size = 0.5,
-    panel.label.size = 0.5,panel.label.height=5
+    panel.label.size = 0.5,
+    panel.label.height = 5
   ) +
   tm_add_legend(title = "Cluster Type",
                 labels = labels,
                 col = colors)
 
 ## Colour: High
-Plot_Colour_High <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+Plot_Colour_High <-
+  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
   tm_polygons(col = "Colors_ColourHigh") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
     legend.height = 0.5,
     legend.just = "right",
     legend.text.size = 0.5,
-    panel.label.size = 0.5,panel.label.height=5
+    panel.label.size = 0.5,
+    panel.label.height = 5
   ) +
   tm_add_legend(title = "Cluster Type",
                 labels = labels,
@@ -667,28 +771,32 @@ Plot_Colour_High <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_
 
 #---------------
 ## Colour: Medium
-Plot_Smell_Medium <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+Plot_Smell_Medium <-
+  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
   tm_polygons(col = "Colors_Smell") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
     legend.height = 0.5,
     legend.just = "right",
     legend.text.size = 0.5,
-    panel.label.size = 0.5,panel.label.height=5
+    panel.label.size = 0.5,
+    panel.label.height = 5
   ) +
   tm_add_legend(title = "Cluster Type",
                 labels = labels,
                 col = colors)
 
 ## Colour: High
-Plot_Smell_High <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+Plot_Smell_High <-
+  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
   tm_polygons(col = "Colors_SmellHigh") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
     legend.height = 0.5,
     legend.just = "right",
     legend.text.size = 0.5,
-    panel.label.size = 0.5,panel.label.height=5
+    panel.label.size = 0.5,
+    panel.label.height = 5
   ) +
   tm_add_legend(title = "Cluster Type",
                 labels = labels,
@@ -696,28 +804,32 @@ Plot_Smell_High <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0
 
 #--------------------
 ## Colour: Medium
-Plot_Sound_Medium <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+Plot_Sound_Medium <-
+  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
   tm_polygons(col = "Colors_Sound") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
     legend.height = 0.5,
     legend.just = "right",
     legend.text.size = 0.5,
-    panel.label.size = 0.5,panel.label.height=5
+    panel.label.size = 0.5,
+    panel.label.height = 5
   ) +
   tm_add_legend(title = "Cluster Type",
                 labels = labels,
                 col = colors)
 
 ## Colour: High
-Plot_Sound_High <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+Plot_Sound_High <-
+  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
   tm_polygons(col = "Colors_SoundHigh") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
     legend.height = 0.5,
     legend.just = "right",
     legend.text.size = 0.5,
-    panel.label.size = 0.5,panel.label.height=5
+    panel.label.size = 0.5,
+    panel.label.height = 5
   ) +
   tm_add_legend(title = "Cluster Type",
                 labels = labels,
@@ -725,36 +837,40 @@ Plot_Sound_High <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0
 
 
 ## Decomposition: Medium
-Plot_Decomposition_Medium <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+Plot_Decomposition_Medium <-
+  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
   tm_polygons(col = "Colors_Decomposition") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
     legend.height = 0.5,
     legend.just = "right",
     legend.text.size = 0.5,
-    panel.label.size = 0.5,panel.label.height=5
+    panel.label.size = 0.5,
+    panel.label.height = 5
   ) +
   tm_add_legend(title = "Cluster Type",
                 labels = labels,
                 col = colors)
 
 ## Decomposition: High
-Plot_Decomposition_High <- tm_shape(st_transform(GB_New,"+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+Plot_Decomposition_High <-
+  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
   tm_polygons(col = "Colors_DecompositionHigh") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
     legend.height = 0.5,
     legend.just = "right",
     legend.text.size = 0.5,
-    panel.label.size = 0.5,panel.label.height=5
+    panel.label.size = 0.5,
+    panel.label.height = 5
   ) +
   tm_add_legend(title = "Cluster Type",
                 labels = labels,
                 col = colors)
 
-#----------------------------------------------------------------------
+# *****************************
 ## Adding all plots to one:
-#----------------------------------------------------------------------
+# *****************************
 
 
 
@@ -784,7 +900,9 @@ Winter_Figure4B <- tmap_arrange(
   nrow=2,ncol=4
 )
 
-tmap_save(Winter_Figure4B,here("OtherOutput/Figures","Winter_Figure4B.png"),dpi = 1000)
+tmap_save(Winter_Figure4B,
+          here("OtherOutput/Figures", "Winter_Figure4B.png"),
+          dpi = 1000)
 
 
 

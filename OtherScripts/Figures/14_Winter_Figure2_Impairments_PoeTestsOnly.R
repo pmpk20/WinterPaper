@@ -70,13 +70,7 @@ library(Rfast)
 
 
 ## Import Respondents Data
-Winter <- data.frame(fread(here("OtherData","Winter_dataframe_Step3.csv")))
-
-
-## Import WTP
-WTP <- data.frame(fread(here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_ConWTP.csv")))
-
-
+Winter <- here("OtherData","Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
 
 
 # **********************************************************
@@ -89,49 +83,33 @@ Winter <-  Winter[!is.na(Winter$MilesDistance), ] ## Drop missing distances
 Winter <-  Winter[!is.na(Winter$Overall), ] ## Drop respondents not completing BIOWELL
 
 
-## If the conditionals are imported then run this to recover only useful variables
-WTP <- WTP[WTP %>% select(-ends_with(c(".ID", ".post.sd"))) %>% colnames()] %>% data.frame()
-
-
-## Change names for ease of reference
-colnames(WTP) <- WTP %>%
-  colnames() %>%
-  gsub(pattern = ".post.mean", replacement = "")
-
-
-## Merge data here
-Winter <- cbind(Winter,WTP)
-
-
-
-
 # **********************************************************
 # Section 3: Calculate test results ####
 # **********************************************************
 
 
 ## Colours:
-OutputColours <- paste0("of colours (p = ", c(mded(Winter[, "b_Colour"][Winter$SightIssues == 0],
-                      Winter[, "b_Colour"][Winter$SightIssues == 1])$stat) %>% round(3),
-       " and ", c(mded(Winter[, "b_Colour2"][Winter$SightIssues == 0],
-                       Winter[, "b_Colour2"][Winter$SightIssues == 1])$stat) %>% round(3),
+OutputColours <- paste0("of colours (p = ", c(mded(Winter[, "Colour_WTP_Medium"][Winter$SightIssues == 0],
+                      Winter[, "Colour_WTP_Medium"][Winter$SightIssues == 1])$stat) %>% round(3),
+       " and ", c(mded(Winter[, "Colour_WTP_High"][Winter$SightIssues == 0],
+                       Winter[, "Colour_WTP_High"][Winter$SightIssues == 1])$stat) %>% round(3),
        " for the ‘medium’ and ‘high’ levels of colours respectively)"
 )
 
 
 ## Smell:
-OutputSmells <- paste0(", smells (p = ", c(mded(Winter[,"b_Smell"][Winter$SmellIssues==0],
-                      Winter[,"b_Smell"][Winter$SmellIssues==1])$stat) %>% round(3),
-       " and ", c(mded(Winter[,"b_Smell2"][Winter$SmellIssues==0],
-                       Winter[,"b_Smell2"][Winter$SmellIssues==1])$stat) %>% round(3),
+OutputSmells <- paste0(", smells (p = ", c(mded(Winter[,"Smell_WTP_Medium"][Winter$SmellIssues==0],
+                      Winter[,"Smell_WTP_Medium"][Winter$SmellIssues==1])$stat) %>% round(3),
+       " and ", c(mded(Winter[,"Smell_WTP_High"][Winter$SmellIssues==0],
+                       Winter[,"Smell_WTP_High"][Winter$SmellIssues==1])$stat) %>% round(3),
        ")")
 
 
 ## Sounds:
-OutputSounds <- paste0(", or sounds (p = ", c(mded(Winter[,"b_Sound"][Winter$HearingIssues==0],
-                      Winter[,"b_Sound"][Winter$HearingIssues==1])$stat) %>% round(3),
-       " and ", c(mded(Winter[,"b_Sound2"][Winter$HearingIssues==0],
-                       Winter[,"b_Sound2"][Winter$HearingIssues==1])$stat) %>% round(3),
+OutputSounds <- paste0(", or sounds (p = ", c(mded(Winter[,"Sound_WTP_Medium"][Winter$HearingIssues==0],
+                      Winter[,"Sound_WTP_Medium"][Winter$HearingIssues==1])$stat) %>% round(3),
+       " and ", c(mded(Winter[,"Sound_WTP_High"][Winter$HearingIssues==0],
+                       Winter[,"Sound_WTP_High"][Winter$HearingIssues==1])$stat) %>% round(3),
        ")")
 
 
@@ -144,11 +122,17 @@ OutputSounds <- paste0(", or sounds (p = ", c(mded(Winter[,"b_Sound"][Winter$Hea
 
 ## Output here
 paste0("We found no statistical difference in WTP for increases to the variety of ",
-  OutputColours,
-  OutputSmells,
-  OutputSounds,
-  " between participants with and without sensory impairments. "
-) %>% noquote()
+       OutputColours,
+       OutputSmells,
+       OutputSounds,
+       " between participants with and without sensory impairments. "
+) %>% c() %>% list() %>% fwrite(
+  sep = ",",
+  here("OtherOutput/Tables", "TableX_ImpairmentsPoeTests.txt"),
+  row.names = TRUE,
+  quote = FALSE
+)
+
 
 
 # End Of Script ****************************************************

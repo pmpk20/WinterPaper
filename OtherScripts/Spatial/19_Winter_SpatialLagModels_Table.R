@@ -1,15 +1,15 @@
 #### RELATE WP5: Winter Spatial Lag Models  ###############
 # Function: Calculate and output spatial lag models for each attribute level
 # Script author: Peter King (p.m.king@kent.ac.uk)
-# Last Edited: 02/02/2023
+# Last Edited: 10/05/2023
 # Changes: Tidying up
 # Note: There's probably a way to use loops to make the call to SpatialLagModel()
 ## run faster and make the inputs less repetitive.
 
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# **********************************************************************
 #### Section 0: Setup ####
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# **********************************************************************
 
 
 ## sessionInfo() for my office PC not the HPC ---------------------------------------------------------------
@@ -56,6 +56,12 @@
 
 
 
+# install.packages(
+#   c("rgdal"),
+#   repos = "http://cran.us.r-project.org",
+#   lib = "/shared/home/pk372/anaconda3/envs/WinterEnv/lib/R/library"
+# )
+
 ## Libraries: ---------------------------------------------------------------
 library(tidyr)
 library(spacetime)
@@ -71,15 +77,16 @@ rm(list=ls())
 
 
 
-##----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 #### Step One: Read in data frame with all respondents ####
-##----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 
 
 
 ## Import spatial data which has WTP per place
-GB_Winter <- st_read(here("OtherData","GB_Winter_Final.gpkg"))
-Winter <- data.frame(fread(here("OtherData","Winter_dataframe_Step4.csv")))
+GB_Winter <- st_read(here("OtherData", "GB_Winter_Final.gpkg"))
+Winter <-
+  here("OtherData", "Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
 
 
 ## Drop rows that have missing data in any of the following we use in the models:
@@ -96,12 +103,12 @@ Data <- GB_Winter
 Data_Winter <- Data
 
 
-%>% %>% %>%
-  #----------------------------------------------------------------------------------------------------------
+
+  # **********************************************************************
 # Section 2: Define Nearest Neighbours ####
 ## I actually redefine these later but this section is a warning -
 ## if this doesn't work then the function in Section3 won't either.
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 
 
 ## Determine number of neighbours:
@@ -129,9 +136,9 @@ Distances_Inverse <- lapply(Distances, function(x)
 KNN_Weights <- nb2listw(KNN_ToNBs, glist = Distances_Inverse)
 
 
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 # Section 3: Define Summary functions ####
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 
 
 ## This function takes Model (a formula() object),
@@ -213,9 +220,9 @@ SpatialLagModel <- function(Model, WTP,Data, K) {
 
 
 
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 # Section 4A: Spatial Lag Models for Colour ####
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 
 
 
@@ -235,9 +242,9 @@ Model <- as.formula("Colour_WTP_High~WoodlandsScore+
 SpatialLagModel(Model, "Colour_WTP_High", Data_Winter,K = 5)
 
 
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 # Section 4B: Spatial Lag Models for Smell ####
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 
 
 # ## Spatial Lag Model for Smell medium estimate:
@@ -257,9 +264,9 @@ SpatialLagModel(Model, "Smell_WTP_High", Data_Winter,K = 5)
 
 
 
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 # Section 4C: Spatial Lag Models for Sound ####
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 
 
 
@@ -279,9 +286,9 @@ Model <- as.formula("Sound_WTP_High~WoodlandsScore+
 SpatialLagModel(Model, "Sound_WTP_High", Data_Winter,K = 5)
 
 
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 # Section 4D: Spatial Lag Models for Decomposition ####
-#----------------------------------------------------------------------------------------------------------
+# **********************************************************************
 
 
 # ## Spatial Lag Model for Decomposition medium estimate:
@@ -301,10 +308,10 @@ SpatialLagModel(Model, "Deadwood_WTP_High", Data_Winter,K = 5)
 
 
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# **********************************************************************
 #### Section 5: Read in outputs ####
 ## In two parts: Models then results
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# **********************************************************************
 
 
 
@@ -354,9 +361,9 @@ DecompositionWTP2Result <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Deadwoo
 
 
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# **********************************************************************
 #### Section 6A: Define Summary Functions ####
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# **********************************************************************
 
 
 ## So this code outputs a table of estimate, p.v stars and s.e in brackets ##
@@ -400,45 +407,50 @@ ModelOutput <- function(Model,Result) {
 }
 
 
-
-
-
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# **********************************************************************
 #### Section 6B: Use Summary Functions For Output Tables ####
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# **********************************************************************
 
 
 ## Maybe a little ugly but outputs table in one go
 Table7 <- cbind(
-  "Attribute"=ModelOutput(ColourWTPModel,ColourWTPResult)[,1],
-  "Colour: Medium"=ModelOutput(ColourWTPModel,ColourWTPResult)[,2],
-  "Colour: High"=ModelOutput(ColourWTP2Model,ColourWTP2Result)[,2],
+  "Attribute" = ModelOutput(ColourWTPModel, ColourWTPResult)[, 1],
+  "Colour: Medium" = ModelOutput(ColourWTPModel, ColourWTPResult)[, 2],
+  "Colour: High" = ModelOutput(ColourWTP2Model, ColourWTP2Result)[, 2],
 
-  "Smell: Medium"=ModelOutput(SmellWTPModel,SmellWTPResult)[,2],
-  "Smell: High"=ModelOutput(SmellWTP2Model,SmellWTP2Result)[,2],
+  "Smell: Medium" = ModelOutput(SmellWTPModel, SmellWTPResult)[, 2],
+  "Smell: High" = ModelOutput(SmellWTP2Model, SmellWTP2Result)[, 2],
 
-  "Sound: Medium"=ModelOutput(SoundWTPModel,SoundWTPResult)[,2],
-  "Sound: High"=ModelOutput(SoundWTP2Model,SoundWTP2Result)[,2],
+  "Sound: Medium" = ModelOutput(SoundWTPModel, SoundWTPResult)[, 2],
+  "Sound: High" = ModelOutput(SoundWTP2Model, SoundWTP2Result)[, 2],
 
-  "Decomposition: Medium"=ModelOutput(DecompositionWTPModel,DecompositionWTPResult)[,2],
-  "Decomposition: High"=ModelOutput(DecompositionWTP2Model,DecompositionWTP2Result)[,2]) %>%
+  "Decomposition: Medium" = ModelOutput(DecompositionWTPModel, DecompositionWTPResult)[, 2],
+  "Decomposition: High" = ModelOutput(DecompositionWTP2Model, DecompositionWTP2Result)[, 2]
+) %>%
   noquote()
 
 
+# **********************************************************************
+#### Section 7: Export ####
+# **********************************************************************
+
 
 ## Output to screen:
-Table7 %>% write.csv(quote=F,row.names=F)
+Table7 %>% write.csv(quote = FALSE, row.names = FALSE)
 
 
 
 ## Output to a discrete file if that's helpful
-write.table(Table7,
-            here("OtherOutput/Spatial","Table7.txt"),
-            sep=",",quote=F)
+write.table(
+  Table7,
+  here("OtherOutput/Spatial", "Table7_SpatialLagModels.txt"),
+  sep = ",",
+  quote = FALSE
+)
 
 
 
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# **********************************************************************
 #### END OF SCRIPT ####
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# **********************************************************************
