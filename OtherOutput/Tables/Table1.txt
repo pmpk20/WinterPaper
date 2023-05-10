@@ -1,0 +1,21 @@
+,Variable,Category,N,Sample....,Population....,PV
+1,Gender,Male,854,49.9,49,0
+2,Gender,Female,857,50.1,51,PV: 0.985
+3,AgeCategory,18 - 29,438,25.6,16.2,0.12
+4,AgeCategory,30 - 39,240,14,13.3,0.12
+5,AgeCategory,40 - 49,204,11.9,14.6,0.12
+6,AgeCategory,50 - 59,205,12,12.1,0.12
+7,AgeCategory,60 - 69,412,24.1,10.8,0.12
+8,AgeCategory,70+,212,12.4,11.7,PV: 1
+9,EthnicityDummyWhite,Non-white,338,19.8,13,2.335
+10,EthnicityDummyWhite,White,1373,80.2,87,PV: 0.126
+11,IncomeCategories,£0 – £20,500,648,37.9,26,0.129
+12,IncomeCategories,£20,501 – £26,800,369,21.6,19,PV: 0.988
+13,IncomeCategories,£26,801 – £54,000,419,24.5,25,PV: 0.988
+14,IncomeCategories,£54,000+,275,16.1,30,PV: 0.988
+15,Urbanicity,Rural,406,23.7,18.5,0.017
+16,Urbanicity,Urban,1305,76.3,81.5,PV: 0.896
+17,Occupation,Student,66,3.9,8.2,0.06
+18,Occupation,Unemployed,66,3.9,4,0.06
+19,Occupation,Retired,66,3.9,24,0.06
+20,Occupation,Employed,132,7.7,76,PV: 0.996
