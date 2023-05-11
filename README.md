@@ -10,6 +10,10 @@
 - This works locally on my machine and HPC so hopefully does for you too.
 - Current issues: 
   - The *model.rds* and *unconditionalWTP* are too large for github so do not appear here. 
+- I have anonymised all location data where possible. 
+  - The raw coordinates and postcodes inthe survey data now direct to the University of Kent.  
+  - The processed postcodes and coordinates are now generalised to much larger areas than we used. 
+  - For the full survey data please email the RELATE Project.
 
 ------------------------------
 ##### Folders:
