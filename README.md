@@ -12,9 +12,7 @@
   - The *model.rds* and *unconditionalWTP* are too large for github so do not appear here. 
 
 ------------------------------
-##### File Structure: 
-
-Folders:
+##### Folders:
 - CEModelData: Inputs for estimated models. 
 - CEModelScripts: Scripts to estimate choice models. 
 - CEoutput: Outputs from estimated models, split into models one and two. 
@@ -22,14 +20,13 @@ Folders:
 - OutherOutput: Misc tables and figures.  
 - OtherScripts: R scripts to manipulate data, spatial analysis, present outputs, consumer surplus.  
 
-Scripts:
+##### Scripts:
 The workflow to replicate the paper is detailed in 00_Winter_StepByStep.rmd and I have numbered the scripts in the correct order.
 
-Methods for processing the data: 
+##### Methods for processing the data: 
 Survey data collected using Qualtrics and a survey research company. Sample collected using quota sampling. Additional data from ONS.
 
-
-Instrument- or software-specific information needed to interpret the data:
+##### Instrument- or software-specific information needed to interpret the data:
 R version 4.2.0 (2022-04-22 ucrt)
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 Running under: Windows 10 x64 (build 19045)
