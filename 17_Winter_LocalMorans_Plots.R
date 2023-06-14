@@ -163,10 +163,10 @@ KNN_Weights <- nb2listw(KNN_ToNBs, glist = Distances_Inverse)
 
 
 
-# *****************************
-## Tax:
-# *****************************
 
+# ***************************************************
+# Section 3: Calculate hotspots by variable: Tax ####
+# ***************************************************
 
 
 LocalMoran_Tax <-
@@ -236,12 +236,9 @@ Data$quad_sig_WTP_Tax <- recode(
 
 
 
-
-# *****************************
-## Colour:
-# *****************************
-
-
+# ***************************************************
+# Section 3: Calculate hotspots by variable: Colour ####
+# ***************************************************
 
 LocalMoran_Colour <-
   localmoran(as.data.frame(Data[, c("Colour_WTP_Medium")])[, 1], KNN_Weights)
@@ -305,11 +302,10 @@ Data$quad_sig_WTP_Colour <- recode(
 )
 
 
-# *****************************
-## Smell:
-# *****************************
 
-
+# ***************************************************
+# Section 3: Calculate hotspots by variable: Smell ####
+# ***************************************************
 
 LocalMoran_Smell <-
   localmoran(as.data.frame(Data[, c("Smell_WTP_Medium")])[, 1], KNN_Weights)
@@ -359,9 +355,9 @@ Data$quad_sig_WTP_Smell <- recode(
 )
 
 
-# *****************************
-## Sound:
-# *****************************
+# ***************************************************
+# Section 3: Calculate hotspots by variable: Sound ####
+# ***************************************************
 
 
 LocalMoran_Sound <-
@@ -413,9 +409,10 @@ Data$quad_sig_WTP_Sound <- recode(
 
 
 
-# *****************************
-## Decomposition:
-# *****************************
+
+# ***************************************************
+# Section 3: Calculate hotspots by variable: Decomposition ####
+# ***************************************************
 
 
 LocalMoran_Decomposition <-
@@ -472,10 +469,10 @@ Data$quad_sig_WTP_Decomposition <-
   )
 
 
-# *****************************
-## Colour High:
-# *****************************
 
+# ***************************************************
+# Section 3: Calculate hotspots by variable: Colour High ####
+# ***************************************************
 
 LocalMoran_ColourHigh <-
   localmoran(as.data.frame(Data[, c("Colour_WTP_High")])[, 1], KNN_Weights)
@@ -531,9 +528,9 @@ Data$quad_sig_WTP_ColourHigh <- recode(
 
 
 
-# *****************************
-## Smell High:
-# *****************************
+# ***************************************************
+# Section 3: Calculate hotspots by variable: Smell High ####
+# ***************************************************
 
 
 LocalMoran_SmellHigh <-
@@ -589,10 +586,10 @@ Data$quad_sig_WTP_SmellHigh <- recode(
 )
 
 
-# *****************************
-## Sound High:
-# *****************************
 
+# ***************************************************
+# Section 3: Calculate hotspots by variable: Sound High ####
+# ***************************************************
 
 LocalMoran_SoundHigh <-
   localmoran(as.data.frame(Data[, c("Sound_WTP_High")])[, 1], KNN_Weights)
@@ -646,9 +643,12 @@ Data$quad_sig_WTP_SoundHigh <- recode(
   '1' = "High-High"
 )
 
-# *****************************
-## Decomposition High:
-# *****************************
+
+
+
+# ***************************************************
+# Section 3: Calculate hotspots by variable: Decomp high ####
+# ***************************************************
 
 
 LocalMoran_DecompositionHigh <-
@@ -707,9 +707,11 @@ Data$quad_sig_WTP_DecompositionHigh <-
   )
 
 
-# *****************************
-## Plotting setup:
-# *****************************
+
+# ***************************************************
+# Section 4: Setup plots ####
+# ***************************************************
+
 
 GB <-
   st_read(
@@ -731,6 +733,13 @@ Data %>%
               "FigureS2_PlotData.csv"))
 
 
+## Import directly here
+## Must define labels and colors if doing this way!
+Data <- here::here("OtherOutput",
+           "FigureS2_PlotData.csv") %>% fread() %>% data.frame()
+
+
+
 
 ## Join county name to county name
 GB_New <- left_join(x = GB, Data, by = c("ctyua19nm" = "County"))
@@ -750,9 +759,12 @@ GB_New <- GB_New[!GB_New$ctyua19nm == "Belfast", ]
 GB_New2 <- GB_New[!GB_New$ctyua19nm == "Shetland Islands", ]
 
 
-# **********************************************************
-## Plotting making each plot individually then stitch together:
-# **********************************************************
+
+
+# ***************************************************
+# Section 5: Create plots variable-wise####
+# ***************************************************
+
 
 ## Okay co-authors want three changes:
 # 1: Remove legends except for one
@@ -792,6 +804,8 @@ Plot_Tax <-
 #               col = colors)
 
 
+
+# Colours ---------------
 ## Colour: Medium
 Plot_Colour_Medium <-
   tm_shape(GB_New) +
@@ -826,8 +840,8 @@ Plot_Colour_High <-
 
 
 
-#---------------
-## Colour: Medium
+# Smells ---------------
+## Smell: Medium
 Plot_Smell_Medium <-
   tm_shape(GB_New) +
   tm_polygons(col = "Colors_Smell") + tm_layout(
@@ -861,8 +875,9 @@ Plot_Smell_High <-
              position = c("LEFT", "TOP"))
 
 
-#--------------------
-## Colour: Medium
+
+
+# Sounds ---------------
 Plot_Sound_Medium <-
   tm_shape(GB_New) +
   tm_polygons(col = "Colors_Sound") + tm_layout(
@@ -879,7 +894,7 @@ Plot_Sound_Medium <-
              position = c("LEFT", "TOP"))
 
 
-## Colour: High
+## Sound: High
 Plot_Sound_High <-
   tm_shape(GB_New) +
   tm_polygons(col = "Colors_SoundHigh") + tm_layout(
@@ -897,15 +912,17 @@ Plot_Sound_High <-
 
 
 
+
+# Deadwood ---------------
 ## Decomposition: Medium
 Plot_Decomposition_Medium <-
-  tm_shape(GB_New2) +
+  tm_shape(GB_New) +
   tm_polygons(col = "Colors_Decomposition") + tm_layout(
-    legend.position = c("RIGHT", "top"),
-    legend.title.size = 0.5,
-    legend.height = 0.5,
-    legend.just = "right",
-    legend.text.size = 0.5,
+    legend.position = c(0.6, 0.45),
+    # legend.title.size = 0.5,
+    # legend.height = 0.5,
+    # legend.just = "right",
+    # legend.text.size = 0.5,
     panel.label.size = 0.5,
     panel.label.height = 5,
     title = "Deadwood\ndecomposition:\nmedium",
@@ -914,6 +931,19 @@ Plot_Decomposition_Medium <-
   tm_add_legend(title = "Cluster Type",
                 labels = labels,
                 col = colors)
+
+
+## New version using manual legend position and credits not title
+Plot_Decomposition_Medium <- tm_shape(GB_New) +
+  tm_polygons(col = "Colors_Decomposition") + tm_layout(
+    legend.position = c(0.6, 0.6)) +
+  tm_add_legend(title = "Cluster Type",
+                labels = labels,
+                col = colors) +
+  tm_credits("Deadwood\ndecomposition:\nhigh",size = 0.75,
+             fontfamily = "serif",
+             position = c("LEFT", "TOP"))
+
 
 
 
@@ -934,9 +964,10 @@ Plot_Decomposition_High <-
              position = c("LEFT", "TOP"))
 
 
-# *****************************
-## Adding all plots to one:
-# *****************************
+
+# ***************************************************
+# Section 6: Combine and output plots ####
+# ***************************************************
 
 
 #
