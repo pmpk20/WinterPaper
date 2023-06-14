@@ -1,8 +1,9 @@
 #### RELATE Winter Paper ####
 ## Function: Plots Local Moran Hotspots
 ## Author: Dr Peter King (p.m.king@kent.ac.uk)
-## Last change: 01/02/2023
+## Last change: 13/06/2023
 ## TODO: My god this is a mess but it works
+## Note: This no longer works as I've anonymised all the data
 
 
 # *****************************
@@ -74,8 +75,8 @@ library(tmap)
 
 
 ## Import step4 which has WTP already appended
-Winter <- here("OtherData", "Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
-
+Winter <- here::here("OtherData","Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
+# Winter <- here::here("OtherData","Winter_dataframe_2022-01-07.csv") %>% fread() %>% data.frame()
 
 ## Remove potentially tricky observations
 Winter <-
@@ -715,13 +716,30 @@ GB_New <- GB_New[!GB_New$ctyua19nm == "Belfast", ]
 ## Plotting making each plot individually then stitch together:
 # *****************************
 
+## Okay co-authors want three changes:
+# 1: Remove legends except for one
+# 2: Label each plot A, B,C etc
+# 3: Change projection
+# I really cba for this in R and hate this script so the following is the original
+# and I made the changes for the manuscript version in powerpoint :)
 
+
+
+# *****************************
+## Plotting making each plot individually then stitch together:
+# *****************************
+
+## Okay co-authors want three changes:
+# 1: Remove legends except for one
+# 2: Label each plot A, B,C etc
+# 3: Change projection
+# Okay so 1hr reinstalling tmap and Rcpp and plyr and 5minutes of googling later.
 
 
 
 ## Tax:
 Plot_Tax <-
-  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+  tmap::tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
   tm_polygons(col = "Colors_Tax") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
@@ -730,15 +748,15 @@ Plot_Tax <-
     legend.text.size = 0.5,
     panel.label.size = 0.5,
     panel.label.height = 5
-  ) +
-  tm_add_legend(title = "Cluster Type",
-                labels = labels,
-                col = colors)
+  )
+# tm_add_legend(title = "Cluster Type",
+#               labels = labels,
+#               col = colors)
 
 
 ## Colour: Medium
 Plot_Colour_Medium <-
-  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+  tm_shape(GB_New) +
   tm_polygons(col = "Colors_Colour") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
@@ -748,13 +766,11 @@ Plot_Colour_Medium <-
     panel.label.size = 0.5,
     panel.label.height = 5
   ) +
-  tm_add_legend(title = "Cluster Type",
-                labels = labels,
-                col = colors)
+  tm_credits("Colours:\nmedium", position = c("left", "top"))
 
 ## Colour: High
 Plot_Colour_High <-
-  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+  tm_shape(GB_New) +
   tm_polygons(col = "Colors_ColourHigh") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
@@ -764,15 +780,14 @@ Plot_Colour_High <-
     panel.label.size = 0.5,
     panel.label.height = 5
   ) +
-  tm_add_legend(title = "Cluster Type",
-                labels = labels,
-                col = colors)
+  tm_credits("Colours:\nhigh", position = c("left", "top"))
+
 
 
 #---------------
 ## Colour: Medium
 Plot_Smell_Medium <-
-  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+  tm_shape(GB_New) +
   tm_polygons(col = "Colors_Smell") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
@@ -782,13 +797,12 @@ Plot_Smell_Medium <-
     panel.label.size = 0.5,
     panel.label.height = 5
   ) +
-  tm_add_legend(title = "Cluster Type",
-                labels = labels,
-                col = colors)
+  tm_credits("Smells:\nmedium", position = c("left", "top"))
+
 
 ## Colour: High
 Plot_Smell_High <-
-  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+  tm_shape(GB_New) +
   tm_polygons(col = "Colors_SmellHigh") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
@@ -798,14 +812,13 @@ Plot_Smell_High <-
     panel.label.size = 0.5,
     panel.label.height = 5
   ) +
-  tm_add_legend(title = "Cluster Type",
-                labels = labels,
-                col = colors)
+  tm_credits("Smells:\nhigh", position = c("left", "top"))
+
 
 #--------------------
 ## Colour: Medium
 Plot_Sound_Medium <-
-  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+  tm_shape(GB_New) +
   tm_polygons(col = "Colors_Sound") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
@@ -815,13 +828,12 @@ Plot_Sound_Medium <-
     panel.label.size = 0.5,
     panel.label.height = 5
   ) +
-  tm_add_legend(title = "Cluster Type",
-                labels = labels,
-                col = colors)
+  tm_credits("Sounds:\nmedium", position = c("left", "top"))
+
 
 ## Colour: High
 Plot_Sound_High <-
-  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+  tm_shape(GB_New) +
   tm_polygons(col = "Colors_SoundHigh") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
@@ -831,14 +843,13 @@ Plot_Sound_High <-
     panel.label.size = 0.5,
     panel.label.height = 5
   ) +
-  tm_add_legend(title = "Cluster Type",
-                labels = labels,
-                col = colors)
+  tm_credits("Sounds:\nhigh", position = c("left", "top"))
+
 
 
 ## Decomposition: Medium
 Plot_Decomposition_Medium <-
-  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+  tm_shape(GB_New) +
   tm_polygons(col = "Colors_Decomposition") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
@@ -850,11 +861,14 @@ Plot_Decomposition_Medium <-
   ) +
   tm_add_legend(title = "Cluster Type",
                 labels = labels,
-                col = colors)
+                col = colors) +
+  tm_credits("Deadwood\ndecomposition:\nmedium", position = c("left", "top"))
+
+
 
 ## Decomposition: High
 Plot_Decomposition_High <-
-  tm_shape(st_transform(GB_New, "+proj=laea +x_0=0 +y_0=0 +lon_0=0 +lat_0=0")) +
+  tm_shape(GB_New) +
   tm_polygons(col = "Colors_DecompositionHigh") + tm_layout(
     legend.position = c("RIGHT", "top"),
     legend.title.size = 0.5,
@@ -864,9 +878,8 @@ Plot_Decomposition_High <-
     panel.label.size = 0.5,
     panel.label.height = 5
   ) +
-  tm_add_legend(title = "Cluster Type",
-                labels = labels,
-                col = colors)
+  tm_credits("Deadwood\ndecomposition:\nhigh", position = c("left", "top"))
+
 
 # *****************************
 ## Adding all plots to one:
@@ -882,7 +895,10 @@ Winter_Figure4A <- tmap_arrange(
   Plot_Decomposition_Medium,nrow=2,ncol=2
 )
 
-tmap_save(Winter_Figure4A,"Winter_Figure4A.png",dpi = 1000)
+
+tmap_save(Winter_Figure4A,
+          here("OtherOutput/Figures", "Winter_Figure4A.png"),
+          dpi = 500)
 
 
 
@@ -902,7 +918,7 @@ Winter_Figure4B <- tmap_arrange(
 
 tmap_save(Winter_Figure4B,
           here("OtherOutput/Figures", "Winter_Figure4B.png"),
-          dpi = 1000)
+          dpi = 500)
 
 
 

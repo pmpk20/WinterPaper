@@ -7,9 +7,9 @@
 ## VisitFrequency. So unconditionals > moments > summary > create plot.
 
 
-#----------------------------------------------------------------------------------------------------------
+# ***************************************************************************
 #### Section 0: Setup and estimate models ####
-#----------------------------------------------------------------------------------------------------------
+# ***************************************************************************
 
 
 
@@ -65,18 +65,23 @@ library(data.table)
 library(Rfast)
 
 
-#----------------------------------------------------------------------------------------------------------
+# ***************************************************************************
 #### Section 1: Setup parallelisation and benchmarking ####
-#----------------------------------------------------------------------------------------------------------
+# ***************************************************************************
 
 
 
-## The latest version with WTP appended is 2022_01_07
-Winter <- data.frame(fread(here("OtherData","Winter_dataframe_Step3.csv")))
+## Step4 has the right number of rows
+Winter <- here("OtherData","Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
+
+
+## For various reasons I'm dropping the existing WTP to re-add it here
+## This makes fixing the rest of the code easier
+Winter <- Winter[,1:217]
 
 ## Truncate to have same number of rows as in the models
-Winter<- Winter[!is.na(Winter$MilesDistance),] ## Drop missing distances
-Winter<- Winter[!is.na(Winter$Overall),] ## Drop respondents not completing BIOWELL
+Winter <- Winter[!is.na(Winter$MilesDistance), ] ## Drop missing distances
+Winter <- Winter[!is.na(Winter$Overall), ] ## Drop respondents not completing BIOWELL
 
 
 
@@ -87,19 +92,19 @@ Winter<- Winter[!is.na(Winter$Overall),] ## Drop respondents not completing BIOW
 # WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelOne_2022_07_29_WTP.csv")))
 # WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelOne_2022_07_29_UCWTP.csv")))
 # WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelTwo_2022_07_29_WTP.csv")))
-WTP <- data.frame(fread(here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv")))
+WTP <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv") %>% fread() %>% data.frame()
 
 ## If the conditionals are imported then run this to recover only useful variables
 WTP <- WTP[WTP %>% select(-ends_with(c(".ID",".post.sd"))) %>% colnames()] %>% data.frame()
 
 
 ## Combine all for ease:
-WinterWTPCombined <- cbind(Winter,WTP)
+WinterWTPCombined <- cbind(Winter, WTP)
 
 
-#----------------------------------------------------------------------------------------------------------
+# ***************************************************************************
 #### Section 2: Define useful variables ####
-#----------------------------------------------------------------------------------------------------------
+# ***************************************************************************
 
 
 ## So I'll use these later to name rows
@@ -113,13 +118,20 @@ Names <- c("Tax",
            "DeadwoodMedium",
            "DeadwoodHigh")
 
+# ## Label X axis of ggplot boxplots
+# Labels <- c("Tax",
+#             "Colour\n Medium","Colour\n High",
+#             "Sound\n Medium","Sound\n High",
+#             "Smell\n Medium", "Smell\n High",
+#             "Deadwood\n Medium","Deadwood\n High")
 
-## Label X axis of ggplot boxplots
+
+# ## New version
 Labels <- c("Tax",
-            "Colour\n Medium","Colour\n High",
-            "Sound\n Medium","Sound\n High",
-            "Smell\n Medium", "Smell\n High",
-            "Deadwood\n Medium","Deadwood\n High")
+            "Colours:\n medium","Colours:\n high",
+            "Sounds:\n medium","Sounds:\n high",
+            "Smells:\n medium", "Smells:\n high",
+            "Deadwood:\ndecomposition\n medium","Deadwood:\ndecomposition\n high")
 
 
 ## Label grouping variable
@@ -127,7 +139,7 @@ VisitFrequency <- c(0,1,2,3,4,5)
 
 
 LegendLabels <- c(
-  paste0("I did not visit\n(N = ",Winter %>% filter(MostRecentVisit==0) %>% nrow(),")"),
+  paste0("I do not visit\n(N = ",Winter %>% filter(MostRecentVisit==0) %>% nrow(),")"),
   paste0("Once or twice a season\n(N = " ,Winter %>% filter(MostRecentVisit==1) %>% nrow(),")"),
   paste0("Once or twice a month\n(N = ",Winter %>% filter(MostRecentVisit==2) %>% nrow(),")"),
   paste0("Once a week\n(N = " ,Winter %>% filter(MostRecentVisit==3) %>% nrow(),")"),
@@ -135,9 +147,9 @@ LegendLabels <- c(
   paste0("Every day\n(N = " ,Winter %>% filter(MostRecentVisit==5) %>% nrow(),")"))
 
 
-#----------------------------------------------------------------------------------------------------------
+# ***************************************************************************
 #### Section 2B or most likely not 2B: Trying to make the tails longer by using the entire distribution ####
-#----------------------------------------------------------------------------------------------------------
+# ***************************************************************************
 
 
 ## So this function calculates one stat per attribute per VisitFrequency
@@ -147,7 +159,7 @@ Summarizer <- function(Attribute) {
   bind_cols(
     "y0"=  WinterWTPCombined %>% select(starts_with(Attribute),"MostRecentVisit")  %>% group_by(MostRecentVisit) %>% summarise_all(quantile,c(0.05)) %>% as.matrix() %>% rowmeans(),
     "y25"= WinterWTPCombined %>% select(starts_with(Attribute),"MostRecentVisit")  %>% group_by(MostRecentVisit) %>% summarise_all(quantile,c(0.25)) %>% as.matrix() %>% rowmeans(),
-    "y50"= WinterWTPCombined %>% select(starts_with(Attribute),"MostRecentVisit")  %>% group_by(MostRecentVisit) %>% summarise_all(mean) %>% as.matrix() %>% rowmeans(),
+    "y50"= WinterWTPCombined %>% select(starts_with(Attribute),"MostRecentVisit")  %>% group_by(MostRecentVisit) %>% summarise_all(median) %>% as.matrix() %>% rowmeans(),
     "y75"= WinterWTPCombined %>% select(starts_with(Attribute),"MostRecentVisit")  %>% group_by(MostRecentVisit) %>% summarise_all(quantile,c(0.75)) %>% as.matrix() %>% rowmeans() ,
     "y100"=WinterWTPCombined %>% select(starts_with(Attribute),"MostRecentVisit")  %>% group_by(MostRecentVisit) %>% summarise_all(quantile,c(0.95)) %>% as.matrix() %>% rowmeans()) %>% data.frame()
 
@@ -178,50 +190,128 @@ NewerData <- bind_cols(
 NewerData$variable <- factor(NewerData$variable,levels=unique(NewerData$variable))
 
 
-#----------------------------------------------------------------------------------------------------------
+
+NewerData %>%
+  fwrite(sep=",",
+         here("OtherOutput",
+              "FigureS1_PlotData.csv"))
+
+# ***************************************************************************
 #### Section 3: Create Plot ####
-#----------------------------------------------------------------------------------------------------------
+# ***************************************************************************
 
 
-print("Figure")
-## Using this version now!
-Figure2_VisitFrequency <-
-  ggplot(NewerData,aes(x=variable, fill=as.factor(MostRecentVisit))) +
-  geom_boxplot(varwidth = 0.5,outlier.shape = NA,
-               aes(
-                 ymin=y0,
-                 lower=y25,
-                 middle=y50,
-                 upper=y75,
-                 ymax=y100,
-               ),stat="identity")+
-  scale_x_discrete(name="Attribute",label=Labels)+
-  theme_bw()+geom_hline(yintercept=0)+
-  ylab("WTP ( \U00a3 GBP) Per Year Local Tax")+
-  scale_y_continuous(limits=c(-10,25)
-                     ,breaks = seq(-10,25,1))+
-  scale_fill_brewer(name="Visit Frequency",type="seq",
-                    label=LegendLabels,
-                    guide=guide_legend(reverse = FALSE))+
-  theme(legend.position = "bottom",
-        legend.background=element_blank(),
-        legend.box.background = element_rect(colour="black"),
-        panel.grid.major.x=element_blank(),
-        panel.grid.minor.x=element_blank(),
-        panel.grid.major.y=element_blank(),
-        panel.grid.minor.y=element_blank())
+## Import direct plot data here:
+NewerData <- here("OtherOutput", "FigureS1_PlotData.csv") %>% fread() %>% data.frame()
+#
+# # Old version
+# Figure2_VisitFrequency <-
+#   ggplot(NewerData, aes(x = rev(variable), fill = as.factor(MostRecentVisit))) +
+#
+#   geom_boxplot(
+#     varwidth = 0.5,
+#     outlier.shape = NA,
+#     aes(
+#       ymin = y0,
+#       lower = y25,
+#       middle = y50,
+#       upper = y75,
+#       ymax = y100,
+#     ),
+#     stat = "identity"
+#   )+
+#   scale_x_discrete(name = "Attribute",
+#                    label = rev(Labels),
+#                    limits = Names) +
+#   theme_bw() +
+#   geom_hline(yintercept = 0) +
+#   ylab("WTP (GBP) via local council tax, per household, per annum") +
+#   scale_y_continuous(limits = c(-10, 25)
+#                      , breaks = seq(-10, 25, 1)) +
+#   scale_fill_brewer(
+#     name = "Visit Frequency",
+#     type = "seq",
+#     label = LegendLabels,
+#     guide = guide_legend(reverse = FALSE)
+#   ) +
+#   theme(
+#     legend.position = "bottom",
+#     legend.background = element_blank(),
+#     legend.box.background = element_rect(colour = "black"),
+#     panel.grid.major.x = element_blank(),
+#     panel.grid.minor.x = element_blank(),
+#     panel.grid.major.y = element_blank(),
+#     panel.grid.minor.y = element_blank()
+#   ) +
+#   coord_flip()
 
 
-#----------------------------------------------------------------------------------------------------------
+
+## Reshape here so that I can add the errorbars
+NewerData_Pivoted <- NewerData %>% pivot_longer(cols = y0:y100)
+
+
+## THis is an important step for the correct plot order!
+NewerData_Pivoted$variable <-
+  factor(NewerData_Pivoted$variable, levels = unique(NewerData_Pivoted$variable))
+
+
+## Better way with working error bars!
+Figure2_VisitFrequency <- ggplot(NewerData_Pivoted, aes(
+  x = rev(variable),
+  y = value,
+  fill = as.factor(MostRecentVisit)
+)) +
+  stat_boxplot(geom = "errorbar", width = 0.25, position = position_dodge(width = 0.75)) +
+  geom_boxplot(outlier.shape = NA) +
+  scale_x_discrete(name = "Attribute",
+                   label = rev(Labels),
+                   limits = Names) +
+  theme_bw() +
+  geom_hline(yintercept = 0) +
+  ylab("WTP (GBP) via local council tax, per household, per annum") +
+  scale_y_continuous(limits = c(-10, 20)
+                     , breaks = seq(-10, 20, 5)) +
+  scale_fill_brewer(
+    name = "Visit Frequency",
+    type = "seq",
+    label = LegendLabels,
+    guide = guide_legend(reverse = FALSE)
+  ) +
+  theme(
+    legend.position = "bottom",
+    legend.background = element_blank(),
+    legend.box.background = element_rect(colour = "black"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.text.x = element_text(size = 10,
+                               colour = "black"), ## Change text to be clearer for reader
+    axis.text.y = element_text(size = 10,
+                               colour = "black")
+  ) +
+  coord_flip()
+
+
+# ***************************************************************************
 #### Section 3: Export Plot ####
-#----------------------------------------------------------------------------------------------------------
-
+# ***************************************************************************
 
 
 ## Save with high DPI in the right place. I think png is the right format.
-ggsave(Figure2_VisitFrequency, device = "png",
-       filename = paste0(here(),"/OtherOutput/Figures/","Figure2_VisitFrequency.png"),
-       width=20,height=15,units = "cm",dpi=500)
-
+ggsave(
+  Figure2_VisitFrequency,
+  device = "png",
+  filename = paste0(
+    here(),
+    "/OtherOutput/Figures/",
+    "Figure2_VisitFrequency.png"
+  ),
+  width = 20,
+  height = 15,
+  units = "cm",
+  dpi = 500
+)
 
 # End Of Script -----------------------------------------------------------

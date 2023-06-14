@@ -1,8 +1,8 @@
 #### RELATE Winter Paper ####
 ## Function: Literally plots one figure: distributions of each attributes' WTP
 ## Author: Dr Peter King (p.m.king@kent.ac.uk)
-## Last change: 13/04/2023
-## Change: Changing X limit, y labels, and investigating tax bars.
+## Last change: 13/06/2023
+## Change: Added option to import data in. Fixed label formatting for Zoe.
 ## TODO: Trying to use foreach() to speed up the loop
 
 
@@ -148,25 +148,29 @@ Names <- c(
   "SmellMedium",
   "SoundHigh",
   "SoundMedium",
-  "DeadwoodHigh",
-  "DeadwoodMedium"
+  "Deadwood\nDecomposition High",
+  "Deadwood\nDecomposition Medium"
 )
 
 
 
 ## Label X axis of ggplot boxplots
 ## Using gsub() to add spaces to the list
-Names <-
-  gsub(pattern = "Deadwood",
-       replacement = "Deadwood\nDecomposition ",
-       x = Names)
+# Names <-
+  # gsub(pattern = "Deadwood",
+  #      replacement = "Deadwood\nDecomposition ",
+  #      x = Names)
 
 
 Labels <-
-  gsub(pattern = "Medium",
-       replacement = "\n Medium",
-       x = Names) %>%
-  gsub(pattern = "High", replacement = "\n High") %>%
+  Names %>% gsub(pattern = "Decomposition",
+       replacement = "decomposition") %>%
+  gsub(pattern = "Medium", replacement = "\nmedium") %>%
+  gsub(pattern = "High", replacement = "\nhigh") %>%
+  gsub(pattern = "Colour", replacement = "Colours:") %>%
+  gsub(pattern = "Smell", replacement = "Smells:") %>%
+  gsub(pattern = "Sound", replacement = "Sounds:") %>%
+  gsub(pattern = "Deadwood", replacement = "Deadwood:") %>%
   c()
 
 
@@ -210,6 +214,8 @@ Colours <- c(
 )
 
 
+# NewerData <- here("OtherOutput", "Figure2_PlotData.csv") %>% fread() %>% data.frame()
+
 
 ## here is the final plot I use.
 ## I put Newerdata in then use the columns to specify the points of the boxplot
@@ -236,7 +242,7 @@ Figure2 <-
                    limits = Names) + ## Using rev() to make the order I want
   theme_bw() + ## Just looks nicer imo
   geom_hline(yintercept = 0) + ## I like the zero line for ease of comparison
-  ylab("Marginal WTP in \U00a3 GBP per Household per annum in local tax.") +
+  ylab("Marginal WTP (GBP) in local council tax, per household, per annum") +
   scale_y_continuous(limits = c(-10, 20)
                      , breaks = seq(-10, 20, 5)) +
   scale_fill_manual(name = "Attributes",
