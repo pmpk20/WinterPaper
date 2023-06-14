@@ -2,7 +2,7 @@
 ### ERC-Funded RELATE Project Work Package Five ####
 - Repo for the data and code for the "Stated preferences for the colours, smells and sounds of biodiversity outweigh those for ecological function. " from the RELATE ERC-funded project.
 - Author: Peter King (p.m.king@kent.ac.uk)
-- Last Edited: 12/05/2023.
+- Last Edited: 15/06/2023.
 - Guide to replicating the paper from survey data
 
 
