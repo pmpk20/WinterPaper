@@ -214,6 +214,7 @@ Colours <- c(
 )
 
 
+## Direct import here
 # NewerData <- here("OtherOutput", "Figure2_PlotData.csv") %>% fread() %>% data.frame()
 
 
@@ -257,9 +258,11 @@ Figure2 <-
     panel.grid.major.y = element_blank(),
     panel.grid.minor.y = element_blank(),
     axis.text.x = element_text(size = 10,
-                               colour = "black"), ## Change text to be clearer for reader
+                               colour = "black",
+                               family = "serif"), ## Change text to be clearer for reader
     axis.text.y = element_text(size = 10,
-                               colour = "black")
+                               colour = "black",
+                               family = "serif")
   ) +
   coord_flip()
 

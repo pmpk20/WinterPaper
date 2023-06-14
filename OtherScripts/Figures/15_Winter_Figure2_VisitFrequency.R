@@ -109,14 +109,15 @@ WinterWTPCombined <- cbind(Winter, WTP)
 
 ## So I'll use these later to name rows
 Names <- c("Tax",
-           "ColourMedium",
            "ColourHigh",
-           "SoundMedium",
-           "SoundHigh",
-           "SmellMedium",
+           "ColourMedium",
            "SmellHigh",
-           "DeadwoodMedium",
-           "DeadwoodHigh")
+           "SmellMedium",
+           "SoundHigh",
+           "SoundMedium",
+           "DeadwoodHigh",
+           "DeadwoodMedium"
+           )
 
 # ## Label X axis of ggplot boxplots
 # Labels <- c("Tax",
@@ -128,10 +129,10 @@ Names <- c("Tax",
 
 # ## New version
 Labels <- c("Tax",
-            "Colours:\n medium","Colours:\n high",
-            "Sounds:\n medium","Sounds:\n high",
-            "Smells:\n medium", "Smells:\n high",
-            "Deadwood:\ndecomposition\n medium","Deadwood:\ndecomposition\n high")
+            "Colours:\n high","Colours:\n medium",
+            "Smells:\n high", "Smells:\n medium",
+            "Sounds:\n high","Sounds:\n medium",
+            "Deadwood:\ndecomposition\n high","Deadwood:\ndecomposition\n medium")
 
 
 ## Label grouping variable
@@ -169,14 +170,14 @@ Summarizer <- function(Attribute) {
 ## Binds the results for each attribute; maybe we can loop through this.
 Summaries <- bind_rows(
   Summarizer("beta_Tax"),
-  Summarizer("b_Colour."),
   Summarizer("b_Colour2."),
-  Summarizer("b_Sound."),
-  Summarizer("b_Sound2."),
-  Summarizer("b_Smell."),
+  Summarizer("b_Colour."),
   Summarizer("b_Smell2."),
-  Summarizer("b_Deadwood."),
-  Summarizer("b_Deadwood2."))
+  Summarizer("b_Smell."),
+  Summarizer("b_Sound2."),
+  Summarizer("b_Sound."),
+  Summarizer("b_Deadwood2."),
+  Summarizer("b_Deadwood."))
 
 
 ## Bind the results with variable and MostRecentVisit ID for ease later
@@ -269,27 +270,31 @@ Figure2_VisitFrequency <- ggplot(NewerData_Pivoted, aes(
                    limits = Names) +
   theme_bw() +
   geom_hline(yintercept = 0) +
-  ylab("WTP (GBP) via local council tax, per household, per annum") +
+  ylab("Marginal WTP (GBP) in local council tax, per household, per annum") +
   scale_y_continuous(limits = c(-10, 20)
                      , breaks = seq(-10, 20, 5)) +
   scale_fill_brewer(
-    name = "Visit Frequency",
+    name = "Visit\nFrequency",
     type = "seq",
     label = LegendLabels,
     guide = guide_legend(reverse = FALSE)
   ) +
   theme(
     legend.position = "bottom",
+    legend.text = element_text(size = 10,
+                               colour = "black",
+                               family = "serif"),
     legend.background = element_blank(),
-    legend.box.background = element_rect(colour = "black"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_blank(),
     panel.grid.minor.y = element_blank(),
     axis.text.x = element_text(size = 10,
-                               colour = "black"), ## Change text to be clearer for reader
+                               colour = "black",
+                               family = "serif"), ## Change text to be clearer for reader
     axis.text.y = element_text(size = 10,
-                               colour = "black")
+                               colour = "black",
+                               family = "serif")
   ) +
   coord_flip()
 
