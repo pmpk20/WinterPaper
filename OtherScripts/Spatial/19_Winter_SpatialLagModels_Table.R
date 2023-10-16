@@ -78,7 +78,7 @@ rm(list=ls())
 
 
 # **********************************************************************
-#### Step One: Read in data frame with all respondents ####
+#### Section 1: Import ####
 # **********************************************************************
 
 
@@ -105,7 +105,7 @@ Data_Winter <- Data
 
 
   # **********************************************************************
-# Section 2: Define Nearest Neighbours ####
+# Section 2: Nearest Neighbours ####
 ## I actually redefine these later but this section is a warning -
 ## if this doesn't work then the function in Section3 won't either.
 # **********************************************************************
@@ -137,7 +137,7 @@ KNN_Weights <- nb2listw(KNN_ToNBs, glist = Distances_Inverse)
 
 
 # **********************************************************************
-# Section 3: Define Summary functions ####
+# Section 3: Summary function ####
 # **********************************************************************
 
 
@@ -221,144 +221,84 @@ SpatialLagModel <- function(Model, WTP,Data, K) {
 
 
 # **********************************************************************
-# Section 4A: Spatial Lag Models for Colour ####
+# Section 4A: Define loop ####
 # **********************************************************************
 
 
+## Specify the loop of WTP characters to loop through
+Dependent <- c(
+  "Colour_WTP_Medium",
+  "Colour_WTP_High",
 
-# ## Spatial Lag Model for Colour medium estimate:
-Model <- as.formula("Colour_WTP_Medium~WoodlandsScore+
-                     MilesDistance+MostRecentVisit+DummyAge+
-                     Gender+IncomeDummy+ Impairment + GDHI + Density + Area_ha_median")
-SpatialLagModel(Model, "Colour_WTP_Medium", Data_Winter,K = 5)
+  "Smell_WTP_Medium",
+  "Smell_WTP_High",
 
+  "Sound_WTP_Medium",
+  "Sound_WTP_High",
 
-
-# ## Spatial Lag Model for Colour high estimate:
-Model <- as.formula("Colour_WTP_High~WoodlandsScore+
-                     MilesDistance+MostRecentVisit+DummyAge+
-                     Gender+IncomeDummy+ Impairment + GDHI + Density + Area_ha_median
-                     ")
-SpatialLagModel(Model, "Colour_WTP_High", Data_Winter,K = 5)
-
-
-# **********************************************************************
-# Section 4B: Spatial Lag Models for Smell ####
-# **********************************************************************
+  "Deadwood_WTP_Medium",
+  "Deadwood_WTP_High"
+)
 
 
-# ## Spatial Lag Model for Smell medium estimate:
-Model <- as.formula("Smell_WTP_Medium~WoodlandsScore+
-                     MilesDistance+MostRecentVisit+DummyAge+
-                     Gender+IncomeDummy+ Impairment + GDHI + Density + Area_ha_median
-                     ")
-SpatialLagModel(Model, "Smell_WTP_Medium", Data_Winter,K = 5)
-
-
-# ## Spatial Lag Model for Smell high estimate:
-Model <- as.formula("Smell_WTP_High~WoodlandsScore+
-                     MilesDistance+MostRecentVisit+DummyAge+
-                     Gender+IncomeDummy+ Impairment + GDHI + Density + Area_ha_median
-                     ")
-SpatialLagModel(Model, "Smell_WTP_High", Data_Winter,K = 5)
-
+## Independent variables to control for
+Independent <- c("Gender +
+                DummyAge +
+                EthnicityDummyWhite +
+                IncomeDummy +
+                Urbanicity +
+                Charity +
+                Country +
+                MilesDistance +
+                MostRecentVisit +
+                WoodlandsScore +
+                Impairment +
+                Area_ha_median +
+                GDHI + Density"
+)
 
 
 # **********************************************************************
-# Section 4C: Spatial Lag Models for Sound ####
+# Section 4B: Run loop ####
 # **********************************************************************
 
 
+## Reformulate updates the model object
+## we update the LHS for different attributes WTP
+## then pipe that into SpatialLagModel()
+for (i in 1:length(Dependent)) {
 
-# ## Spatial Lag Model for Sound medium estimate:
-Model <- as.formula("Sound_WTP_Medium~WoodlandsScore+
-                     MilesDistance+MostRecentVisit+DummyAge+
-                     Gender+IncomeDummy+ Impairment + GDHI + Density + Area_ha_median
-                     ")
-SpatialLagModel(Model, "Sound_WTP_Medium", Data_Winter,K = 5)
+  reformulate(termlabels = Independent,
+              response = Dependent[i]) %>% SpatialLagModel(Dependent[i] %>% as.character(),
+                                                           Data_Winter,
+                                                           K = 5)
 
 
-# ## Spatial Lag Model for Sound high estimate:
-Model <- as.formula("Sound_WTP_High~WoodlandsScore+
-                     MilesDistance+MostRecentVisit+DummyAge+
-                     Gender+IncomeDummy+ Impairment + GDHI + Density + Area_ha_median
-                     ")
-SpatialLagModel(Model, "Sound_WTP_High", Data_Winter,K = 5)
+}
 
 
 # **********************************************************************
-# Section 4D: Spatial Lag Models for Decomposition ####
+#### Section 5: Loop in outputs ####
 # **********************************************************************
-
-
-# ## Spatial Lag Model for Decomposition medium estimate:
-Model <- as.formula("Deadwood_WTP_Medium~WoodlandsScore+
-                     MilesDistance+MostRecentVisit+DummyAge+
-                     Gender+IncomeDummy+ Impairment + GDHI + Density + Area_ha_median
-                     ")
-SpatialLagModel(Model, "Deadwood_WTP_Medium", Data_Winter,K = 5)
-
-
-# ## Spatial Lag Model for Decomposition high estimate:
-Model <- as.formula("Deadwood_WTP_High~WoodlandsScore+
-                     MilesDistance+MostRecentVisit+DummyAge+
-                     Gender+IncomeDummy+ Impairment + GDHI + Density + Area_ha_median
-                     ")
-SpatialLagModel(Model, "Deadwood_WTP_High", Data_Winter,K = 5)
-
-
-
-# **********************************************************************
-#### Section 5: Read in outputs ####
-## In two parts: Models then results
-# **********************************************************************
-
-
 
 
 ### Models themselves: ----------------------------------------------------------
-## Colour medium and high:
-ColourWTPModel <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Colour_WTP_Medium_K5_Model.rds"))
-ColourWTP2Model <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Colour_WTP_High_K5_Model.rds"))
+for (i in 1:length(Dependent)) {
 
+assign(x = paste0(Dependent[i], "_Model"),
+       value = here("OtherOutput/Spatial",
+                    paste0("SLM_Dummy_", Dependent[i], "_K5_Model.rds")) %>% readRDS())
 
-## Smell medium and high:
-SmellWTPModel <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Smell_WTP_Medium_K5_Model.rds"))
-SmellWTP2Model <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Smell_WTP_High_K5_Model.rds"))
+  }
 
+### Diagnostics themselves: ----------------------------------------------------------
+for (i in 1:length(Dependent)) {
 
-## Sound medium and high:
-SoundWTPModel <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Sound_WTP_Medium_K5_Model.rds"))
-SoundWTP2Model <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Sound_WTP_High_K5_Model.rds"))
+  assign(x = paste0(Dependent[i], "_Result"),
+         value = here("OtherOutput/Spatial",
+                      paste0("SLM_Dummy_", Dependent[i], "_K5_Result.rds")) %>% readRDS())
 
-
-## Deadwood medium and high:
-DecompositionWTPModel <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Deadwood_WTP_Medium_K5_Model.rds"))
-DecompositionWTP2Model <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Deadwood_WTP_High_K5_Model.rds"))
-
-
-
-### Diagnostic results: ----------------------------------------------------------
-## Colour medium and high:
-ColourWTPResult <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Colour_WTP_Medium_K5_Result.rds"))
-ColourWTP2Result <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Colour_WTP_High_K5_Result.rds"))
-
-
-## Smell medium and high:
-SmellWTPResult <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Smell_WTP_Medium_K5_Result.rds"))
-SmellWTP2Result <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Smell_WTP_High_K5_Result.rds"))
-
-
-## Sound medium and high:
-SoundWTPResult <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Sound_WTP_Medium_K5_Result.rds"))
-SoundWTP2Result <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Sound_WTP_High_K5_Result.rds"))
-
-
-## Deadwood medium and high:
-DecompositionWTPResult <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Deadwood_WTP_Medium_K5_Result.rds"))
-DecompositionWTP2Result <- readRDS(here("OtherOutput/Spatial","SLM_Dummy_Deadwood_WTP_High_K5_Result.rds"))
-
-
+}
 
 
 # **********************************************************************
@@ -372,38 +312,41 @@ ModelOutput <- function(Model,Result) {
   rbind(
     data.frame(
       "Value" = rownames(Estimates$Coef),
-      "Data" = paste(ifelse(
+      "Data" = paste0(ifelse(
         Estimates$Coef[, 4] < 0.01,
-        paste0(round(Estimates$Coef[, 1], 3), "***"),
+        paste0(Estimates$Coef[, 1] %>% round(3) %>% sprintf("%.3f", .), "***"),
         ifelse(
           Estimates$Coef[, 4] < 0.05,
-          paste0(round(Estimates$Coef[, 1], 3), "**"),
+          paste0(Estimates$Coef[, 1] %>% round(3) %>% sprintf("%.3f", .), "**"),
           ifelse(
             Estimates$Coef[, 4] < 0.1,
-            paste0(round(Estimates$Coef[, 1], 3), "*"),
-            round(Estimates$Coef[, 4], 3)))),
-        "(",round(Estimates$Coef[,3],3),")")),
+            paste0(Estimates$Coef[, 1] %>% round(3) %>% sprintf("%.3f", .), "*"),
+            Estimates$Coef[, 4] %>% round(3) %>% sprintf("%.3f", .)))),
+        " (",Estimates$Coef[, 3] %>% round(3) %>% sprintf("%.3f", .),")")),
 
-    data.frame("Value"=c("Stat"),"Data"=round(Result$LMlag$statistic,3)),
+    data.frame("Value" = c("Stat"),
+               "Data" = Result$LMlag$statistic %>% round(3) %>% sprintf("%.3f", .)),
 
-    data.frame("Value"=c("LR"),
-               "Data"=paste(ifelse(
+    data.frame("Value" = c("LR"),
+               "Data" = paste(ifelse(
                  Estimates$LR1$p.value < 0.01,
-                 paste0(round(Estimates$rho, 3), "***"),
+                 paste0(Estimates$rho %>% round(3) %>% sprintf("%.3f", .), "***"),
                  ifelse(
                    Estimates$LR1$p.value < 0.05,
-                   paste0(round(Estimates$rho, 3), "**"),
+                   paste0(Estimates$rho %>% round(3) %>% sprintf("%.3f", .), "**"),
                    ifelse(
                      Estimates$LR1$p.value < 0.1,
-                     paste0(round(Estimates$rho, 3), "*"),
-                     round(Estimates$LR1$p.value, 3)
+                     paste0(Estimates$rho %>% round(3) %>% sprintf("%.3f", .), "*"),
+                     Estimates$LR1$p.value %>% round(3) %>% sprintf("%.3f", .)
                    )
                  )
                ),
-               paste0("(", round(Estimates$rho.se, 3),")")))[1,],
+               paste0("(",
+                      Estimates$rho.se %>% round(3) %>% sprintf("%.3f", .),
+                      ")")))[1,],
 
-    data.frame("Value"=c("logLik"),"Data"=round(logLik(Estimates),3)),
-    data.frame("Value"=c("AIC"),"Data"=round(AIC(Estimates),3)))
+    data.frame("Value" = c("logLik"), "Data" = logLik(Estimates) %>% round(3) %>% sprintf("%.3f", .)),
+    data.frame("Value" = c("AIC"), "Data" = AIC(Estimates) %>% round(3) %>% sprintf("%.3f", .)))
 }
 
 
@@ -414,21 +357,19 @@ ModelOutput <- function(Model,Result) {
 
 ## Maybe a little ugly but outputs table in one go
 Table7 <- cbind(
-  "Attribute" = ModelOutput(ColourWTPModel, ColourWTPResult)[, 1],
-  "Colour: Medium" = ModelOutput(ColourWTPModel, ColourWTPResult)[, 2],
-  "Colour: High" = ModelOutput(ColourWTP2Model, ColourWTP2Result)[, 2],
+  "Attribute" = ModelOutput(Colour_WTP_Medium_Model, Colour_WTP_Medium_Result)[, 1],
+  "Colour: Medium" = ModelOutput(Colour_WTP_Medium_Model, Colour_WTP_Medium_Result)[, 2],
+  "Colour: High" = ModelOutput(Colour_WTP_High_Model, Colour_WTP_High_Result)[, 2],
 
-  "Smell: Medium" = ModelOutput(SmellWTPModel, SmellWTPResult)[, 2],
-  "Smell: High" = ModelOutput(SmellWTP2Model, SmellWTP2Result)[, 2],
+  "Smell: Medium" = ModelOutput(Smell_WTP_Medium_Model, Smell_WTP_Medium_Result)[, 2],
+  "Smell: High" = ModelOutput(Smell_WTP_High_Model, Smell_WTP_High_Result)[, 2],
 
-  "Sound: Medium" = ModelOutput(SoundWTPModel, SoundWTPResult)[, 2],
-  "Sound: High" = ModelOutput(SoundWTP2Model, SoundWTP2Result)[, 2],
+  "Sound: Medium" = ModelOutput(Sound_WTP_Medium_Model, Sound_WTP_Medium_Result)[, 2],
+  "Sound: High" = ModelOutput(Sound_WTP_High_Model, Sound_WTP_High_Result)[, 2],
 
-  "Decomposition: Medium" = ModelOutput(DecompositionWTPModel, DecompositionWTPResult)[, 2],
-  "Decomposition: High" = ModelOutput(DecompositionWTP2Model, DecompositionWTP2Result)[, 2]
-) %>%
-  noquote()
-
+  "Decomposition: Medium" = ModelOutput(Deadwood_WTP_Medium_Model, Deadwood_WTP_Medium_Result)[, 2],
+  "Decomposition: High" = ModelOutput(Deadwood_WTP_High_Model, Deadwood_WTP_High_Result)[, 2]
+)
 
 # **********************************************************************
 #### Section 7: Export ####
