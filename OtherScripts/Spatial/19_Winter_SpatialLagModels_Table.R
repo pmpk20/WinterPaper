@@ -1,10 +1,11 @@
 #### RELATE WP5: Winter Spatial Lag Models  ###############
 # Function: Calculate and output spatial lag models for each attribute level
 # Script author: Peter King (p.m.king@kent.ac.uk)
-# Last Edited: 10/05/2023
-# Changes: Tidying up
-# Note: There's probably a way to use loops to make the call to SpatialLagModel()
-## run faster and make the inputs less repetitive.
+# Last Edited: 16/10/2023
+# Changes:
+## - wrote loops for calling SLM()
+## - and reading in the outputs
+## - used sprintf() to round outputs
 
 
 # **********************************************************************

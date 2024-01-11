@@ -1,7 +1,8 @@
 #### RELATE WP5: Table 2 MXL Model Outputs  ###############
 # Script author: Peter King (p.m.king@kent.ac.uk)
-# Last Edited: 01/02/2023
-# Trying to output the models here
+# Last Edited: 13/10/2023
+# Changes:
+## - Format for mean and SD columns
 
 
  # *************************************************************************
@@ -69,18 +70,16 @@ ModelOutputs <- function(Estimates) {
              "Estimate" =  paste(
                ifelse(
                  Estimates$Rob.p.val.0. < 0.01,
-                 paste0(round(Estimates$Estimate,  3),  "***"),
+                 paste0(Estimates$Estimate %>% round(3) %>% sprintf("%.3f", .),  "***"),
                  ifelse(
                    Estimates$Rob.p.val.0. < 0.05,
-                   paste0(round(Estimates$Estimate,  3),  "**"),
+                   paste0(Estimates$Estimate %>% round(3) %>% sprintf("%.3f", .),  "**"),
                    ifelse(
                      Estimates$Rob.p.val.0. < 0.1,
-                     paste0(round(Estimates$Estimate,  3),  "*"),
-                     round(Estimates$Estimate,  3)
-                   )
-                 )
-               ),
-               paste0("(", round(Estimates$Rob.std.err.,  3), ")")
+                     paste0(Estimates$Estimate %>% round(3) %>% sprintf("%.3f", .),  "*"),
+                     paste0(Estimates$Estimate %>% round(3) %>% sprintf("%.3f", .)))
+                 )),
+               paste0("(", Estimates$Rob.std.err %>% round(3) %>% sprintf("%.3f", .), ")")
              ))
 }
 
@@ -96,27 +95,35 @@ rownames(ModelOne_Output) <- ModelOne_Output$Variable
 
 
 ## Stitch rows together in the order we want
-ModelOne_Table <- bind_rows(
-  ModelOne_Output["asc_C", 1:2],
-  ModelOne_Output["mu_Tax", 1:2],
-  ModelOne_Output["mu_Colour", 1:2],
-  ModelOne_Output["mu_Colour2", 1:2],
-  ModelOne_Output["mu_Smell", 1:2],
-  ModelOne_Output["mu_Smell2", 1:2],
-  ModelOne_Output["mu_Sound", 1:2],
-  ModelOne_Output["mu_Sound2", 1:2],
-  ModelOne_Output["mu_Deadwood", 1:2],
-  ModelOne_Output["mu_Deadwood2", 1:2],
-  ModelOne_Output["sig_Tax", 1:2],
-  ModelOne_Output["sig_Colour", 1:2],
-  ModelOne_Output["sig_Colour2", 1:2],
-  ModelOne_Output["sig_Smell", 1:2],
-  ModelOne_Output["sig_Smell2", 1:2],
-  ModelOne_Output["sig_Sound", 1:2],
-  ModelOne_Output["sig_Sound2", 1:2],
-  ModelOne_Output["sig_Deadwood", 1:2],
-  ModelOne_Output["sig_Deadwood2", 1:2]
-)
+ModelOne_Table <-
+  bind_cols(
+    "Mean" =
+      bind_rows(
+        ModelOne_Output["asc_C", 1:2],
+        ModelOne_Output["mu_Tax", 1:2],
+        ModelOne_Output["mu_Colour", 1:2],
+        ModelOne_Output["mu_Colour2", 1:2],
+        ModelOne_Output["mu_Smell", 1:2],
+        ModelOne_Output["mu_Smell2", 1:2],
+        ModelOne_Output["mu_Sound", 1:2],
+        ModelOne_Output["mu_Sound2", 1:2],
+        ModelOne_Output["mu_Deadwood", 1:2],
+        ModelOne_Output["mu_Deadwood2", 1:2]
+      ),
+    "Standard Deviation" =
+      bind_rows(
+        ModelOne_Output["asc_C", 1:2],
+        ModelOne_Output["sig_Tax", 1:2],
+        ModelOne_Output["sig_Colour", 1:2],
+        ModelOne_Output["sig_Colour2", 1:2],
+        ModelOne_Output["sig_Smell", 1:2],
+        ModelOne_Output["sig_Smell2", 1:2],
+        ModelOne_Output["sig_Sound", 1:2],
+        ModelOne_Output["sig_Sound2", 1:2],
+        ModelOne_Output["sig_Deadwood", 1:2],
+        ModelOne_Output["sig_Deadwood2", 1:2]
+      )
+  )
 
  # *************************************************************************
 #### Section 3B: Output Model Two part of the table ####
@@ -131,27 +138,35 @@ rownames(ModelTwo_Output) <- ModelTwo_Output$Variable
 
 
 ## Stitch rows together in the order we want
-ModelTwo_Table <- bind_rows(
-  ModelTwo_Output["asc_C", 1:2],
-  ModelTwo_Output["mu_Tax", 1:2],
-  ModelTwo_Output["mu_Colour", 1:2],
-  ModelTwo_Output["mu_Colour2", 1:2],
-  ModelTwo_Output["mu_Smell", 1:2],
-  ModelTwo_Output["mu_Smell2", 1:2],
-  ModelTwo_Output["mu_Sound", 1:2],
-  ModelTwo_Output["mu_Sound2", 1:2],
-  ModelTwo_Output["mu_Deadwood", 1:2],
-  ModelTwo_Output["mu_Deadwood2", 1:2],
-  ModelTwo_Output["sig_Tax", 1:2],
-  ModelTwo_Output["sig_Colour", 1:2],
-  ModelTwo_Output["sig_Colour2", 1:2],
-  ModelTwo_Output["sig_Smell", 1:2],
-  ModelTwo_Output["sig_Smell2", 1:2],
-  ModelTwo_Output["sig_Sound", 1:2],
-  ModelTwo_Output["sig_Sound2", 1:2],
-  ModelTwo_Output["sig_Deadwood", 1:2],
-  ModelTwo_Output["sig_Deadwood2", 1:2]
-)
+ModelTwo_Table <-
+  bind_cols(
+    "Mean" =
+      bind_rows(
+        ModelTwo_Output["asc_C", 1:2],
+        ModelTwo_Output["mu_Tax", 1:2],
+        ModelTwo_Output["mu_Colour", 1:2],
+        ModelTwo_Output["mu_Colour2", 1:2],
+        ModelTwo_Output["mu_Smell", 1:2],
+        ModelTwo_Output["mu_Smell2", 1:2],
+        ModelTwo_Output["mu_Sound", 1:2],
+        ModelTwo_Output["mu_Sound2", 1:2],
+        ModelTwo_Output["mu_Deadwood", 1:2],
+        ModelTwo_Output["mu_Deadwood2", 1:2]
+      ),
+    "Standard Deviation" =
+      bind_rows(
+        ModelTwo_Output["asc_C", 1:2],
+        ModelTwo_Output["sig_Tax", 1:2],
+        ModelTwo_Output["sig_Colour", 1:2],
+        ModelTwo_Output["sig_Colour2", 1:2],
+        ModelTwo_Output["sig_Smell", 1:2],
+        ModelTwo_Output["sig_Smell2", 1:2],
+        ModelTwo_Output["sig_Sound", 1:2],
+        ModelTwo_Output["sig_Sound2", 1:2],
+        ModelTwo_Output["sig_Deadwood", 1:2],
+        ModelTwo_Output["sig_Deadwood2", 1:2]
+      )
+  )
 
 
  # *************************************************************************
@@ -161,8 +176,11 @@ ModelTwo_Table <- bind_rows(
 
 
 Table2 <- bind_cols("Variable" = ModelOne_Table[, 1],
-                    "ModelOne" = ModelOne_Table[, 2],
-                    "ModelTwo" = ModelTwo_Table[, 2])
+                    "Means" = ModelOne_Table[, 2],
+                    "SD" = ModelOne_Table[, 4],
+                    "Means" = ModelTwo_Table[, 2],
+                    "SD" = ModelTwo_Table[, 4])
+
 
 
 
