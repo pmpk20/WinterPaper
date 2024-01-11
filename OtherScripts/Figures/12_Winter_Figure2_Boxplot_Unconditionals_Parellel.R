@@ -1,9 +1,11 @@
 #### RELATE Winter Paper ####
 ## Function: Literally plots one figure: distributions of each attributes' WTP
 ## Author: Dr Peter King (p.m.king@kent.ac.uk)
-## Last change: 13/06/2023
-## Change: Added option to import data in. Fixed label formatting for Zoe.
-## TODO: Trying to use foreach() to speed up the loop
+## Last change: 20/10/2023
+## Changes:
+## - Added option to import data in. Fixed label formatting for Zoe.
+## - Changed y axis label
+## - rewrote Summarizer() to select() once not five times
 
 
 # ******************************
@@ -96,12 +98,14 @@ WTP <- WTP[WTP %>% select(-ends_with(c(".ID", ".post.sd"))) %>% colnames()] %>% 
 ## This function selects the variable from WTP and calculates summary stats from it.
 Summarizer <- function(i) {
 
+  Test <- WTP %>% select(starts_with(i))
+
   bind_cols(
-    "y0" =  WTP %>% select(starts_with(i)) %>% summarise_all(quantile, c(0.05)) %>% as.matrix() %>% rowmeans(),
-    "y25" = WTP %>% select(starts_with(i)) %>% summarise_all(quantile, c(0.25)) %>% as.matrix() %>% rowmeans(),
-    "y50" = WTP %>% select(starts_with(i)) %>% summarise_all(median) %>% as.matrix() %>% rowmeans(),
-    "y75" = WTP %>% select(starts_with(i)) %>% summarise_all(quantile, c(0.75)) %>% as.matrix() %>% rowmeans() ,
-    "y100" = WTP %>% select(starts_with(i)) %>% summarise_all(quantile, c(0.95)) %>% as.matrix() %>% rowmeans()) %>% data.frame()
+    "y0" = Test %>% summarise_all(quantile, c(0.05)) %>% as.matrix() %>% rowmeans(),
+    "y25" = Test %>% summarise_all(quantile, c(0.25)) %>% as.matrix() %>% rowmeans(),
+    "y50" = Test %>% summarise_all(median) %>% as.matrix() %>% rowmeans(),
+    "y75" = Test %>% summarise_all(quantile, c(0.75)) %>% as.matrix() %>% rowmeans() ,
+    "y100" = Test %>% summarise_all(quantile, c(0.95)) %>% as.matrix() %>% rowmeans()) %>% data.frame()
 
 }
 
@@ -213,6 +217,8 @@ Colours <- c(
   "#F7FBFF"
 )
 
+## Update all text sizes here for consistency
+TextSize <- 12
 
 ## Direct import here
 # NewerData <- here("OtherOutput", "Figure2_PlotData.csv") %>% fread() %>% data.frame()
@@ -238,14 +244,13 @@ Figure2 <-
     ),
     stat = "identity" ## means you can specify moments as in AES()
   ) +
-  scale_x_discrete(name = "Attribute",
+  scale_x_discrete(name = "Attribute and level",
                    label = rev(Labels),
                    limits = Names) + ## Using rev() to make the order I want
   theme_bw() + ## Just looks nicer imo
   geom_hline(yintercept = 0) + ## I like the zero line for ease of comparison
   ylab("Marginal WTP (GBP) in local council tax, per household, per annum") +
-  scale_y_continuous(limits = c(-10, 20)
-                     , breaks = seq(-10, 20, 5)) +
+  scale_y_continuous(breaks = seq(-10, 20, 5)) +
   scale_fill_manual(name = "Attributes",
                     label = Labels,
                     values = Colours) +
@@ -257,14 +262,20 @@ Figure2 <-
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_blank(),
     panel.grid.minor.y = element_blank(),
-    axis.text.x = element_text(size = 10,
+    axis.text.x = element_text(size = TextSize,
                                colour = "black",
                                family = "serif"), ## Change text to be clearer for reader
-    axis.text.y = element_text(size = 10,
+    axis.text.y = element_text(size = TextSize,
                                colour = "black",
-                               family = "serif")
+                               family = "serif"),
+    axis.title.y = element_text(size = TextSize,
+                               colour = "black",
+                               family = "serif"),
+    axis.title.x = element_text(size = TextSize,
+                                colour = "black",
+                                family = "serif")
   ) +
-  coord_flip()
+  coord_flip(ylim = c(-10, 20))
 
 
 # **********************************************************

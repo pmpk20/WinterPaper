@@ -55,7 +55,6 @@
 
 # install.packages("data.table",repos="http://cran.us.r-project.org")
 # options(scipen=90)
-library(apollo)
 library(tidyverse)
 library(dplyr)
 library(magrittr)
@@ -108,16 +107,17 @@ WinterWTPCombined <- cbind(Winter, WTP)
 
 
 ## So I'll use these later to name rows
-Names <- c("Tax",
-           "ColourHigh",
-           "ColourMedium",
-           "SmellHigh",
-           "SmellMedium",
-           "SoundHigh",
-           "SoundMedium",
-           "DeadwoodHigh",
-           "DeadwoodMedium"
-           )
+Names <- c(
+  "Tax",
+  "ColourHigh",
+  "ColourMedium",
+  "SmellHigh",
+  "SmellMedium",
+  "SoundHigh",
+  "SoundMedium",
+  "DeadwoodHigh",
+  "DeadwoodMedium"
+)
 
 # ## Label X axis of ggplot boxplots
 # Labels <- c("Tax",
@@ -128,15 +128,20 @@ Names <- c("Tax",
 
 
 # ## New version
-Labels <- c("Tax",
-            "Colours:\n high","Colours:\n medium",
-            "Smells:\n high", "Smells:\n medium",
-            "Sounds:\n high","Sounds:\n medium",
-            "Deadwood:\ndecomposition\n high","Deadwood:\ndecomposition\n medium")
-
+Labels <- c(
+  "Tax",
+  "Colours:\n high",
+  "Colours:\n medium",
+  "Smells:\n high",
+  "Smells:\n medium",
+  "Sounds:\n high",
+  "Sounds:\n medium",
+  "Deadwood:\ndecomposition\n high",
+  "Deadwood:\ndecomposition\n medium"
+)
 
 ## Label grouping variable
-VisitFrequency <- c(0,1,2,3,4,5)
+VisitFrequency <- c(0, 1, 2, 3, 4, 5)
 
 
 LegendLabels <- c(
@@ -148,6 +153,24 @@ LegendLabels <- c(
   paste0("Every day\n(N = " ,Winter %>% filter(MostRecentVisit==5) %>% nrow(),")"))
 
 
+## I got these from RColorBrewer but adding specifically here to
+### (a) see the colours in the console with new RStudio,
+### (b) make scale_fill_manual() easier
+Colours <- c(
+  "#C6DBEF",
+  "#C6DBEF",
+  "#08306B",
+  "#08306B",
+  "#6BAED6",
+  "#6BAED6",
+  "#2171B5",
+  "#2171B5",
+  "#F7FBFF"
+)
+
+## Update all text sizes here for consistency
+TextSize <- 12
+
 # ***************************************************************************
 #### Section 2B or most likely not 2B: Trying to make the tails longer by using the entire distribution ####
 # ***************************************************************************
@@ -157,12 +180,19 @@ LegendLabels <- c(
 ### So: rowmeans() not rowMeans() is actually insanely fast if you can be bothered to transform to and from matrices.
 Summarizer <- function(Attribute) {
 
+
+  Test <-
+    WinterWTPCombined %>%
+    select(starts_with(Attribute), "MostRecentVisit") %>%
+    group_by(MostRecentVisit)
+
+
   bind_cols(
-    "y0"=  WinterWTPCombined %>% select(starts_with(Attribute),"MostRecentVisit")  %>% group_by(MostRecentVisit) %>% summarise_all(quantile,c(0.05)) %>% as.matrix() %>% rowmeans(),
-    "y25"= WinterWTPCombined %>% select(starts_with(Attribute),"MostRecentVisit")  %>% group_by(MostRecentVisit) %>% summarise_all(quantile,c(0.25)) %>% as.matrix() %>% rowmeans(),
-    "y50"= WinterWTPCombined %>% select(starts_with(Attribute),"MostRecentVisit")  %>% group_by(MostRecentVisit) %>% summarise_all(median) %>% as.matrix() %>% rowmeans(),
-    "y75"= WinterWTPCombined %>% select(starts_with(Attribute),"MostRecentVisit")  %>% group_by(MostRecentVisit) %>% summarise_all(quantile,c(0.75)) %>% as.matrix() %>% rowmeans() ,
-    "y100"=WinterWTPCombined %>% select(starts_with(Attribute),"MostRecentVisit")  %>% group_by(MostRecentVisit) %>% summarise_all(quantile,c(0.95)) %>% as.matrix() %>% rowmeans()) %>% data.frame()
+    "y0"=  Test %>% summarise_all(quantile,c(0.05)) %>% as.matrix() %>% rowmeans(),
+    "y25"= Test %>% summarise_all(quantile,c(0.25)) %>% as.matrix() %>% rowmeans(),
+    "y50"= Test %>% summarise_all(median) %>% as.matrix() %>% rowmeans(),
+    "y75"= Test %>% summarise_all(quantile,c(0.75)) %>% as.matrix() %>% rowmeans() ,
+    "y100"= Test %>% summarise_all(quantile,c(0.95)) %>% as.matrix() %>% rowmeans()) %>% data.frame()
 
 }
 
@@ -182,9 +212,10 @@ Summaries <- bind_rows(
 
 ## Bind the results with variable and MostRecentVisit ID for ease later
 NewerData <- bind_cols(
-  "variable"=rep(Names,each=6),
-  "MostRecentVisit"=rep(0:5,times=9),
-  Summaries)
+  "variable" = rep(Names, each = 6),
+  "MostRecentVisit" = rep(0:5, times = 9),
+  Summaries
+)
 
 
 ## Without explicitly telling GGPLOT the factor levels it will plot in a horrible order!
@@ -258,21 +289,21 @@ NewerData_Pivoted$variable <-
 
 
 ## Better way with working error bars!
-Figure2_VisitFrequency <- ggplot(NewerData_Pivoted, aes(
+Figure2_VisitFrequency <- ggplot(NewerData_Pivoted,
+                                 aes(
   x = rev(variable),
   y = value,
   fill = as.factor(MostRecentVisit)
 )) +
-  stat_boxplot(geom = "errorbar", width = 0.25, position = position_dodge(width = 0.75)) +
+  stat_boxplot(geom = "errorbar", width = 0.5, position = position_dodge(width = 0.75)) +
   geom_boxplot(outlier.shape = NA) +
-  scale_x_discrete(name = "Attribute",
+  scale_x_discrete(name = "Attribute and level",
                    label = rev(Labels),
                    limits = Names) +
   theme_bw() +
   geom_hline(yintercept = 0) +
   ylab("Marginal WTP (GBP) in local council tax, per household, per annum") +
-  scale_y_continuous(limits = c(-10, 20)
-                     , breaks = seq(-10, 20, 5)) +
+  scale_y_continuous(breaks = seq(-10, 20, 5)) +
   scale_fill_brewer(
     name = "Visit\nFrequency",
     type = "seq",
@@ -289,14 +320,23 @@ Figure2_VisitFrequency <- ggplot(NewerData_Pivoted, aes(
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_blank(),
     panel.grid.minor.y = element_blank(),
-    axis.text.x = element_text(size = 10,
+    legend.title = element_text(size = TextSize,
+                                colour = "black",
+                                family = "serif"),
+    axis.text.x = element_text(size = TextSize,
                                colour = "black",
                                family = "serif"), ## Change text to be clearer for reader
-    axis.text.y = element_text(size = 10,
+    axis.text.y = element_text(size = TextSize,
                                colour = "black",
-                               family = "serif")
+                               family = "serif"),
+    axis.title.y = element_text(size = TextSize,
+                                colour = "black",
+                                family = "serif"),
+    axis.title.x = element_text(size = TextSize,
+                                colour = "black",
+                                family = "serif")
   ) +
-  coord_flip()
+  coord_flip(ylim = c(-10, 20))
 
 
 # ***************************************************************************
@@ -313,8 +353,8 @@ ggsave(
     "/OtherOutput/Figures/",
     "Figure2_VisitFrequency.png"
   ),
-  width = 20,
-  height = 15,
+  width = 25,
+  height = 20,
   units = "cm",
   dpi = 500
 )
