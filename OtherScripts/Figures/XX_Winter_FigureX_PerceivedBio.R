@@ -1,8 +1,11 @@
-#### RELATE WP5: Plot WTP by visit frequency  ###############
-# Script author: Peter King (p.king1@leeds.ac.uk)
-# Last Edited: 25/02/2024
-# Change: major change to use conditionals instead of unconditionals
-## - using correlated model
+#### RELATE WP5: Recovering unconditionals  ###############
+# Script author: Peter King (p.m.king@kent.ac.uk)
+# Last Edited: 03/02/2023
+# Change: Removing figure minor y lines and adding pound sign.
+# Description: So here we take all the unconditionals and use them to specify the
+## mean, max, min, and quantiles for the distribution of each attribute in each
+## VisitFrequency. So unconditionals > moments > summary > create plot.
+
 
 # ***************************************************************************
 #### Section 0: Setup and estimate models ####
@@ -67,50 +70,14 @@ library(Rfast)
 
 
 
-
-
-## **************************
-## Import Survey Data
-## **************************
-## Use step three and add unconditionals rather than use Step4.csv with conditionals
-here()
+## Step4 has the right number of rows
 Winter <- here("OtherData","Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
-## For various reasons I'm dropping the existing WTP to re-add it here
-## This makes fixing the rest of the code easier
-Winter <- Winter[,1:217]
 
 ## Truncate to have same number of rows as in the models
 Winter <- Winter[!is.na(Winter$MilesDistance), ] ## Drop missing distances
 Winter <- Winter[!is.na(Winter$Overall), ] ## Drop respondents not completing BIOWELL
 
 
-
-## **************************
-## Import WTP
-## **************************
-
-## This is the WTP from the model itself:
-WTP <- here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_ConWTP.csv") %>% fread() %>% data.frame()
-WTP <- here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_AllCorrelations_ConWTP.csv") %>% fread() %>% data.frame()
-
-## If the conditionals are imported then run this to recover only useful variables
-WTP <- WTP[WTP %>% select(-ends_with(c(".ID", ".post.sd"))) %>% colnames()] %>% data.frame()
-
-
-
-WTP <-
-  bind_cols(
-    "ColourHigh" = WTP$b_Colour2.post.mean,
-    "ColourMedium" = WTP$b_Colour.post.mean,
-    "SmellHigh" = WTP$b_Smell2.post.mean,
-    "SmellMedium" = WTP$b_Smell.post.mean,
-    "SoundHigh" = WTP$b_Sound2.post.mean,
-    "SoundMedium" = WTP$b_Sound.post.mean,
-    "DeadwoodHigh" = WTP$b_Deadwood2.post.mean,
-    "DeadwoodMedium" = WTP$b_Deadwood.post.mean,
-
-    "MostRecentVisit" = Winter$MostRecentVisit
-  )
 
 # ***************************************************************************
 #### Section 2: Define useful variables ####
@@ -119,15 +86,11 @@ WTP <-
 
 ## So I'll use these later to name rows
 Names <- c(
-  "Tax",
-  "ColourHigh",
-  "ColourMedium",
-  "SmellHigh",
-  "SmellMedium",
-  "SoundHigh",
-  "SoundMedium",
-  "DeadwoodHigh",
-  "DeadwoodMedium"
+  "WoodlandsColours",
+  "WoodlandsSmells",
+  "WoodlandsSounds",
+  "WoodlandsTree",
+  "WoodlandsScore"
 )
 
 # ## Label X axis of ggplot boxplots
@@ -140,28 +103,12 @@ Names <- c(
 
 # ## New version
 Labels <- c(
-  "Tax",
-  "Colours:\n high",
-  "Colours:\n medium",
-  "Smells:\n high",
-  "Smells:\n medium",
-  "Sounds:\n high",
-  "Sounds:\n medium",
-  "Deadwood:\ndecomposition\n high",
-  "Deadwood:\ndecomposition\n medium"
+  "Colours",
+  "Smells",
+  "Sounds",
+  "Deadwood\ndecomposition",
+  "Overall\nmeasure"
 )
-
-## Label grouping variable
-VisitFrequency <- c(0, 1, 2, 3, 4, 5)
-
-
-LegendLabels <- c(
-  paste0("I do not visit\n(N = ",Winter %>% filter(MostRecentVisit==0) %>% nrow(),")"),
-  paste0("Once or twice a season\n(N = " ,Winter %>% filter(MostRecentVisit==1) %>% nrow(),")"),
-  paste0("Once or twice a month\n(N = ",Winter %>% filter(MostRecentVisit==2) %>% nrow(),")"),
-  paste0("Once a week\n(N = " ,Winter %>% filter(MostRecentVisit==3) %>% nrow(),")"),
-  paste0("Several times a week\n(N = " ,Winter %>% filter(MostRecentVisit==4) %>% nrow(),")"),
-  paste0("Every day\n(N = " ,Winter %>% filter(MostRecentVisit==5) %>% nrow(),")"))
 
 
 ## I got these from RColorBrewer but adding specifically here to
@@ -169,27 +116,24 @@ LegendLabels <- c(
 ### (b) make scale_fill_manual() easier
 Colours <- c(
   "#C6DBEF",
-  "#C6DBEF",
-  "#08306B",
   "#08306B",
   "#6BAED6",
-  "#6BAED6",
-  "#2171B5",
   "#2171B5",
   "#F7FBFF"
 )
 
 ## Update all text sizes here for consistency
 TextSize <- 12
+
+
 # ***************************************************************************
 #### Section 3: Create Data ####
 # ***************************************************************************
 
 
-PlotData <- WTP %>%
-  pivot_longer(1:8) %>%
-  mutate("YMIN" = quantile(value, c(0.025)),
-         "YMAX" = quantile(value, c(0.975)))
+PlotData <- Winter %>%
+  select(all_of(Names)) %>%
+  pivot_longer(cols = 1:5)
 
 ## THis is an important step for the correct plot order!
 PlotData$name <-
@@ -198,32 +142,30 @@ PlotData$name <-
 
 
 # ***************************************************************************
-#### Section 3: Create Plot ####
+#### Section 4: Create Plot ####
 # ***************************************************************************
 
 
-
-## Better way with working error bars!
-Figure2_VisitFrequency <- ggplot(PlotData,
-                                 aes(
-                                   x = value,
-                                   y = rev(name),
-                                   fill = MostRecentVisit %>% as.factor()
-                                 )) +
-  stat_boxplot(geom = "errorbar",
-               width = 0.5,
-               position = position_dodge(width = 0.75)) +
-  geom_boxplot(outlier.shape = NA) +
+FigureX_PerceivedBio <- ggplot(PlotData,
+                               aes(
+                                 x = value,
+                                 y = name,
+                                 fill = name,
+                                 group = name
+                               )) +
+  ggdist::stat_histinterval() +
+  scale_y_discrete(name = "Perceived biodiversity measure",
+                   label = Labels,
+                   limits = Names) +
   theme_bw() +
-  geom_vline(xintercept = 0, alpha = 0.5) +
-  scale_x_continuous(name = "Marginal WTP (GBP) in local council tax, per household, per annum",
-                     breaks = seq(-50, 50, 5)) +
-  scale_y_discrete(name = "Attribute and level", labels = rev(Labels)) +
+  geom_vline(xintercept = 50, alpha = 0.5) +
+  scale_x_continuous(name = "",
+                     breaks = seq(0, 100, 10)) +
   scale_fill_brewer(
-    name = "Visit\nFrequency",
+    name = "Perceived biodiversity",
     type = "seq",
-    label = LegendLabels,
-    guide = guide_legend(reverse = FALSE)
+    label = Labels,
+    guide = guide_legend(reverse = TRUE)
   ) +
   theme(
     legend.position = "bottom",
@@ -250,8 +192,7 @@ Figure2_VisitFrequency <- ggplot(PlotData,
     axis.title.x = element_text(size = TextSize,
                                 colour = "black",
                                 family = "serif")
-  ) +
-  coord_cartesian(xlim = c(-15, 30))
+  )
 
 
 # ***************************************************************************
@@ -261,12 +202,12 @@ Figure2_VisitFrequency <- ggplot(PlotData,
 
 ## Save with high DPI in the right place. I think png is the right format.
 ggsave(
-  Figure2_VisitFrequency,
+  FigureX_PerceivedBio,
   device = "png",
   filename = paste0(
     here(),
     "/OtherOutput/Figures/",
-    "Figure2_VisitFrequency.png"
+    "FigureX_PerceivedBio.png"
   ),
   width = 25,
   height = 20,
