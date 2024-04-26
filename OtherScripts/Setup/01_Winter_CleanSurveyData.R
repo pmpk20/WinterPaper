@@ -1,8 +1,10 @@
 #### RELATE WP5: Winter Paper Setting up data for analysis  ###############
 # Function: To clean the survey data into usable inputs to the choice models.
 # Author: Dr Peter King (p.m.king@kent.ac.uk)
-# Last Edited: 03/02/2023
 # Notes: very long cleaning file but works.
+# Last Edited: 23/01/2024
+# - add library(data.table)
+
 
 
 # **********************************************************************************
@@ -47,6 +49,7 @@ library(dplyr)
 library(geosphere)
 library(PostcodesioR)
 library(udunits2)
+library(data.table)
 
 
 ## Setting working directory
@@ -74,6 +77,12 @@ Winter <- data.frame(read_xlsx(here("OtherData","Winter_SurveyData.xlsx"),sheet 
 attach(Winter) ## just makes it easier to refer to variables.
 
 
+Exclude <- here("OtherData",
+                "ExcludeList.csv") %>%
+  fread() %>%
+  data.frame()
+
+
 ## Trim to only completed responses
 Winter <-
   Winter[Winter$Finished == "True", ] # Get only complete responses/
@@ -91,47 +100,76 @@ Winter$Season <- 0 ## Set to zero for later seasons
 
 # **********************************************************************************
 ## Start with BIOWELL responses first:
+## NOTE: ACTUAL BIOWELL SCORES HIDDEN IN THIS DATA
+## this is how you would use them if they were available
+## but instead skip this step
 # **********************************************************************************
+
 
 
 BioWell <-
   data.frame(Winter[c(52:136)]) ## Subset the winter data to only have biowell responses
-Factors2 <-
-  (fa(r = BioWell, 11, rotate = "none", fm = "pa")) ## Re-estimate with fewer factors
-Scores <-
-  data.frame(Factors2$scores) ## The scores are respondent-level values of each of the 11 factors
+# Factors2 <-
+#   (fa(r = BioWell, 11, rotate = "none", fm = "pa")) ## Re-estimate with fewer factors
+# Scores <-
+#   data.frame(Factors2$scores) ## The scores are respondent-level values of each of the 11 factors
+# Winter <-
+#   cbind(Winter, Scores) ## These are the factors you can cbind() to the data and include in models
+# # Winter <- Winter[!is.na(Winter$PA1),] ## Drop incomplete or missing data
+#
+#
+# ## This code calculates each respondents mean for each `stem` question (17 in total).
+# ## This is helpful to have one value per person per question which can then be used to calculate one `score` per person.
+# BioWellScores <-
+#   cbind(
+#     "Encountering.the.living.things" = BioWell %>% select(starts_with("Encountering.the.living.things")) %>% rowMeans(),
+#     "The.number.of.living.things" = BioWell %>% select(starts_with("The.number.of.living.things")) %>% rowMeans(),
+#     "The.variety.of.living.things" = BioWell %>% select(starts_with("The.variety.of.living.things")) %>% rowMeans(),
+#     "The.interactions.between.plants" = BioWell %>% select(starts_with("The.interactions.between.plants")) %>% rowMeans(),
+#     "The.living.processes" = BioWell %>% select(starts_with("The.living.processes")) %>% rowMeans(),
+#     "The.variety.of.sounds" = BioWell %>% select(starts_with("The.variety.of.sounds")) %>% rowMeans(),
+#     "The.distinctive.sounds" = BioWell %>% select(starts_with("The.distinctive.sounds")) %>% rowMeans(),
+#     "The.vivid.colours" = BioWell %>% select(starts_with("The.vivid.colours")) %>% rowMeans(),
+#     "The.variety.of.colours" = BioWell %>% select(starts_with("The.variety.of.colours")) %>% rowMeans(),
+#     "The.maturity.of.living.things" = BioWell %>% select(starts_with("The.maturity.of.living.things")) %>% rowMeans(),
+#     "The.variety.of.shapes" = BioWell %>% select(starts_with("The.variety.of.shapes")) %>% rowMeans(),
+#     "The.sponginess.of.living.things" = BioWell %>% select(starts_with("The.sponginess.of.living.things")) %>% rowMeans(),
+#     "The.variety.of.textures" = BioWell %>% select(starts_with("The.variety.of.textures")) %>% rowMeans(),
+#     "The.woody.smells" = BioWell %>% select(starts_with("The.woody.smells")) %>% rowMeans(),
+#     "The.variety.of.smells" = BioWell %>% select(starts_with("The.variety.of.smells")) %>% rowMeans(),
+#     "Changes.in.this.season" = BioWell %>% select(starts_with("Changes.in.this.season")) %>% rowMeans(),
+#     "The.presence.of.animals" = BioWell %>% select(starts_with("The.presence.of.animals")) %>% rowMeans()
+#   )
+#
+#
+# # BioWell_Everything <-cbind(BioWell,BioWellScores,"Overall"=rowSums(BioWellScores)/17)
+# Winter <-
+#   cbind(Winter, BioWellScores, "Overall" = rowSums(BioWellScores) / 17) ## Add a column to the Winter data with each persons mean biowell score.
+
+
+## Modified code to keep scripts running but hiding biowell
 Winter <-
-  cbind(Winter, Scores) ## These are the factors you can cbind() to the data and include in models
-# Winter <- Winter[!is.na(Winter$PA1),] ## Drop incomplete or missing data
+  cbind(Winter,
+        "PA1" = 0,
+        "PA2" = 0,
+        "PA3" = 0,
+        "PA4" = 0,
+        "PA5" = 0,
+        "PA6" = 0,
+        "PA7" = 0,
+        "PA8" = 0,
+        "PA9" = 0,
+        "PA10" = 0,
+        "PA11" = 0,
+        "Overall" = 0) ## Add a column to the Winter data with each persons mean biowell score.
 
 
-## This code calculates each respondents mean for each `stem` question (17 in total).
-## This is helpful to have one value per person per question which can then be used to calculate one `score` per person.
-BioWellScores <-
-  cbind(
-    "Encountering.the.living.things" = BioWell %>% select(starts_with("Encountering.the.living.things")) %>% rowMeans(),
-    "The.number.of.living.things" = BioWell %>% select(starts_with("The.number.of.living.things")) %>% rowMeans(),
-    "The.variety.of.living.things" = BioWell %>% select(starts_with("The.variety.of.living.things")) %>% rowMeans(),
-    "The.interactions.between.plants" = BioWell %>% select(starts_with("The.interactions.between.plants")) %>% rowMeans(),
-    "The.living.processes" = BioWell %>% select(starts_with("The.living.processes")) %>% rowMeans(),
-    "The.variety.of.sounds" = BioWell %>% select(starts_with("The.variety.of.sounds")) %>% rowMeans(),
-    "The.distinctive.sounds" = BioWell %>% select(starts_with("The.distinctive.sounds")) %>% rowMeans(),
-    "The.vivid.colours" = BioWell %>% select(starts_with("The.vivid.colours")) %>% rowMeans(),
-    "The.variety.of.colours" = BioWell %>% select(starts_with("The.variety.of.colours")) %>% rowMeans(),
-    "The.maturity.of.living.things" = BioWell %>% select(starts_with("The.maturity.of.living.things")) %>% rowMeans(),
-    "The.variety.of.shapes" = BioWell %>% select(starts_with("The.variety.of.shapes")) %>% rowMeans(),
-    "The.sponginess.of.living.things" = BioWell %>% select(starts_with("The.sponginess.of.living.things")) %>% rowMeans(),
-    "The.variety.of.textures" = BioWell %>% select(starts_with("The.variety.of.textures")) %>% rowMeans(),
-    "The.woody.smells" = BioWell %>% select(starts_with("The.woody.smells")) %>% rowMeans(),
-    "The.variety.of.smells" = BioWell %>% select(starts_with("The.variety.of.smells")) %>% rowMeans(),
-    "Changes.in.this.season" = BioWell %>% select(starts_with("Changes.in.this.season")) %>% rowMeans(),
-    "The.presence.of.animals" = BioWell %>% select(starts_with("The.presence.of.animals")) %>% rowMeans()
-  )
-
-
-# BioWell_Everything <-cbind(BioWell,BioWellScores,"Overall"=rowSums(BioWellScores)/17)
-Winter <-
-  cbind(Winter, BioWellScores, "Overall" = rowSums(BioWellScores) / 17) ## Add a column to the Winter data with each persons mean biowell score.
+## Here I am storing the list of IDs to exclude (exclude = 1)
+## This list is from the full dataset with spatial data
+## but we can't give you that so I'm telling you who gets dropped
+## storing it in PA1 as (a) we never use it,
+## (b) don't want to add a new column and upset things later
+Winter$PA1 <- ifelse(Winter$ID %in% c(Exclude$.), 1, 0 )
 
 
 # **********************************************************************************
