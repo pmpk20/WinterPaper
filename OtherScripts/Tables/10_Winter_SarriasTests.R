@@ -1,6 +1,9 @@
 #### RELATE WP5: Replication code to perform validity checks on WTP  ###############
-# Script author: Peter King (p.m.king@kent.ac.uk)
-# Last Edited: 03/02/2023
+# Script author: Peter King (p.king1@leeds.ac.uk)
+# Last Edited: 13/03/2024
+# Changes:
+# - changing to correlated conditional WTP
+# - Changed mean test to use absolute values
 # Based on Sarrias (2020) https://doi.org/10.1016/j.jocm.2020.100224
 
 
@@ -53,17 +56,24 @@ library(Rfast)
 # *********************************************************************************************************
 
 
+
+
 ## Basic model, no covariates, in WTP-space.
-# ModelOne_WTP <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_ConWTP.csv") %>% fread() %>% data.frame()
-# ModelOne_Estimates <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_estimates.csv") %>% fread() %>% data.frame()
-# ModelOne_UC <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_UnconWTP.csv") %>% fread() %>% data.frame()
+# ModelTwo_WTP <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_ConWTP.csv") %>% fread() %>% data.frame()
+# ModelTwo_Estimates <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_estimates.csv") %>% fread() %>% data.frame()
+# ModelTwo_UC <- here("CEoutput/ModelOne","Winter_MXL_ModelOne_UnconWTP.csv") %>% fread() %>% data.frame()
 
 
-## Model with covariates
-ModelTwo_WTP <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_ConWTP.csv") %>% fread() %>% data.frame()
-ModelTwo_Estimates <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_estimates.csv") %>% fread() %>% data.frame()
-ModelTwo_UC <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv") %>% fread() %>% data.frame()
+## Model with covariates no correlations
+# ModelTwo_WTP <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_ConWTP.csv") %>% fread() %>% data.frame()
+# ModelTwo_Estimates <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_estimates.csv") %>% fread() %>% data.frame()
+# ModelTwo_UC <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv") %>% fread() %>% data.frame()
 
+
+## Model with correlations
+ModelTwo_WTP <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_AllCorrelations_ConWTP.csv") %>% fread() %>% data.frame()
+ModelTwo_Estimates <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_AllCorrelations_estimates.csv") %>% fread() %>% data.frame()
+ModelTwo_UC <- here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_AllCorrelations_UnconWTP.csv") %>% fread() %>% data.frame()
 
 
 # *********************************************************************************************************
@@ -80,24 +90,27 @@ SarriasTestMeans <- function(WTP, Estimates,Variable) {
     select(paste0("b_",Variable,".post.mean")) %>%
     summarise(across(everything(),list(mean))) %>%
     as.numeric()
-  B <- Estimates %>%
+  B_1 <- Estimates %>%
     filter(V1==paste0("b_",Variable)) %>%
-    select("Estimate") %>%
-    abs() %>%
+    select("Estimate")
+  B_2 <- B_1 %>%
     divide_by(100) %>%
     multiply_by(90) %>%
     as.numeric()
 
+  ## NOTE:
+  # Here I am using the absolute values to avoid issues of negative numbers
   ifelse(
-    A >= B ,
+    abs(A) >= abs(B_2) ,
     paste0("Pass: Mean of conditional WTP (",
-           A %>% round(3), ") >= 90% of mu parameter (", B %>% round(3), ")"),
+           A %>% round(3), ") >= 90% of μ parameter (", B_1 %>% round(3), ")"),
     paste0("Fail: Mean of conditional WTP (",
-           A %>% round(3), ") < 90% of mu parameter (", B %>% round(3), ")")
+           A %>% round(3), ") < 90% of μ parameter (", B_1 %>% round(3), ")")
   ) %>%
     c()
 
 }
+
 
 
 ## For the variances  we test whether the variance of the
@@ -121,9 +134,9 @@ SarriasTestVariances <- function(WTP, Estimates,Variable) {
   ifelse(
     A >= B ,
     paste0("Pass: Variance of conditional WTP (",
-           A %>% round(3), ") >= 60% of sigma parameter (", B %>% round(3), ")"),
+           A %>% round(3), ") >= 60% of σ parameter (", B %>% round(3), ")"),
     paste0("Fail: Variance of conditional WTP (",
-           A %>% round(3), ") < 60% of sigma parameter (", B %>% round(3), ")")
+           A %>% round(3), ") < 60% of σ parameter (", B %>% round(3), ")")
   ) %>%
     c()
 
@@ -140,30 +153,19 @@ SarriasTestDistributions <- function(Conditionals, Unconditionals, Variable) {
   Q <- Conditionals %>% nrow()
 
   ## SO firstly simulate a distribution of WTP with the mean and SD of the conditionals:
-  X_Dist <- pnorm(
-    q = Q,
-    mean = Conditionals %>%
-      select(paste0("b_", Variable, ".post.mean")) %>% unlist() %>% as.numeric(),
-    sd = Conditionals %>%
-      select(paste0("b_", Variable, ".post.sd")) %>% unlist() %>% as.numeric()
-  )
+  X_Dist <- Conditionals %>%
+      select(paste0("b_", Variable, ".post.mean")) %>% unlist() %>% as.numeric()
 
   ## Then simulate a distribution of WTP using moments from the UNconditionals
-  Y_Mean <-
+  Y_Dist <-
     Unconditionals %>% select(starts_with(paste0("b_", Variable, "."))) %>%
     summarise_all(mean) %>% as.matrix() %>% rowmeans()
 
-  Y_SD <-
-    Unconditionals %>% select(starts_with(paste0("b_", Variable, "."))) %>%
-    summarise_all(sd) %>% as.matrix() %>% rowmeans()
-
-  Y_Dist <- pnorm(q = Q, mean = Y_Mean, sd = Y_SD)
-
-
-  ## NOW use the KS test to
+    ## NOW use the KS test to
   # " test whether the distribution of the conditional means equals the estimated unconditional distribution"
   Test2 <- ks.test(
-    X_Dist, Y_Dist)
+    X_Dist,
+    Y_Dist)
 
 
   ## Output Result with some text:
@@ -172,8 +174,8 @@ SarriasTestDistributions <- function(Conditionals, Unconditionals, Variable) {
   # that the distribution selected for the parameter is correct"
   ifelse(
     Test2$p.value > 0.05,
-    paste0("Pass (KS test stat = ", Test2$statistic %>% round(3), ", P = ", Test2$p.value %>% round(3),")"),
-    paste0("Fail (KS test stat = ", Test2$statistic %>% round(3), ", P = ", Test2$p.value %>% round(3),")")) %>% c()
+    paste0("Pass: (KS test stat = ", Test2$statistic %>% round(3), ", P = ", Test2$p.value %>% round(3),")"),
+    paste0("Fail: (KS test stat = ", Test2$statistic %>% round(3), ", P = ", Test2$p.value %>% round(3),")")) %>% c()
 
 
 }
@@ -229,10 +231,29 @@ for (i in Index){
 
 
 ## Compile all results here:
+## and use slice to correct row order
 SarriasTests <- bind_cols("Variables"=Index,
                          "Means"=MeanTests$.,
                          "Variances"=VarTests$.,
-                         "Distributions"=DistTests$.)
+                         "Distributions"=DistTests$.) %>%
+  slice(match(
+    c(
+      "Colour2",
+      "Colour",
+
+      "Smell2",
+      "Smell",
+
+      "Sound2",
+      "Sound",
+
+      "Deadwood2",
+      "Deadwood"
+    ),
+    Variables
+  ))
+
+
 
 
 
@@ -240,7 +261,7 @@ SarriasTests <- bind_cols("Variables"=Index,
 SarriasTests %>% write.csv(quote = FALSE)
 ## Output to a discrete file if that's helpful
 SarriasTests %>% fwrite(
-  sep = ",",
+  sep = "#",
   here("OtherOutput/Tables", "SarriasTests.txt"),
   row.names = TRUE,
   quote = FALSE
@@ -251,6 +272,51 @@ SarriasTests %>% fwrite(
 # *********************************************************************************************************
 #### END OF SCRIPT / OLD CODE ####
 # *********************************************************************************************************
+
+
+## OLD VERSION
+# SarriasTestDistributions <- function(Conditionals, Unconditionals, Variable) {
+#
+#   Q <- Conditionals %>% nrow()
+#
+#   ## SO firstly simulate a distribution of WTP with the mean and SD of the conditionals:
+#   X_Dist <- pnorm(
+#     q = Q,
+#     mean = Conditionals %>%
+#       select(paste0("b_", Variable, ".post.mean")) %>% unlist() %>% as.numeric(),
+#     sd = Conditionals %>%
+#       select(paste0("b_", Variable, ".post.sd")) %>% unlist() %>% as.numeric()
+#   )
+#
+#   ## Then simulate a distribution of WTP using moments from the UNconditionals
+#   Y_Mean <-
+#     Unconditionals %>% select(starts_with(paste0("b_", Variable, "."))) %>%
+#     summarise_all(mean) %>% as.matrix() %>% rowmeans()
+#
+#   Y_SD <-
+#     Unconditionals %>% select(starts_with(paste0("b_", Variable, "."))) %>%
+#     summarise_all(sd) %>% as.matrix() %>% rowmeans()
+#
+#   Y_Dist <- pnorm(q = Q, mean = Y_Mean, sd = Y_SD)
+#
+#
+#   ## NOW use the KS test to
+#   # " test whether the distribution of the conditional means equals the estimated unconditional distribution"
+#   Test2 <- ks.test(
+#     X_Dist, Y_Dist)
+#
+#
+#   ## Output Result with some text:
+#   # Sarris (2020) notes that:
+#   # "Failure to reject the null hypothesis is a conservative indicator
+#   # that the distribution selected for the parameter is correct"
+#   ifelse(
+#     Test2$p.value > 0.05,
+#     paste0("Pass (KS test stat = ", Test2$statistic %>% round(3), ", P = ", Test2$p.value %>% round(3),")"),
+#     paste0("Fail (KS test stat = ", Test2$statistic %>% round(3), ", P = ", Test2$p.value %>% round(3),")")) %>% c()
+#
+#
+# }
 
 
 #

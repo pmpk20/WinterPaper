@@ -1,8 +1,9 @@
 #### RELATE Winter Paper ####
 ## Function: Calculates Table 5 WTP estimates
 ## Author: Dr Peter King (p.m.king@kent.ac.uk)
-## Last change: 29/07/2022
-## TODO: Add appendix tables
+## Last change: 25/02/2024
+# Changes:
+# - newer WTP
 
 
 # *****************************
@@ -37,19 +38,17 @@ library(magrittr)
 library(dplyr)
 library(apollo)
 library(reshape2)
-library(gridExtra)
-library(xtable)
+library(here)
+library(data.table)
 
 # *****************************
 # Section 1: Import Data ####
 # *****************************
 
 
-## The latest version with WTP appended is 2022_01_07
-ModelOne_WTP <- here("OtherData",
-                     "Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
-
-
+WTP <-
+  here("CEoutput/ModelTwo",
+       "Winter_MXL_ModelTwo_AllCorrelations_ConWTP.csv") %>% fread() %>% data.frame()
 
 
 # *****************************
@@ -57,30 +56,64 @@ ModelOne_WTP <- here("OtherData",
 # *****************************
 
 
-Table3 <- rbind(
-  cbind("Median" =  round(median(ModelOne_WTP$beta_Tax.post.mean),  3), "SD" =  round(median(ModelOne_WTP$beta_Tax.post.sd),  3), "95% C-I" =  paste0("(", round(quantile(ModelOne_WTP$beta_Tax.post.mean,  c(0.025)),  3),  ") - (",  round(quantile(ModelOne_WTP$beta_Tax.post.mean,  c(0.975)), 3), ")")),
-  cbind("Median" =  round(median(ModelOne_WTP$b_Smell.post.mean),  3), "SD" =  round(median(ModelOne_WTP$b_Smell.post.sd),  3), "95% C-I" =  paste0("(", round(quantile(ModelOne_WTP$b_Smell.post.mean,  c(0.025)),  3),  ") - (",  round(quantile(ModelOne_WTP$b_Smell.post.mean,  c(0.975)), 3), ")")),
-  cbind("Median" =  round(median(ModelOne_WTP$b_Smell2.post.mean),  3), "SD" =  round(median(ModelOne_WTP$b_Smell2.post.sd),  3), "95% C-I" =  paste0("(", round(quantile(ModelOne_WTP$b_Smell2.post.mean,  c(0.025)),  3),  ") - (",  round(quantile(ModelOne_WTP$b_Smell2.post.mean,  c(0.975)), 3), ")")),
-  cbind("Median" =  round(median(ModelOne_WTP$b_Sound.post.mean),  3), "SD" =  round(median(ModelOne_WTP$b_Sound.post.sd),  3), "95% C-I" =  paste0("(", round(quantile(ModelOne_WTP$b_Sound.post.mean,  c(0.025)),  3),  ") - (",  round(quantile(ModelOne_WTP$b_Sound.post.mean,  c(0.975)), 3), ")")),
-  cbind("Median" =  round(median(ModelOne_WTP$b_Sound2.post.mean),  3), "SD" =  round(median(ModelOne_WTP$b_Sound2.post.sd),  3), "95% C-I" =  paste0("(", round(quantile(ModelOne_WTP$b_Sound2.post.mean,  c(0.025)),  3),  ") - (",  round(quantile(ModelOne_WTP$b_Sound2.post.mean,  c(0.975)), 3), ")")),
-  cbind("Median" =  round(median(ModelOne_WTP$b_Colour.post.mean),  3), "SD" =  round(median(ModelOne_WTP$b_Colour.post.sd),  3), "95% C-I" =  paste0("(", round(quantile(ModelOne_WTP$b_Colour.post.mean,  c(0.025)),  3),  ") - (",  round(quantile(ModelOne_WTP$b_Colour.post.mean,  c(0.975)), 3), ")")),
-  cbind("Median" =  round(median(ModelOne_WTP$b_Colour2.post.mean),  3), "SD" =  round(median(ModelOne_WTP$b_Colour2.post.sd),  3), "95% C-I" =  paste0("(", round(quantile(ModelOne_WTP$b_Colour2.post.mean,  c(0.025)),  3),  ") - (",  round(quantile(ModelOne_WTP$b_Colour2.post.mean,  c(0.975)), 3), ")")),
-  cbind("Median" =  round(median(ModelOne_WTP$b_Deadwood.post.mean),  3), "SD" =  round(median(ModelOne_WTP$b_Deadwood.post.sd),  3), "95% C-I" =  paste0("(", round(quantile(ModelOne_WTP$b_Deadwood.post.mean,  c(0.025)),  3),  ") - (",  round(quantile(ModelOne_WTP$b_Deadwood.post.mean,  c(0.975)), 3), ")")),
-  cbind("Median" =  round(median(ModelOne_WTP$b_Deadwood2.post.mean),  3), "SD" =  round(median(ModelOne_WTP$b_Deadwood2.post.sd),  3), "95% C-I" =  paste0("(", round(quantile(ModelOne_WTP$b_Deadwood2.post.mean,  c(0.025)),  3),  ") - (",  round(quantile(ModelOne_WTP$b_Deadwood2.post.mean,  c(0.975)), 3), ")")))
+## Define a function that summarises median, SD, and 95% by variable
+calculate_summary_table <- function(data, columns) {
+  Upper <- WTP[, paste0(i, "post.mean")] %>% quantile(c(0.975)) %>% round(3) %>% sprintf("%.3f", .)
+  Lower <- WTP[, paste0(i, "post.mean")] %>% quantile(c(0.025)) %>% round(3) %>% sprintf("%.3f", .)
 
 
-rownames(Table3) <-
+  cbind(
+    "Variable" = columns,
+    "Median" = WTP[, paste0(i, "post.mean")] %>% median() %>% round(3) %>% sprintf("%.3f", .),
+    "SD" = WTP[, paste0(i, "post.sd")] %>% median() %>% round(3) %>% sprintf("%.3f", .),
+    "95% C-I" = paste0("(",Lower, ") - (", Upper, ")")
+) %>% data.frame() %>% return()
+}
+
+
+## List of attributes to loop through
+Variables <- c(
+  "beta_Tax.",
+  "b_Colour2.",
+  "b_Colour.",
+  "b_Smell2.",
+  "b_Smell.",
+  "b_Sound2.",
+  "b_Sound.",
+  "b_Deadwood2.",
+  "b_Deadwood."
+)
+
+
+
+# Initialize an empty list to store the results
+summary_results <- list()
+
+# The actual loop
+for (i in Variables){
+  summary_results[[i]] <- calculate_summary_table(WTP, i)
+}
+
+
+## Rearrange here
+Table3 <- do.call(rbind, summary_results)
+
+
+Table3$Variable <-
   c(
     "Tax",
-    "Smell: Medium",
-    "Smell: High",
-    "Sound: Medium",
-    "Sound: High",
-    "Colour: Medium",
-    "Colour: High",
-    "Deadwood: Medium",
-    "Deadwood: High"
-  )
+    "Colour: high",
+    "Colour: medium",
+
+    "Smell: high",
+    "Smell: medium",
+
+    "Sound: high",
+    "Sound: medium",
+
+    "Deadwood: high",
+    "Deadwood: medium"
+    )
 
 
 
@@ -91,7 +124,7 @@ rownames(Table3) <-
 
 
 ## Output to console for easy ctrl C+V
-write.csv(Table3, quote = F)
+write.csv(Table3, quote = FALSE)
 
 
 # Output to correct location
