@@ -1,7 +1,11 @@
 #### RELATE WP5: Winter Spatial Lag Models  ###############
 # Function: Calculate and output spatial lag models for each attribute level
 # Script author: Peter King (p.m.king@kent.ac.uk)
+<<<<<<< HEAD
 # Last Edited: 24/03/2024
+=======
+# Last Edited: 16/10/2023
+>>>>>>> 4f0792f1b987bcf984f39670f5a2f3676f2742e2
 # Changes:
 ## - wrote loops for calling SLM()
 ## - and reading in the outputs
@@ -260,8 +264,12 @@ Independent <- c("Gender +
                 WoodlandsScore +
                 Impairment +
                 Area_ha_median +
+<<<<<<< HEAD
                 GDHI +
                 Density"
+=======
+                GDHI + Density"
+>>>>>>> 4f0792f1b987bcf984f39670f5a2f3676f2742e2
 )
 
 
@@ -273,6 +281,7 @@ Independent <- c("Gender +
 ## Reformulate updates the model object
 ## we update the LHS for different attributes WTP
 ## then pipe that into SpatialLagModel()
+<<<<<<< HEAD
 ## NOTE: just piping reformulate() to SLM caused issues so being explicit here
 for (i in 1:length(Dependent)) {
 
@@ -281,6 +290,14 @@ for (i in 1:length(Dependent)) {
   SpatialLagModel(Model = Model,
                     WTP = Dependent[i] %>% as.character(),
                     Data = Data_Winter,K = 5)
+=======
+for (i in 1:length(Dependent)) {
+
+  reformulate(termlabels = Independent,
+              response = Dependent[i]) %>% SpatialLagModel(Dependent[i] %>% as.character(),
+                                                           Data_Winter,
+                                                           K = 5)
+>>>>>>> 4f0792f1b987bcf984f39670f5a2f3676f2742e2
 
 
 }
@@ -330,6 +347,7 @@ ModelOutput <- function(Model,Result) {
           ifelse(
             Estimates$Coef[, 4] < 0.1,
             paste0(Estimates$Coef[, 1] %>% round(3) %>% sprintf("%.3f", .), "*"),
+<<<<<<< HEAD
             Estimates$Coef[, 1] %>% round(3) %>% sprintf("%.3f", .)))),
         " (",Estimates$Coef[, 3] %>% round(3) %>% sprintf("%.3f", .),")")),
 
@@ -370,6 +388,32 @@ ModelOutput <- function(Model,Result) {
            Estimates$rho.se %>% round(3) %>% sprintf("%.3f", .),
            ")")),
 
+=======
+            Estimates$Coef[, 4] %>% round(3) %>% sprintf("%.3f", .)))),
+        " (",Estimates$Coef[, 3] %>% round(3) %>% sprintf("%.3f", .),")")),
+
+    data.frame("Value" = c("Stat"),
+               "Data" = Result$LMlag$statistic %>% round(3) %>% sprintf("%.3f", .)),
+
+    data.frame("Value" = c("LR"),
+               "Data" = paste(ifelse(
+                 Estimates$LR1$p.value < 0.01,
+                 paste0(Estimates$rho %>% round(3) %>% sprintf("%.3f", .), "***"),
+                 ifelse(
+                   Estimates$LR1$p.value < 0.05,
+                   paste0(Estimates$rho %>% round(3) %>% sprintf("%.3f", .), "**"),
+                   ifelse(
+                     Estimates$LR1$p.value < 0.1,
+                     paste0(Estimates$rho %>% round(3) %>% sprintf("%.3f", .), "*"),
+                     Estimates$LR1$p.value %>% round(3) %>% sprintf("%.3f", .)
+                   )
+                 )
+               ),
+               paste0("(",
+                      Estimates$rho.se %>% round(3) %>% sprintf("%.3f", .),
+                      ")")))[1,],
+
+>>>>>>> 4f0792f1b987bcf984f39670f5a2f3676f2742e2
     data.frame("Value" = c("logLik"), "Data" = logLik(Estimates) %>% round(3) %>% sprintf("%.3f", .)),
     data.frame("Value" = c("AIC"), "Data" = AIC(Estimates) %>% round(3) %>% sprintf("%.3f", .)))
 }

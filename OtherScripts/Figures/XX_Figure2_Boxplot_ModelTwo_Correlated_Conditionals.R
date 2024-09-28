@@ -1,11 +1,14 @@
 #### RELATE Winter Paper ####
 ## Function: Literally plots one figure: distributions of each attributes' WTP
-## Author: Dr Peter King (p.m.king@kent.ac.uk)
-## Last change: 20/10/2023
+## Author: Dr Peter King (p.king1@leeds.ac.uk)
+## Last change: 24/03/2024
 ## Changes:
 ## - Added option to import data in. Fixed label formatting for Zoe.
 ## - Changed y axis label
 ## - rewrote Summarizer() to select() once not five times
+## - Filtered out tax attribute
+## - changed to use conditionals
+## - error bars drawn using quantile(c(0.025, 0.975)) not min max
 
 
 # ******************************
@@ -71,81 +74,56 @@ library(Rfast)
 # **********************************************************
 
 
+
+## **************************
+## Import Survey Data
+## **************************
 ## Use step three and add unconditionals rather than use Step4.csv with conditionals
 here()
-Winter <- here("OtherData","Winter_dataframe_Step3.csv") %>% fread() %>% data.frame()
+Winter <- here("OtherData","Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
+## For various reasons I'm dropping the existing WTP to re-add it here
+## This makes fixing the rest of the code easier
+Winter <- Winter[,1:217]
 
+## Truncate to have same number of rows as in the models
+Winter <- Winter[!is.na(Winter$MilesDistance), ] ## Drop missing distances
+Winter <- Winter[!is.na(Winter$Overall), ] ## Drop respondents not completing BIOWELL
+
+
+
+## **************************
+## Import WTP
+## **************************
 
 ## This is the WTP from the model itself:
 ### Note: 1711 rows (one per respondent), 9001 variables (1000 per attribute level)
 ### Note: added all four datasets here so you can choose
-# WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelOne_2022_07_29_WTP.csv")))
-# WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelOne_2022_07_29_UCWTP.csv")))
-# WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelTwo_2022_07_29_WTP.csv")))
-WTP <- here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_UnconWTP.csv") %>% fread() %>% data.frame()
-
+WTP <- here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_AllCorrelations_ConWTP.csv") %>% fread() %>% data.frame()
 
 ## If the conditionals are imported then run this to recover only useful variables
-WTP <- WTP[WTP %>% select(-ends_with(c(".ID", ".post.sd"))) %>% colnames()] %>% data.frame()
+WTP <- WTP[WTP %>% dplyr::select(-ends_with(c(".ID", ".post.sd"))) %>% colnames()] %>% data.frame()
 
 
-# **********************************************************
-# Section 2: Summarise Unconditionals by attribute ####
-# **********************************************************
-
-## So this function calculates one stat per attribute per season
-### So: rowmeans() not rowMeans() is actually insanely fast if you can be bothered to transform to and from matrices.
-## This function selects the variable from WTP and calculates summary stats from it.
-Summarizer <- function(i) {
-
-  Test <- WTP %>% select(starts_with(i))
-
+WTP <-
   bind_cols(
-    "y0" = Test %>% summarise_all(quantile, c(0.05)) %>% as.matrix() %>% rowmeans(),
-    "y25" = Test %>% summarise_all(quantile, c(0.25)) %>% as.matrix() %>% rowmeans(),
-    "y50" = Test %>% summarise_all(median) %>% as.matrix() %>% rowmeans(),
-    "y75" = Test %>% summarise_all(quantile, c(0.75)) %>% as.matrix() %>% rowmeans() ,
-    "y100" = Test %>% summarise_all(quantile, c(0.95)) %>% as.matrix() %>% rowmeans()) %>% data.frame()
-
-}
-
-
-## List of variable names
-Attribute <- c(
-  "beta_Tax",
-  "b_Colour2.",
-  "b_Colour.",
-  "b_Smell2.",
-  "b_Smell.",
-  "b_Sound2.",
-  "b_Sound.",
-  "b_Deadwood2.",
-  "b_Deadwood."
-)
-
-
-## Initialising data here to make it faster
-Summaries <- matrix(0,length(Attribute),5) %>% data.frame()
-
-
-## Loop through each variable and produce summaries.
-## If you have time rewrite this with foreach() using .export=c("Summarizer")
-for (i in 1:length(Attribute)) {
-  Summaries[i,] <- Summarizer(Attribute[i])
-
-}
-
-
+    "ColourHigh" = WTP$b_Colour2.post.mean,
+    "ColourMedium" = WTP$b_Colour.post.mean,
+    "SmellHigh" = WTP$b_Smell2.post.mean,
+    "SmellMedium" = WTP$b_Smell.post.mean,
+    "SoundHigh" = WTP$b_Sound2.post.mean,
+    "SoundMedium" = WTP$b_Sound.post.mean,
+    "DeadwoodHigh" = WTP$b_Deadwood2.post.mean,
+    "DeadwoodMedium" = WTP$b_Deadwood.post.mean
+  )
 
 
 # **********************************************************
-#### Section 2B: Additional wrangling and setup of labels ####
+# Section 2: Misc steps for the plot  ####
 # **********************************************************
 
 
 ## I want this order on the plot:
 Names <- c(
-  "Tax",
   "ColourHigh",
   "ColourMedium",
   "SmellHigh",
@@ -158,17 +136,9 @@ Names <- c(
 
 
 
-## Label X axis of ggplot boxplots
-## Using gsub() to add spaces to the list
-# Names <-
-  # gsub(pattern = "Deadwood",
-  #      replacement = "Deadwood\nDecomposition ",
-  #      x = Names)
-
-
 Labels <-
   Names %>% gsub(pattern = "Decomposition",
-       replacement = "decomposition") %>%
+                 replacement = "decomposition") %>%
   gsub(pattern = "Medium", replacement = "\nmedium") %>%
   gsub(pattern = "High", replacement = "\nhigh") %>%
   gsub(pattern = "Colour", replacement = "Colours:") %>%
@@ -177,29 +147,6 @@ Labels <-
   gsub(pattern = "Deadwood", replacement = "Deadwood:") %>%
   c()
 
-
-## Bind the results with variable and season ID for ease later
-NewerData <- bind_cols(Summaries,
-                       "variable" = Names)
-
-
-## Clearly label which column represents which stat
-colnames(NewerData) <- c("y0",
-                         "y25",
-                         "y50",
-                         "y75",
-                         "y100", "variable")
-
-
-NewerData %>%
-  fwrite(sep=",",
-         here("OtherOutput",
-              "Figure2_PlotData.csv"))
-
-
-# **********************************************************
-#### Section 3: Create Plot ####
-# **********************************************************
 
 
 ## I got these from RColorBrewer but adding specifically here to
@@ -213,55 +160,79 @@ Colours <- c(
   "#6BAED6",
   "#6BAED6",
   "#2171B5",
-  "#2171B5",
-  "#F7FBFF"
+  "#2171B5"
 )
 
 ## Update all text sizes here for consistency
 TextSize <- 12
 
-## Direct import here
-# NewerData <- here("OtherOutput", "Figure2_PlotData.csv") %>% fread() %>% data.frame()
 
+# ***************************************************************************
+#### Section 3: Create Data ####
+# ***************************************************************************
+
+
+# PlotData <- WTP %>%
+#   pivot_longer(1:8) %>%
+#   mutate("YMIN" = quantile(value, c(0.025)),
+#          "YMAX" = quantile(value, c(0.975)))
+#
+# ## THis is an important step for the correct plot order!
+# PlotData$name <-
+#   factor(PlotData$name,
+#          levels = unique(PlotData$name))
+
+## Faster way with correct quantiles and factor levels
+PlotData <- WTP %>%
+  pivot_longer(1:8) %>%
+  group_modify(~ mutate(.x,
+                        YMIN = quantile(value, 0.025),
+                        YMAX = quantile(value, 0.975))) %>%
+  ungroup() %>%
+  mutate(name = factor(name, levels = unique(WTP %>% colnames())))
+
+
+# ***************************************************************************
+#### Section 4: Create Plot ####
+# ***************************************************************************
 
 ## here is the final plot I use.
 ## I put Newerdata in then use the columns to specify the points of the boxplot
-Figure2 <-
-  ggplot(NewerData, aes(x = rev(variable), fill = as.factor(variable)))+
-  geom_errorbar(aes(
-    ymin = y0,
-    ymax = y100,
-  ),width = 0.2)+ ## errorbar means you can have the nicer whiskers
-  geom_boxplot(
-    varwidth = 0.5,
-    outlier.shape = NA,
-    aes(
-      ymin = y0,
-      lower = y25,
-      middle = y50,
-      upper = y75,
-      ymax = y100,
-    ),
-    stat = "identity" ## means you can specify moments as in AES()
+Figure2 <- ggplot(PlotData,
+                  aes(
+                    x = value,
+                    y = rev(name),
+                    fill = rev(name),
+                    group = rev(name)
+                  )) +
+  stat_boxplot(geom = "errorbar",
+               width = 0.25,
+               position = position_dodge(width = 0.75)) +
+  geom_boxplot(outlier.shape = NA) +
+  theme_bw() +
+  geom_vline(xintercept = 0, alpha = 0.5) +
+  scale_x_continuous(name = "",
+                     breaks = seq(-50, 50, 5)) +
+  scale_y_discrete(name = "Attribute and level", labels = rev(Labels)) +
+  scale_fill_brewer(
+    name = "Perceived biodiversity",
+    type = "seq",
+    label = rev(Labels),
+    guide = guide_legend(reverse = TRUE)
   ) +
-  scale_x_discrete(name = "Attribute and level",
-                   label = rev(Labels),
-                   limits = Names) + ## Using rev() to make the order I want
-  theme_bw() + ## Just looks nicer imo
-  geom_hline(yintercept = 0) + ## I like the zero line for ease of comparison
-  ylab("Marginal WTP (GBP) in local council tax, per household, per annum") +
-  scale_y_continuous(breaks = seq(-10, 20, 5)) +
-  scale_fill_manual(name = "Attributes",
-                    label = Labels,
-                    values = Colours) +
   theme(
     legend.position = "none",
+    legend.text = element_text(size = 10,
+                               colour = "black",
+                               family = "serif"),
     legend.background = element_blank(),
-    legend.box.background = element_rect(colour = "black"),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_blank(),
     panel.grid.minor.y = element_blank(),
+    legend.title = element_text(size = TextSize,
+                                colour = "black",
+                                family = "serif"),
     axis.text.x = element_text(size = TextSize,
                                colour = "black",
                                family = "serif"), ## Change text to be clearer for reader
@@ -269,17 +240,17 @@ Figure2 <-
                                colour = "black",
                                family = "serif"),
     axis.title.y = element_text(size = TextSize,
-                               colour = "black",
-                               family = "serif"),
+                                colour = "black",
+                                family = "serif"),
     axis.title.x = element_text(size = TextSize,
                                 colour = "black",
                                 family = "serif")
   ) +
-  coord_flip(ylim = c(-10, 20))
+  coord_cartesian(xlim = c(-10, 25))
 
 
 # **********************************************************
-#### Section 3: Export Plot ####
+#### Section 5: Export Plot ####
 ## Removed sys.date() and changed save location
 # **********************************************************
 
@@ -292,7 +263,7 @@ ggsave(
   filename = paste0(
     here(),
     "/OtherOutput/Figures/",
-    "Winter_Figure2_BW.png"
+    "Winter_Figure2_ModelTwo_Correlated_Conditionals.png"
   ),
   width = 20,
   height = 15,
@@ -301,4 +272,56 @@ ggsave(
 )
 
 
-# End Of Script ****************************************************
+# **********************************************************
+#### Section X: Histinterval instead ####
+## change halfeye to histinterval easily
+# **********************************************************
+
+
+#
+# ggplot(PlotData,
+#        aes(
+#          x = value,
+#          y = rev(name),
+#          fill = rev(name),
+#          group = rev(name)
+#        )) +
+#   ggdist::stat_halfeye(normalize = "groups",slab_linewidth = 0.5, slab_colour = "black", outline_bars = TRUE,position = "dodge") +
+#   theme_bw() +
+#   geom_vline(xintercept = 0, alpha = 0.5) +
+#   scale_x_continuous(name = "",
+#                      breaks = seq(-50, 50, 10)) +
+#   scale_y_discrete(name = "Attribute and level", labels = rev(Labels)) +
+#   scale_fill_brewer(
+#     name = "Perceived biodiversity",
+#     type = "seq",
+#     label = rev(Labels),
+#     guide = guide_legend(reverse = TRUE)
+#   ) +
+#   theme(
+#     legend.position = "none",
+#     legend.text = element_text(size = 10,
+#                                colour = "black",
+#                                family = "serif"),
+#     legend.background = element_blank(),
+#     panel.grid.major.x = element_blank(),
+#     panel.grid.minor.x = element_blank(),
+#     panel.grid.major.y = element_blank(),
+#     panel.grid.minor.y = element_blank(),
+#     legend.title = element_text(size = TextSize,
+#                                 colour = "black",
+#                                 family = "serif"),
+#     axis.text.x = element_text(size = TextSize,
+#                                colour = "black",
+#                                family = "serif"), ## Change text to be clearer for reader
+#     axis.text.y = element_text(size = TextSize,
+#                                colour = "black",
+#                                family = "serif"),
+#     axis.title.y = element_text(size = TextSize,
+#                                 colour = "black",
+#                                 family = "serif"),
+#     axis.title.x = element_text(size = TextSize,
+#                                 colour = "black",
+#                                 family = "serif")
+#   )
+#

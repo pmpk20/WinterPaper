@@ -2,10 +2,18 @@
 # Project: ERC Relate Project. Work Package 5
 # Author: Dr Peter King (p.king1@leeds.ac.uk)
 # Function: To clean the survey data into usable inputs to the choice models.
+<<<<<<< HEAD
 # Notes: very long cleaning file but works.
 # Last Edited: 28/09/2024
 # - double-checking that it runs without errors
 # - postcode checks take forever
+=======
+# Author: Dr Peter King (p.m.king@kent.ac.uk)
+# Notes: very long cleaning file but works.
+# Last Edited: 23/01/2024
+# - add library(data.table)
+
+>>>>>>> 4f0792f1b987bcf984f39670f5a2f3676f2742e2
 
 
 # **********************************************************************************
@@ -66,6 +74,15 @@ library(geosphere)
 library(PostcodesioR)
 library(udunits2)
 library(data.table)
+<<<<<<< HEAD
+=======
+
+
+## Setting working directory
+# here()
+## Yes, I'm using here() for all imports and exports
+## I'm was trying to use renv() which is not as easy as first indicated
+>>>>>>> 4f0792f1b987bcf984f39670f5a2f3676f2742e2
 
 
 
@@ -162,6 +179,7 @@ BioWell <-
 # Winter <-
 #   cbind(Winter, BioWellScores, "Overall" = rowSums(BioWellScores) / 17) ## Add a column to the Winter data with each persons mean biowell score.
 
+<<<<<<< HEAD
 ## Placeholder code to add zeroes rather than the real data
 ## NOTE: not used in the analysis for this paper
 Winter$Encountering.the.living.things = 0
@@ -182,6 +200,8 @@ Winter$The.variety.of.smells = 0
 Winter$Changes.in.this.season = 0
 Winter$The.presence.of.animals = 0
 
+=======
+>>>>>>> 4f0792f1b987bcf984f39670f5a2f3676f2742e2
 
 ## Modified code to keep scripts running but hiding biowell
 Winter <-
@@ -205,7 +225,10 @@ Winter <-
 ## but we can't give you that so I'm telling you who gets dropped
 ## storing it in PA1 as (a) we never use it,
 ## (b) don't want to add a new column and upset things later
+<<<<<<< HEAD
 ## Without this column I'd just give the spatial analysis files
+=======
+>>>>>>> 4f0792f1b987bcf984f39670f5a2f3676f2742e2
 Winter$PA1 <- ifelse(Winter$ID %in% c(Exclude$.), 1, 0 )
 
 

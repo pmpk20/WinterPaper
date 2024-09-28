@@ -1,8 +1,8 @@
 ------------------------------
 ### ERC-Funded RELATE Project Work Package Five ####
-- Repo for the data and code for the "Stated preferences for the colours, smells and sounds of biodiversity outweigh those for ecological function. " from the RELATE ERC-funded project.
-- Author: Peter King (p.m.king@kent.ac.uk)
-- Last Edited: 12/05/2023.
+- Repo for the data and code for the "Stated preferences for the colours, smells and sounds of biodiversity. " from the RELATE ERC-funded project.
+- Author: Peter King (p.king1@leeds.ac.uk)
+- Last Edited: 26/04/2024.
 - Guide to replicating the paper from survey data
 
 
@@ -37,4 +37,4 @@ RStudio 2022.02.2 Build 485 "Prairie Trillium" Release (8acbd38b, 2022-04-19) fo
 
 ------------------------------------------------------------------------
 
-#### Any Questions: [p.m.king\@kent.ac.uk](mailto:p.m.king@kent.ac.uk)
+#### Any Questions: [p.king1\@leeds.ac.uk](mailto:p.king1@leeds.ac.uk)

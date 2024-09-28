@@ -1,7 +1,11 @@
 #### RELATE WP5: Table 2 MXL Model Outputs  ###############
-# Script author: Peter King (p.m.king@kent.ac.uk)
-# Last Edited: 01/02/2023
-# Trying to output the models here
+# Script author: Peter King (p.king1@leeds.ac.uk)
+# Last Edited: 25/02/2024
+# Changes:
+## - Format for mean and SD columns
+## - Adding model diagnostics in as per reviewers
+## - reordered variables
+## - Changing to correlated models
 
 
  # *************************************************************************
@@ -17,20 +21,6 @@ library(here)
 library(tidyverse)
 
 
-## Run these only if not already estimated
-## The difference between each model is in the filenames
-## For reference: Levels = =  Sound Medium and Sound High vs Attributes = =  Sound
-## Full data (N =  1711) vs Truncated (N =  ~1500)
-# source("CEModelScripts/Replication_WP5_Winter_MXL_LevelsOnly_FullSample.R")
-# source("CEModelScripts/Replication_WP5_Winter_MXL_LevelsOnly_Truncated.R")
-# source("CEModelScripts/Replication_WP5_Winter_MXL_AttributesOnly_FullSample.R")
-# source("CEModelScripts/Replication_WP5_Winter_MXL_AttributesOnly_Truncated.R")
-# source("CEModelScripts/Replication_WP5_Winter_MXL_Levels_SomeCovariates_FullSample.R")
-# source("CEModelScripts/Replication_WP5_Winter_MXL_Levels_SomeCovariates_Truncated.R")
-# source("CEModelScripts/Replication_WP5_Winter_MXL_Levels_AllCovariates_FullSample.R")
-# source("CEModelScripts/Replication_WP5_Winter_MXL_Levels_AllCovariates_Truncated.R")
-
-
  # *************************************************************************
 #### Section 1: Importing Model,  Estimates,  and WTP for FULL SAMPLE models ####
  # *************************************************************************
@@ -38,20 +28,20 @@ library(tidyverse)
 
 
 ModelOne_Model <-
-  readRDS(here("CEoutput/ModelOne", "Winter_MXL_ModelOne.rds"))
+  readRDS(here("CEoutput/ModelOne", "Winter_MXL_ModelOne_AllCorrelations.rds"))
 ModelOne_WTP <-
-  here("CEoutput/ModelOne", "Winter_MXL_ModelOne_ConWTP.csv") %>% fread() %>% data.frame()
+  here("CEoutput/ModelOne", "Winter_MXL_ModelOne_AllCorrelations_ConWTP.csv") %>% fread() %>% data.frame()
 ModelOne_Estimates <-
-  here("CEoutput/ModelOne", "Winter_MXL_ModelOne_estimates.csv") %>% fread() %>% data.frame()
+  here("CEoutput/ModelOne", "Winter_MXL_ModelOne_AllCorrelations_estimates.csv") %>% fread() %>% data.frame()
 
 
 ## Model with covariates
 ModelTwo_Model <-
-  readRDS(here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo.rds"))
+  readRDS(here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_AllCorrelations.rds"))
 ModelTwo_WTP <-
-  here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_ConWTP.csv") %>% fread() %>% data.frame()
+  here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_AllCorrelations_ConWTP.csv") %>% fread() %>% data.frame()
 ModelTwo_Estimates <-
-  here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_estimates.csv") %>% fread() %>% data.frame()
+  here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_AllCorrelations_estimates.csv") %>% fread() %>% data.frame()
 
 
 
@@ -69,20 +59,30 @@ ModelOutputs <- function(Estimates) {
              "Estimate" =  paste(
                ifelse(
                  Estimates$Rob.p.val.0. < 0.01,
-                 paste0(round(Estimates$Estimate,  3),  "***"),
+                 paste0(Estimates$Estimate %>% round(3) %>% sprintf("%.3f", .),  "***"),
                  ifelse(
                    Estimates$Rob.p.val.0. < 0.05,
-                   paste0(round(Estimates$Estimate,  3),  "**"),
+                   paste0(Estimates$Estimate %>% round(3) %>% sprintf("%.3f", .),  "**"),
                    ifelse(
                      Estimates$Rob.p.val.0. < 0.1,
-                     paste0(round(Estimates$Estimate,  3),  "*"),
-                     round(Estimates$Estimate,  3)
-                   )
-                 )
-               ),
-               paste0("(", round(Estimates$Rob.std.err.,  3), ")")
+                     paste0(Estimates$Estimate %>% round(3) %>% sprintf("%.3f", .),  "*"),
+                     paste0(Estimates$Estimate %>% round(3) %>% sprintf("%.3f", .)))
+                 )),
+               paste0("(", Estimates$Rob.std.err %>% round(3) %>% sprintf("%.3f", .), ")")
              ))
 }
+
+
+## New function to take model and report model stats
+Diagnostics <- function(Model) {
+  rbind(
+    "N" = Model$nIndivs,
+    "AIC" = Model$AIC %>% round(3) %>% sprintf("%.3f", .),
+    "Adj.R2" = Model$adjRho2_C %>% round(3) %>% sprintf("%.3f", .),
+    "LogLik" = Model$LLout %>% as.numeric() %>% round(3) %>% sprintf("%.3f", .)
+  )
+}
+
 
  # *************************************************************************
 #### Section 3A: Output Model One part of the table ####
@@ -96,27 +96,35 @@ rownames(ModelOne_Output) <- ModelOne_Output$Variable
 
 
 ## Stitch rows together in the order we want
-ModelOne_Table <- bind_rows(
-  ModelOne_Output["asc_C", 1:2],
-  ModelOne_Output["mu_Tax", 1:2],
-  ModelOne_Output["mu_Colour", 1:2],
-  ModelOne_Output["mu_Colour2", 1:2],
-  ModelOne_Output["mu_Smell", 1:2],
-  ModelOne_Output["mu_Smell2", 1:2],
-  ModelOne_Output["mu_Sound", 1:2],
-  ModelOne_Output["mu_Sound2", 1:2],
-  ModelOne_Output["mu_Deadwood", 1:2],
-  ModelOne_Output["mu_Deadwood2", 1:2],
-  ModelOne_Output["sig_Tax", 1:2],
-  ModelOne_Output["sig_Colour", 1:2],
-  ModelOne_Output["sig_Colour2", 1:2],
-  ModelOne_Output["sig_Smell", 1:2],
-  ModelOne_Output["sig_Smell2", 1:2],
-  ModelOne_Output["sig_Sound", 1:2],
-  ModelOne_Output["sig_Sound2", 1:2],
-  ModelOne_Output["sig_Deadwood", 1:2],
-  ModelOne_Output["sig_Deadwood2", 1:2]
-)
+ModelOne_Table <-
+  bind_cols(
+    "Mean" =
+      bind_rows(
+        ModelOne_Output["asc_C", 1:2],
+        ModelOne_Output["mu_Tax", 1:2],
+        ModelOne_Output["mu_Colour2", 1:2],
+        ModelOne_Output["mu_Colour", 1:2],
+        ModelOne_Output["mu_Smell2", 1:2],
+        ModelOne_Output["mu_Smell", 1:2],
+        ModelOne_Output["mu_Sound2", 1:2],
+        ModelOne_Output["mu_Sound", 1:2],
+        ModelOne_Output["mu_Deadwood2", 1:2],
+        ModelOne_Output["mu_Deadwood", 1:2]
+      ),
+    "Standard Deviation" =
+      bind_rows(
+        ModelOne_Output["asc_C", 1:2],
+        ModelOne_Output["sig_Tax", 1:2],
+        ModelOne_Output["sig_Colour2", 1:2],
+        ModelOne_Output["sig_Colour", 1:2],
+        ModelOne_Output["sig_Smell2", 1:2],
+        ModelOne_Output["sig_Smell", 1:2],
+        ModelOne_Output["sig_Sound2", 1:2],
+        ModelOne_Output["sig_Sound", 1:2],
+        ModelOne_Output["sig_Deadwood2", 1:2],
+        ModelOne_Output["sig_Deadwood", 1:2]
+      )
+  )
 
  # *************************************************************************
 #### Section 3B: Output Model Two part of the table ####
@@ -131,43 +139,76 @@ rownames(ModelTwo_Output) <- ModelTwo_Output$Variable
 
 
 ## Stitch rows together in the order we want
-ModelTwo_Table <- bind_rows(
-  ModelTwo_Output["asc_C", 1:2],
-  ModelTwo_Output["mu_Tax", 1:2],
-  ModelTwo_Output["mu_Colour", 1:2],
-  ModelTwo_Output["mu_Colour2", 1:2],
-  ModelTwo_Output["mu_Smell", 1:2],
-  ModelTwo_Output["mu_Smell2", 1:2],
-  ModelTwo_Output["mu_Sound", 1:2],
-  ModelTwo_Output["mu_Sound2", 1:2],
-  ModelTwo_Output["mu_Deadwood", 1:2],
-  ModelTwo_Output["mu_Deadwood2", 1:2],
-  ModelTwo_Output["sig_Tax", 1:2],
-  ModelTwo_Output["sig_Colour", 1:2],
-  ModelTwo_Output["sig_Colour2", 1:2],
-  ModelTwo_Output["sig_Smell", 1:2],
-  ModelTwo_Output["sig_Smell2", 1:2],
-  ModelTwo_Output["sig_Sound", 1:2],
-  ModelTwo_Output["sig_Sound2", 1:2],
-  ModelTwo_Output["sig_Deadwood", 1:2],
-  ModelTwo_Output["sig_Deadwood2", 1:2]
+ModelTwo_Table <-
+  bind_cols(
+    "Mean" =
+      bind_rows(
+        ModelTwo_Output["asc_C", 1:2],
+        ModelTwo_Output["mu_Tax", 1:2],
+        ModelTwo_Output["mu_Colour2", 1:2],
+        ModelTwo_Output["mu_Colour", 1:2],
+        ModelTwo_Output["mu_Smell2", 1:2],
+        ModelTwo_Output["mu_Smell", 1:2],
+        ModelTwo_Output["mu_Sound2", 1:2],
+        ModelTwo_Output["mu_Sound", 1:2],
+        ModelTwo_Output["mu_Deadwood2", 1:2],
+        ModelTwo_Output["mu_Deadwood", 1:2]
+      ),
+    "Standard Deviation" =
+      bind_rows(
+        ModelTwo_Output["asc_C", 1:2],
+        ModelTwo_Output["sig_Tax", 1:2],
+        ModelTwo_Output["sig_Colour2", 1:2],
+        ModelTwo_Output["sig_Colour", 1:2],
+        ModelTwo_Output["sig_Smell2", 1:2],
+        ModelTwo_Output["sig_Smell", 1:2],
+        ModelTwo_Output["sig_Sound2", 1:2],
+        ModelTwo_Output["sig_Sound", 1:2],
+        ModelTwo_Output["sig_Deadwood2", 1:2],
+        ModelTwo_Output["sig_Deadwood", 1:2]
+      )
+  )
+
+
+ # *************************************************************************
+#### Section 4: Create tables ####
+ # *************************************************************************
+
+
+## Top part with mean and SDs
+Table2_Top <- bind_cols("Variable" = ModelOne_Table[, 1],
+                    "MeanOne" = ModelOne_Table[, 2],
+                    "SDOne" = ModelOne_Table[, 4],
+                    "MeanTwo" = ModelTwo_Table[, 2],
+                    "SDTwo" = ModelTwo_Table[, 4])
+
+
+## Artificially fix ASC row
+Table2_Top[Table2_Top$Variable == "asc_C",] <-
+  c("asc_C", ModelOne_Output["asc_C", 1:2], ModelTwo_Output["asc_C", 1:2])
+
+
+
+## New reveiwer-requested bottom row
+Table2_Bottom <-  bind_cols(
+  "Variable" = c("N", "AIC", "Adj.R2", "LogLike"),
+  "MeanOne" = Diagnostics(ModelOne_Model)[, 1],
+  "SDOne" = 0,
+  "MeanTwo" = Diagnostics(ModelTwo_Model)[, 1],
+  "SDTwo" = 0
 )
 
-
- # *************************************************************************
-#### Section 4: Output tables ####
- # *************************************************************************
+Table2 <- rbind(Table2_Top,
+                Table2_Bottom)
 
 
-
-Table2 <- bind_cols("Variable" = ModelOne_Table[, 1],
-                    "ModelOne" = ModelOne_Table[, 2],
-                    "ModelTwo" = ModelTwo_Table[, 2])
-
+# *************************************************************************
+#### Section 5: Output tables ####
+# *************************************************************************
 
 
 ## Output to screen in a nice format for making tables in word
-Table2 %>% write.csv(quote=F)
+Table2 %>% write.csv(quote = FALSE)
 ## Output to a discrete file if that's helpful
 Table2 %>% fwrite(
   sep = ",",

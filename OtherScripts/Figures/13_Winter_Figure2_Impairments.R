@@ -1,15 +1,10 @@
-#### RELATE WP5: Recovering unconditionals  ###############
-# Script author: Peter King (p.m.king@kent.ac.uk)
-# Last Edited: 01/02/2023
-# Change: Removing figure minor y lines and adding pound sign.
-# Description: So here we take all the unconditionals and use them to specify the
-## mean, max, min, and quantiles for the distribution of each attribute in each
-## Impairment. So unconditionals > moments > summary > create plot.
+#### RELATE WP5: Conditionals by impairment  ###############
+# Script author: Peter King (p.king1@leeds.ac.uk)
+# Last Edited: 23/02/2024
 
-
-#----------------------------------------------------------------------------------------------------------
+# ************************************************************************
 #### Section 0: Setup and estimate models ####
-#----------------------------------------------------------------------------------------------------------
+# ************************************************************************
 
 
 ## sessionInfo() for Replicability ------------------------------------------------------------------------------
@@ -63,62 +58,109 @@ library(data.table)
 library(Rfast)
 
 
-#----------------------------------------------------------------------------------------------------------
+# ************************************************************************
 #### Section 1: Setup parallelisation and benchmarking ####
-#----------------------------------------------------------------------------------------------------------
+# ************************************************************************
 
 
 
-## The latest version with WTP appended is 2022_01_07
-Winter <- data.frame(fread(here("OtherData","Winter_dataframe_Step3.csv")))
+## **************************
+## Import Survey Data
+## **************************
+## Use step three and add unconditionals rather than use Step4.csv with conditionals
+here()
+Winter <- here("OtherData","Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
+## For various reasons I'm dropping the existing WTP to re-add it here
+## This makes fixing the rest of the code easier
+Winter <- Winter[,1:217]
 
 ## Truncate to have same number of rows as in the models
-Winter<- Winter[!is.na(Winter$MilesDistance),] ## Drop missing distances
-Winter<- Winter[!is.na(Winter$Overall),] ## Drop respondents not completing BIOWELL
+Winter <- Winter[!is.na(Winter$MilesDistance), ] ## Drop missing distances
+Winter <- Winter[!is.na(Winter$Overall), ] ## Drop respondents not completing BIOWELL
 
 
 
+## **************************
+## Import WTP
+## **************************
 
 ## This is the WTP from the model itself:
 ### Note: 1711 rows (one per respondent), 9001 variables (1000 per attribute level)
 ### Note: added all four datasets here so you can choose
-# WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelOne_2022_07_29_WTP.csv")))
-# WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelOne_2022_07_29_UCWTP.csv")))
-# WTP <- data.frame(fread(here("WinterReplication/CEModelData","WP5_Winter_MXL_ModelTwo_2022_07_29_WTP.csv")))
-WTP <- data.frame(fread(here("CEoutput/ModelTwo","Winter_MXL_ModelTwo_UnconWTP.csv")))
+# WTP <- here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_ConWTP.csv") %>% fread() %>% data.frame()
+WTP <- here("CEoutput/ModelTwo", "Winter_MXL_ModelTwo_AllCorrelations_ConWTP.csv") %>% fread() %>% data.frame()
+
 
 ## If the conditionals are imported then run this to recover only useful variables
-WTP <- WTP[WTP %>% select(-ends_with(c(".ID",".post.sd"))) %>% colnames()] %>% data.frame()
+WTP <- WTP[WTP %>% select(-ends_with(c(".ID", ".post.sd"))) %>% colnames()] %>% data.frame()
 
 
-## Combine all for ease:
-WinterWTPCombined <- cbind(Winter,WTP)
 
+WTP <-
+  bind_cols(
+    "ColourHigh" = WTP$b_Colour2.post.mean,
+    "ColourMedium" = WTP$b_Colour.post.mean,
+    "SmellHigh" = WTP$b_Smell2.post.mean,
+    "SmellMedium" = WTP$b_Smell.post.mean,
+    "SoundHigh" = WTP$b_Sound2.post.mean,
+    "SoundMedium" = WTP$b_Sound.post.mean,
+    "DeadwoodHigh" = WTP$b_Deadwood2.post.mean,
+    "DeadwoodMedium" = WTP$b_Deadwood.post.mean,
 
-#----------------------------------------------------------------------------------------------------------
+    "HearingIssues" = Winter$HearingIssues ,
+    "SightIssues" = Winter$SightIssues ,
+    "SmellIssues" = Winter$SmellIssues ,
+    "Impairment" = Winter$Impairment
+  )
+
+# ************************************************************************
 #### Section 2: Define useful variables ####
-#----------------------------------------------------------------------------------------------------------
+# ************************************************************************
 
 
-## So I'll use these later to name rows
-Names <- c("Tax",
-           "ColourMedium",
-           "ColourHigh",
-           "SoundMedium",
-           "SoundHigh",
-           "SmellMedium",
-           "SmellHigh",
-           "DeadwoodMedium",
-           "DeadwoodHigh")
+## I want this order on the plot:
+Names <- c(
+  "ColourHigh",
+  "ColourMedium",
+  "SmellHigh",
+  "SmellMedium",
+  "SoundHigh",
+  "SoundMedium",
+  "Deadwood\nDecomposition High",
+  "Deadwood\nDecomposition Medium"
+)
 
 
-## Label X axis of ggplot boxplots
-Labels <- c("Tax",
-            "Colour\n Medium","Colour\n High",
-            "Sound\n Medium","Sound\n High",
-            "Smell\n Medium", "Smell\n High",
-            "Deadwood\n Medium","Deadwood\n High")
 
+Labels <-
+  Names %>% gsub(pattern = "Decomposition",
+                 replacement = "decomposition") %>%
+  gsub(pattern = "Medium", replacement = "\nmedium") %>%
+  gsub(pattern = "High", replacement = "\nhigh") %>%
+  gsub(pattern = "Colour", replacement = "Colours:") %>%
+  gsub(pattern = "Smell", replacement = "Smells:") %>%
+  gsub(pattern = "Sound", replacement = "Sounds:") %>%
+  gsub(pattern = "Deadwood", replacement = "Deadwood:") %>%
+  c()
+
+
+
+## I got these from RColorBrewer but adding specifically here to
+### (a) see the colours in the console with new RStudio,
+### (b) make scale_fill_manual() easier
+Colours <- c(
+  "#C6DBEF",
+  "#C6DBEF",
+  "#08306B",
+  "#08306B",
+  "#6BAED6",
+  "#6BAED6",
+  "#2171B5",
+  "#2171B5"
+)
+
+## Update all text sizes here for consistency
+TextSize <- 12
 
 ## Label grouping variable
 Impairments <- c(0,1)
@@ -126,94 +168,107 @@ Impairments <- c(0,1)
 
 LegendLabels <- c(
   paste0("No impairment\n (N = ",Winter %>% filter(Impairment==0) %>% nrow(),")"),
-  paste0("Any impairment\n (N = ",Winter %>% filter(Impairment==1) %>% nrow(),")"))
+  paste0("Impairment\n (N = ",Winter %>% filter(Impairment==1) %>% nrow(),")"))
 
-#----------------------------------------------------------------------------------------------------------
-#### Section 2B or most likely not 2B: Trying to make the tails longer by using the entire distribution ####
-#----------------------------------------------------------------------------------------------------------
-
-
-## So this function calculates one stat per attribute per Impairment
-### So: rowmeans() not rowMeans() is actually insanely fast if you can be bothered to transform to and from matrices.
-### Function: selects relevant columns from the dataset then calculates summary stats for each group.
-Summarizer <- function(Attribute) {
-
-  bind_cols(
-    "y0"=  WinterWTPCombined %>% select(starts_with(Attribute),"Impairment")  %>% group_by(Impairment) %>% summarise_all(quantile,c(0.05)) %>% as.matrix() %>% rowmeans(),
-    "y25"= WinterWTPCombined %>% select(starts_with(Attribute),"Impairment")  %>% group_by(Impairment) %>% summarise_all(quantile,c(0.25)) %>% as.matrix() %>% rowmeans(),
-    "y50"= WinterWTPCombined %>% select(starts_with(Attribute),"Impairment")  %>% group_by(Impairment) %>% summarise_all(median) %>% as.matrix() %>% rowmeans(),
-    "y75"= WinterWTPCombined %>% select(starts_with(Attribute),"Impairment")  %>% group_by(Impairment) %>% summarise_all(quantile,c(0.75)) %>% as.matrix() %>% rowmeans() ,
-    "y100"=WinterWTPCombined %>% select(starts_with(Attribute),"Impairment")  %>% group_by(Impairment) %>% summarise_all(quantile,c(0.95)) %>% as.matrix() %>% rowmeans()) %>% data.frame()
-
-}
+# ***************************************************************************
+#### Section 3: Create Data ####
+# ***************************************************************************
 
 
-## Binds the results for each attribute; maybe we can loop through this.
-Summaries <- bind_rows(
-  Summarizer("beta_Tax"),
-  Summarizer("b_Colour."),
-  Summarizer("b_Colour2."),
-  Summarizer("b_Sound."),
-  Summarizer("b_Sound2."),
-  Summarizer("b_Smell."),
-  Summarizer("b_Smell2."),
-  Summarizer("b_Deadwood."),
-  Summarizer("b_Deadwood2."))
+PlotData <- WTP %>%
+  pivot_longer(1:8) %>%
+  mutate("YMIN" = quantile(value, c(0.025)),
+         "YMAX" = quantile(value, c(0.975)))
+
+## THis is an important step for the correct plot order!
+PlotData$name <-
+  factor(PlotData$name,
+         levels = unique(PlotData$name))
 
 
-## Bind the results with variable and Impairment ID for ease later
-NewerData <- bind_cols(
-  "variable"=rep(Names,each=2),
-  "Impairment"=rep(0:1,times=9),
-  Summaries)
+PlotData$Selected <-
+  ifelse(PlotData$name %in% c("ColourHigh", "ColourMedium"), PlotData$SightIssues,
+         ifelse(PlotData$name %in% c("SoundHigh", "SoundMedium"), PlotData$HearingIssues,
+                ifelse(PlotData$name %in% c("SmellHigh", "SmellMedium"), PlotData$SmellIssues,
+                       PlotData$Impairment)))
 
 
-## Without explicitly telling GGPLOT the factor levels it will plot in a horrible order!
-NewerData$variable <- factor(NewerData$variable,levels=unique(NewerData$variable))
-
-
-#----------------------------------------------------------------------------------------------------------
+# ************************************************************************
 #### Section 3: Create Plot ####
-#----------------------------------------------------------------------------------------------------------
+# ************************************************************************
 
 
-print("Figure")
+
 ## Using this version now!
 Figure2_Impairments <-
-  ggplot(NewerData,aes(x=variable, fill=as.factor(Impairment))) +
-  geom_boxplot(varwidth = 0.5,outlier.shape = NA,
-               aes(
-                 ymin=y0,
-                 lower=y25,
-                 middle=y50,
-                 upper=y75,
-                 ymax=y100,
-               ),stat="identity")+
-  scale_x_discrete(name="Attribute",label=Labels)+
-  theme_bw()+geom_hline(yintercept=0)+
-  ylab("WTP ( \U00a3 GBP) Per Year Local Tax")+
-  scale_y_continuous(limits=c(-10,25)
-                     ,breaks = seq(-10,25,1))+
+  ggplot(PlotData,
+         aes(
+           x = value,
+           y = rev(name),
+           fill = Impairment %>% as.factor()
+         )) +
+  # ggdist::stat_histinterval(normalize = "groups",
+  #                           slab_linewidth = 0.5,
+  #                           slab_colour = "black",
+  #                           outline_bars = TRUE,
+  #                           position = "dodge",
+  #                           height = 0.90,
+  #                           scale  = 0.75) +
+  stat_boxplot(geom = "errorbar",
+               width = 0.25,
+               position = position_dodge(width = 0.75)) +
+  geom_boxplot(outlier.shape = NA) +
+  theme_bw() +
+  geom_vline(xintercept = 0, alpha = 0.5) +
+  scale_x_continuous(name = "Marginal WTP (GBP) in local council tax, per household, per annum",
+                     breaks = seq(-50, 50, 5)) +
+  scale_y_discrete(name = "Attribute and level", labels = rev(Labels)) +
   scale_fill_manual(name="Impairment:",values=RColorBrewer::brewer.pal(9, "Blues")[c(6,9)],
                     label=LegendLabels,
                     guide=guide_legend(reverse = FALSE))+
-  theme(legend.position = "bottom",
-        legend.background=element_blank(),
-        legend.box.background = element_rect(colour="black"),
-        panel.grid.major.x=element_blank(),
-        panel.grid.minor.x=element_blank(),
-        panel.grid.major.y=element_blank(),
-        panel.grid.minor.y=element_blank())
+  theme(
+    legend.position = "bottom",
+    legend.text = element_text(size = 10,
+                               colour = "black",
+                               family = "serif"),
+    legend.background = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    legend.title = element_text(size = TextSize,
+                                colour = "black",
+                                family = "serif"),
+    axis.text.x = element_text(size = TextSize,
+                               colour = "black",
+                               family = "serif"), ## Change text to be clearer for reader
+    axis.text.y = element_text(size = TextSize,
+                               colour = "black",
+                               family = "serif"),
+    axis.title.y = element_text(size = TextSize,
+                                colour = "black",
+                                family = "serif"),
+    axis.title.x = element_text(size = TextSize,
+                                colour = "black",
+                                family = "serif")
+  ) +
+  coord_cartesian(xlim = c(-10, 30))
 
 
-#----------------------------------------------------------------------------------------------------------
+# ************************************************************************
 #### Section 3: Export Plot ####
-#----------------------------------------------------------------------------------------------------------
+# ************************************************************************
 
 
-ggsave(Figure2_Impairments, device = "png",
-       filename = paste0(here(),"/OtherOutput/Figures/","Figure2_Impairments.png"),
-       width=20,height=15,units = "cm",dpi=500)
+ggsave(
+  Figure2_Impairments,
+  device = "png",
+  filename = paste0(here(), "/OtherOutput/Figures/", "Figure2_Impairments.png"),
+  width = 20,
+  height = 15,
+  units = "cm",
+  dpi = 500
+)
 
 
 # End Of Script -----------------------------------------------------------
