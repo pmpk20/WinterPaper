@@ -12,7 +12,9 @@
 - Current issues: 
   - The *model.rds* and *unconditionalWTP* are too large for github so do not appear here. 
 - I have anonymised all location data where possible. 
-  - For the full survey data please see: https://data.kent.ac.uk/480/ 
+  - For the full survey data please see: https://data.kent.ac.uk/480/
+- If all the CEoutput isn't here, it is at the above official repo.
+- We did loads of additional analysis which isn't here but ask me for it
 
 ------------------------------
 ##### Folders:
