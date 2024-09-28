@@ -1,0 +1,9 @@
+#Variables#Means#Variances#Distributions
+1#Colour2#Pass: Mean of conditional WTP (8.776) >= 90% of μ parameter (9.201)#Pass: Variance of conditional WTP (9.948) >= 60% of σ parameter (-5.463)#Pass: (KS test stat = 0.867, P = 0.266)
+2#Colour#Pass: Mean of conditional WTP (5.952) >= 90% of μ parameter (6.170)#Pass: Variance of conditional WTP (6.718) >= 60% of σ parameter (-0.1726)#Pass: (KS test stat = 0.822, P = 0.356)
+3#Smell2#Pass: Mean of conditional WTP (5.303) >= 90% of μ parameter (5.668)#Pass: Variance of conditional WTP (7.196) >= 60% of σ parameter (-4.509)#Pass: (KS test stat = 0.914, P = 0.174)
+4#Smell#Pass: Mean of conditional WTP (-1.144) >= 90% of μ parameter (-1.054)#Pass: Variance of conditional WTP (5.640) >= 60% of σ parameter (-3.513)#Pass: (KS test stat = 0.657, P = 0.687)
+5#Sound2#Fail: Mean of conditional WTP (3.431) < 90% of μ parameter (3.996)#Pass: Variance of conditional WTP (11.562) >= 60% of σ parameter (9.571)#Pass: (KS test stat = 0.905, P = 0.192)
+6#Sound#Pass: Mean of conditional WTP (-3.054) >= 90% of μ parameter (-2.857)#Pass: Variance of conditional WTP (5.960) >= 60% of σ parameter (1.416)#Pass: (KS test stat = 0.815, P = 0.370)
+7#Deadwood2#Pass: Mean of conditional WTP (-5.082) >= 90% of μ parameter (-5.107)#Pass: Variance of conditional WTP (6.557) >= 60% of σ parameter (4.174)#Pass: (KS test stat = 0.542, P = 0.916)
+8#Deadwood#Pass: Mean of conditional WTP (2.111) >= 90% of μ parameter (2.240)#Pass: Variance of conditional WTP (3.300) >= 60% of σ parameter (0.4587)#Pass: (KS test stat = 0.867, P = 0.268)

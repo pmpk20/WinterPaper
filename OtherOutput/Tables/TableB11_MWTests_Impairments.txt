@@ -1,0 +1,9 @@
+#Name#Number without#Number with#Statistic#P. value#Effect Size
+W...1#Colour_WTP_High by SightIssues#1511#200#164882#0.036**#0.051
+W...2#Colour_WTP_Medium by SightIssues#1511#200#164518#0.041**#0.049
+W...3#Smell_WTP_High by SmellIssues#1579#132#115320#0.042**#0.049
+W...4#Smell_WTP_Medium by SmellIssues#1579#132#119229#0.006***#0.067
+W...5#Sound_WTP_High by HearingIssues#1585#126#103930#0.445 #0.018
+W...6#Sound_WTP_Medium by HearingIssues#1585#126#104473#0.387 #0.021
+W...7#Deadwood_WTP_High by Impairment#1397#314#215153#0.598 #0.013
+W...8#Deadwood_WTP_Medium by Impairment#1397#314#236203#0.033**#0.052

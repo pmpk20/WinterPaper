@@ -1,0 +1,49 @@
+#Name#Number without#Number with#Statistic#P. value#Effect Size
+W...1#Colour_WTP_High by MostRecentVisit_Never#1175#536#274918#0.000***#0.102
+W...2#Colour_WTP_High by MostRecentVisit_Season#1475#236#183648#0.173 #0.033
+W...3#Colour_WTP_High by MostRecentVisit_Month#1435#276#212860#0.049**#0.048
+W...4#Colour_WTP_High by MostRecentVisit_Week#1452#259#189592#0.832 #0.005
+W...5#Colour_WTP_High by MostRecentVisit_NearWeek#1401#310#230068#0.101 #0.040
+W...6#Colour_WTP_High by MostRecentVisit_Daily#1617#94#77082#0.816 #0.006
+W...7#Colour_WTP_Medium by MostRecentVisit_Never#1175#536#277984#0.000***#0.094
+W...8#Colour_WTP_Medium by MostRecentVisit_Season#1475#236#180346#0.372 #0.022
+W...9#Colour_WTP_Medium by MostRecentVisit_Month#1435#276#213343#0.042**#0.049
+W...10#Colour_WTP_Medium by MostRecentVisit_Week#1452#259#190731#0.713 #0.009
+W...11#Colour_WTP_Medium by MostRecentVisit_NearWeek#1401#310#229676#0.112 #0.038
+W...12#Colour_WTP_Medium by MostRecentVisit_Daily#1617#94#76088#0.985 #0.000
+W...13#Smell_WTP_High by MostRecentVisit_Never#1175#536#276416#0.000***#0.098
+W...14#Smell_WTP_High by MostRecentVisit_Season#1475#236#180066#0.393 #0.021
+W...15#Smell_WTP_High by MostRecentVisit_Month#1435#276#212716#0.051*#0.047
+W...16#Smell_WTP_High by MostRecentVisit_Week#1452#259#191176#0.668 #0.010
+W...17#Smell_WTP_High by MostRecentVisit_NearWeek#1401#310#230864#0.082*#0.042
+W...18#Smell_WTP_High by MostRecentVisit_Daily#1617#94#76930#0.842 #0.005
+W...19#Smell_WTP_Medium by MostRecentVisit_Never#1175#536#272960#0.000***#0.107
+W...20#Smell_WTP_Medium by MostRecentVisit_Season#1475#236#185814#0.095*#0.040
+W...21#Smell_WTP_Medium by MostRecentVisit_Month#1435#276#204135#0.417 #0.020
+W...22#Smell_WTP_Medium by MostRecentVisit_Week#1452#259#195470#0.310 #0.025
+W...23#Smell_WTP_Medium by MostRecentVisit_NearWeek#1401#310#228620#0.145 #0.035
+W...24#Smell_WTP_Medium by MostRecentVisit_Daily#1617#94#81169#0.267 #0.027
+W...25#Sound_WTP_High by MostRecentVisit_Never#1175#536#284027#0.001***#0.079
+W...26#Sound_WTP_High by MostRecentVisit_Season#1475#236#174590#0.939 #0.002
+W...27#Sound_WTP_High by MostRecentVisit_Month#1435#276#213008#0.046**#0.048
+W...28#Sound_WTP_High by MostRecentVisit_Week#1452#259#190643#0.722 #0.009
+W...29#Sound_WTP_High by MostRecentVisit_NearWeek#1401#310#229679#0.112 #0.038
+W...30#Sound_WTP_High by MostRecentVisit_Daily#1617#94#76221#0.962 #0.001
+W...31#Sound_WTP_Medium by MostRecentVisit_Never#1175#536#286281#0.003***#0.073
+W...32#Sound_WTP_Medium by MostRecentVisit_Season#1475#236#171569#0.725 #0.009
+W...33#Sound_WTP_Medium by MostRecentVisit_Month#1435#276#212235#0.059*#0.046
+W...34#Sound_WTP_Medium by MostRecentVisit_Week#1452#259#196417#0.252 #0.028
+W...35#Sound_WTP_Medium by MostRecentVisit_NearWeek#1401#310#229256#0.124 #0.037
+W...36#Sound_WTP_Medium by MostRecentVisit_Daily#1617#94#72410#0.441 #0.019
+W...37#Deadwood_WTP_High by MostRecentVisit_Never#1175#536#301832#0.168 #0.033
+W...38#Deadwood_WTP_High by MostRecentVisit_Season#1475#236#177797#0.595 #0.013
+W...39#Deadwood_WTP_High by MostRecentVisit_Month#1435#276#193416#0.539 #0.015
+W...40#Deadwood_WTP_High by MostRecentVisit_Week#1452#259#196220#0.264 #0.027
+W...41#Deadwood_WTP_High by MostRecentVisit_NearWeek#1401#310#218244#0.890 #0.003
+W...42#Deadwood_WTP_High by MostRecentVisit_Daily#1617#94#80659#0.317 #0.024
+W...43#Deadwood_WTP_Medium by MostRecentVisit_Never#1175#536#270417#0.000***#0.113
+W...44#Deadwood_WTP_Medium by MostRecentVisit_Season#1475#236#185773#0.096*#0.040
+W...45#Deadwood_WTP_Medium by MostRecentVisit_Month#1435#276#210849#0.088*#0.041
+W...46#Deadwood_WTP_Medium by MostRecentVisit_Week#1452#259#189468#0.845 #0.005
+W...47#Deadwood_WTP_Medium by MostRecentVisit_NearWeek#1401#310#232662#0.049**#0.048
+W...48#Deadwood_WTP_Medium by MostRecentVisit_Daily#1617#94#78999#0.519 #0.016

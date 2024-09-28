@@ -1,0 +1,10 @@
+,Variable,Mean,Median,SD,X95..C.I
+beta_Tax.,Tax,-4.912,-0.034,0.031,(-29.978) - (-0.002)
+b_Colour2.,Colour: high,11.217,10.981,12.244,(-8.749) - (23.697)
+b_Colour.,Colour: medium,6.302,6.087,8.503,(-7.725) - (15.437)
+b_Smell2.,Smell: high,7.541,7.259,8.914,(-6.880) - (16.873)
+b_Smell.,Smell: medium,1.673,1.572,6.552,(-4.611) - (6.912)
+b_Sound2.,Sound: high,3.988,3.905,12.226,(-14.997) - (16.172)
+b_Sound.,Sound: medium,-3.505,-3.637,5.091,(-9.373) - (0.241)
+b_Deadwood2.,Deadwood: high,-4.179,-4.309,7.599,(-9.683) - (2.577)
+b_Deadwood.,Deadwood: medium,4.282,4.150,6.730,(-5.467) - (10.464)
