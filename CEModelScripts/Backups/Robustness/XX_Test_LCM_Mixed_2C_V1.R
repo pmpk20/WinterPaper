@@ -1,0 +1,357 @@
+#### RELATE WP5: Latent class ####
+
+rm(list=ls())
+library(here)
+
+library(tidyr)
+library(apollo)
+library(ggridges)
+library(ggplot2)
+library(reshape2)
+library(dplyr)
+library(magrittr)
+library(ggdist)
+library(RColorBrewer)
+library(data.table)
+
+
+# *******************************************************************************
+# Section 1: Import Data ####
+# Selected output of 'sessionInfo()'
+# *******************************************************************************
+
+
+
+## Import reshaped survey data appropriate for Apollo
+database <-
+  here("CEModelData", "database_Winter_Step1.csv") %>%
+  fread() %>%
+  data.frame()
+
+
+## Keep only relevant columns
+database <- database[, c(
+  "Choice",
+  "Respondent",
+  "Season",
+  "Task",
+  "ID",
+  "Tax1",
+  "Tax2",
+  "Sound1",
+  "Sound2",
+  "Smell1",
+  "Smell2",
+  "Colour1",
+  "Colour2",
+  "Deadwood1",
+  "Deadwood2",
+  "Gender",
+  "DummyAge",
+  "MilesDistance",
+  "IncomeDummy",
+  "Impairment",
+  "Charity",
+  "SightIssues" ,
+  "SmellIssues" ,
+  "HearingIssues",
+
+  "CountryDummy",
+  "EthnicityDummyWhite",
+  "Urbanicity",
+  "MostRecentVisit",
+  "WoodlandsScore"
+)]
+
+# database <- here("CEModelData", "database_Winter_Step1.csv") %>% fread() %>% data.frame()
+apollo_initialise()
+
+
+# *******************************************************************************
+# Section 2: Estimation Statistics ####
+# Selected output of 'sessionInfo()'
+# *******************************************************************************
+
+### Initialise code
+apollo_initialise()
+
+### Set core controls
+apollo_control = list(
+  modelName       = "XX_Test_LCM_Mixed_2C_V1",
+  modelDescr      = "Latent class with continuous random parameters on Swiss route choice data",
+  indivID         = "Respondent",
+  mixing    = TRUE,
+  nCores          = 10,
+  outputDirectory = "CEoutput/Robustness"
+)
+
+
+# ################################################################# #
+#### DEFINE MODEL PARAMETERS                                     ####
+# ################################################################# #
+
+
+
+# Define beta starting values:
+apollo_beta = c(
+  asc_A      = 0,
+  asc_B      = 0,
+  asc_C = -1.173759,
+  mu_Tax_Class_1 = -0.020802,
+  mu_Colour2_Class_1 = -13.211719,
+  mu_Colour_Class_1 = -17.070154,
+  mu_Smell2_Class_1 = -10.959211,
+  mu_Smell_Class_1 = -5.260676,
+  mu_Sound2_Class_1 = -19.194319,
+  mu_Sound_Class_1 = -6.500704,
+  mu_Deadwood2_Class_1 = -28.418383,
+  mu_Deadwood_Class_1 = -18.654450,
+
+  mu_Tax_Class_2 = -0.098699,
+  mu_Colour2_Class_2 = 17.398876,
+  mu_Colour_Class_2 = 16.218641,
+  mu_Smell2_Class_2 = 12.839109,
+  mu_Smell_Class_2 = 0.267962,
+  mu_Sound2_Class_2 = 10.128315,
+  mu_Sound_Class_2 = -4.498508,
+  mu_Deadwood2_Class_2 = 1.971344,
+  mu_Deadwood_Class_2 = 7.939309,
+
+  delta_Class_1 = -0.313714,
+  delta_Class_2 = 0.000000,
+
+  gamma_Class_1_Gender = -0.058308,
+  gamma_Class_1_Age = -0.058991,
+  gamma_Class_1_Distance = 0.016149,
+  gamma_Class_1_Charity = 0.687405,
+  gamma_Class_1_Income = 0.231058,
+  gamma_Class_1_Impairment_Colour = 0.186151,
+  gamma_Class_1_Impairment_Smell = 0.903310,
+  gamma_Class_1_Impairment_Sound = 0.390635,
+  gamma_Class_1_Country = 0.074642,
+  gamma_Class_1_White = 0.130488,
+  gamma_Class_1_Urbanicity = 0.026628,
+  gamma_Class_1_MostRecentVisit = 0.222083,
+  gamma_Class_1_WoodlandsScore = 0.004650,
+
+  sig_Tax_Class_1 = 0.01,
+  sig_Tax_Class_2 = 0.02,
+
+  sig_Colour2_Class_1 = 0.2,
+  sig_Colour_Class_1 = 0.2,
+  sig_Smell2_Class_1 = 0.2,
+  sig_Smell_Class_1 = 0.2,
+  sig_Sound2_Class_1   = 0.2,
+  sig_Sound_Class_1   = 0.2,
+  sig_Deadwood2_Class_1 = 0.2,
+  sig_Deadwood_Class_1 = 0.2,
+
+  sig_Colour2_Class_2 = 0.1,
+  sig_Colour_Class_2 = 0.1,
+  sig_Smell2_Class_2 = 0.1,
+  sig_Smell_Class_2 = 0.1,
+  sig_Sound2_Class_2   = 0.1,
+  sig_Sound_Class_2   = 0.1,
+  sig_Deadwood2_Class_2 = 0.1,
+  sig_Deadwood_Class_2 = 0.1
+)
+
+apollo_fixed = c("asc_A", "asc_B", "delta_Class_2")
+
+
+# ################################################################# #
+#### DEFINE RANDOM COMPONENTS                                    ####
+# ################################################################# #
+
+
+
+### Set parameters for generating draws
+apollo_draws = list(
+  interDrawsType = "pmc",
+  interNDraws    = 500,
+  interUnifDraws = c(),
+  interNormDraws = c(
+    "draws_Tax",
+    "draws_Smell",
+    "draws_Sound",
+    "draws_Colour",
+    "draws_Deadwood",
+    "draws_Smell2",
+    "draws_Sound2",
+    "draws_Colour2",
+    "draws_Deadwood2"
+  ),
+  intraDrawsType = "halton",
+  intraNDraws    = 0,
+  intraUnifDraws = c(),
+  intraNormDraws = c()
+)
+
+
+### Create ran
+### Create random parameters
+apollo_randCoeff = function(apollo_beta, apollo_inputs) {
+  randcoeff = list()
+  randcoeff[["beta_Tax_Class_1"]] = -exp(mu_Tax_Class_1 + sig_Tax_Class_1 * draws_Tax)
+  randcoeff[["b_Smell_Class_1"]] =  (mu_Smell_Class_1 + sig_Smell_Class_1 * draws_Smell)
+  randcoeff[["b_Sound_Class_1"]] =  (mu_Sound_Class_1 + sig_Sound_Class_1 * draws_Sound)
+  randcoeff[["b_Colour_Class_1"]] =  (mu_Colour_Class_1 + sig_Colour_Class_1 * draws_Colour)
+  randcoeff[["b_Deadwood_Class_1"]] =  (mu_Deadwood_Class_1 + sig_Deadwood_Class_1 * draws_Deadwood)
+  randcoeff[["b_Smell2_Class_1"]] =  (mu_Smell2_Class_1 + sig_Smell2_Class_1 * draws_Smell2)
+  randcoeff[["b_Sound2_Class_1"]] =  (mu_Sound2_Class_1 + sig_Sound2_Class_1 * draws_Sound2)
+  randcoeff[["b_Colour2_Class_1"]] =  (mu_Colour2_Class_1 + sig_Colour2_Class_1 * draws_Colour2)
+  randcoeff[["b_Deadwood2_Class_1"]] =  (mu_Deadwood2_Class_1 + sig_Deadwood2_Class_1 * draws_Deadwood2)
+
+  randcoeff[["beta_Tax_Class_2"]] = -exp(mu_Tax_Class_2 + sig_Tax_Class_2 * draws_Tax)
+  randcoeff[["b_Smell_Class_2"]] =  (mu_Smell_Class_2 + sig_Smell_Class_2 * draws_Smell)
+  randcoeff[["b_Sound_Class_2"]] =  (mu_Sound_Class_2 + sig_Sound_Class_2 * draws_Sound)
+  randcoeff[["b_Colour_Class_2"]] =  (mu_Colour_Class_2 + sig_Colour_Class_2 * draws_Colour)
+  randcoeff[["b_Deadwood_Class_2"]] =  (mu_Deadwood_Class_2 + sig_Deadwood_Class_2 * draws_Deadwood)
+  randcoeff[["b_Smell2_Class_2"]] =  (mu_Smell2_Class_2 + sig_Smell2_Class_2 * draws_Smell2)
+  randcoeff[["b_Sound2_Class_2"]] =  (mu_Sound2_Class_2 + sig_Sound2_Class_2 * draws_Sound2)
+  randcoeff[["b_Colour2_Class_2"]] =  (mu_Colour2_Class_2 + sig_Colour2_Class_2 * draws_Colour2)
+  randcoeff[["b_Deadwood2_Class_2"]] =  (mu_Deadwood2_Class_2 + sig_Deadwood2_Class_2 * draws_Deadwood2)
+
+  return(randcoeff)
+}
+
+
+# ################################################################# #
+#### DEFINE LATENT CLASS COMPONENTS                              ####
+# ################################################################# #
+
+apollo_lcPars = function(apollo_beta, apollo_inputs){
+  lcpars = list()
+
+  lcpars[["beta_Tax"]] = list(beta_Tax_Class_1, beta_Tax_Class_2)
+  lcpars[["b_Smell"]] = list(b_Smell_Class_1, b_Smell_Class_2)
+  lcpars[["b_Sound"]] = list(b_Sound_Class_1, b_Sound_Class_2)
+  lcpars[["b_Colour"]] = list(b_Colour_Class_1, b_Colour_Class_2)
+  lcpars[["b_Deadwood"]] = list(b_Deadwood_Class_1, b_Deadwood_Class_2)
+  lcpars[["b_Smell2"]] = list(b_Smell2_Class_1, b_Smell2_Class_2)
+  lcpars[["b_Sound2"]] = list(b_Sound2_Class_1, b_Sound2_Class_2)
+  lcpars[["b_Colour2"]] = list(b_Colour2_Class_1, b_Colour2_Class_2)
+  lcpars[["b_Deadwood2"]] = list(b_Deadwood2_Class_1, b_Deadwood2_Class_2)
+
+  V = list()
+  V[["Class_1"]] = delta_Class_1 +
+    gamma_Class_1_Gender * Gender +
+    gamma_Class_1_Age * DummyAge +
+    gamma_Class_1_Distance * MilesDistance +
+    gamma_Class_1_Charity * Charity +
+    gamma_Class_1_Income * IncomeDummy +
+    gamma_Class_1_Impairment_Colour * SightIssues +
+    gamma_Class_1_Impairment_Smell * SmellIssues +
+    gamma_Class_1_Impairment_Sound * HearingIssues +
+    gamma_Class_1_Country * CountryDummy +
+    gamma_Class_1_White * EthnicityDummyWhite +
+    gamma_Class_1_Urbanicity * Urbanicity +
+    gamma_Class_1_MostRecentVisit * MostRecentVisit +
+    gamma_Class_1_WoodlandsScore * WoodlandsScore
+
+  V[["Class_2"]] = delta_Class_2
+
+  classAlloc_settings = list(classes = c(Class_1 = 1, Class_2 = 2),
+                             utilities = V)
+
+  lcpars[["pi_values"]] = apollo_classAlloc(classAlloc_settings)
+
+  return(lcpars)
+}
+
+# ################################################################# #
+#### GROUP AND VALIDATE INPUTS                                   ####
+# ################################################################# #
+
+apollo_inputs = apollo_validateInputs()
+
+# ################################################################# #
+#### DEFINE MODEL AND LIKELIHOOD FUNCTION                        ####
+# ################################################################# #
+
+apollo_probabilities=function(apollo_beta, apollo_inputs, functionality="estimate"){
+
+  ### Attach inputs and detach after function exit
+  apollo_attach(apollo_beta, apollo_inputs)
+  on.exit(apollo_detach(apollo_beta, apollo_inputs))
+
+  ### Create list of probabilities P
+  P = list()
+
+  ### Define settings for MNL model component that are generic across classes
+  mnl_settings = list(
+    alternatives = c(altA = 1, altB = 2, altC = 3),
+    avail        = list(altA = 1, altB = 1, altC = 1),
+    choiceVar    = Choice
+  )
+
+  ### Loop over classes
+  for (s in 1:2) {
+
+    ### Compute class-specific utilities
+    V=list()
+    V[['altA']]  = asc_A + beta_Tax[[s]] * (Tax1 +
+      b_Sound[[s]]  * (Sound1 == 1) +
+        b_Sound2[[s]]  * (Sound1 == 2) +
+        b_Smell[[s]] * (Smell1 == 1) +
+        b_Smell2[[s]] * (Smell1 == 2) +
+        b_Colour[[s]] * (Colour1 == 1) +
+        b_Colour2[[s]] * (Colour1 == 2) +
+        b_Deadwood[[s]] * (Deadwood1 == 7) +
+        b_Deadwood2[[s]] * (Deadwood1 == 15))
+
+
+    V[['altB']]  = asc_B + beta_Tax[[s]] * (Tax2 +
+      b_Sound[[s]]  * (Sound2 == 1) +
+        b_Sound2[[s]]  * (Sound2 == 2) +
+        b_Smell[[s]] * (Smell2 == 1) +
+        b_Smell2[[s]] * (Smell2 == 2) +
+        b_Colour[[s]] * (Colour2 == 1) +
+        b_Colour2[[s]] * (Colour2 == 2) +
+        b_Deadwood[[s]] * (Deadwood2 == 7) +
+        b_Deadwood2[[s]] * (Deadwood2 == 15))
+
+    V[['altC']]  = asc_C
+
+    mnl_settings$utilities = V
+    mnl_settings$componentName = paste0("Class_", s)
+
+    ### Compute within-class choice probabilities using MNL model
+    P[[paste0("Class_", s)]] = apollo_mnl(mnl_settings, functionality)
+
+    ### Take product across observation for same individual
+    P[[paste0("Class_", s)]] = apollo_panelProd(P[[paste0("Class_", s)]],
+                                                apollo_inputs ,
+                                                functionality)
+
+    ## Average across inter-individual draws within classes
+    P[[paste0("Class_", s)]] = apollo_avgInterDraws(P[[paste0("Class_", s)]],
+                                                    apollo_inputs,
+                                                    functionality)
+  }
+
+  ### Compute latent class model probabilities
+  lc_settings  = list(inClassProb = P, classProb = pi_values)
+  P[["model"]] = apollo_lc(lc_settings, apollo_inputs, functionality)
+
+  ### Average across inter-individual draws in class allocation probabilities
+  # P[["model"]] = apollo_avgInterDraws(P[["model"]], apollo_inputs, functionality)
+
+  ### Prepare and return outputs of function
+  P = apollo_prepareProb(P, apollo_inputs, functionality)
+  return(P)
+}
+
+
+# ################################################################# #
+#### MODEL ESTIMATION AND OUTPUT                                 ####
+# ################################################################# #
+
+### Estimate model
+model = apollo_estimate(apollo_beta, apollo_fixed, apollo_probabilities, apollo_inputs)
+
+### Show output in screen
+apollo_modelOutput(model)
+
+### Save output to file(s)
+apollo_saveOutput(model)

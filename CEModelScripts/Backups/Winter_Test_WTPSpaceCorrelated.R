@@ -1,0 +1,399 @@
+#### WP5 Winter Paper: Table 3 Model One ####
+## Function: Estimate Mixed Logit on Attributes Only
+## Author: Dr Peter King (p.king1@leeds.ac.uk)
+## Last change: 22/03/2024
+## Change:
+# -Changed starting values to be from Pref-Space MXL
+# - Added more inter-attribute correlations
+
+
+
+# ****************************
+# Replication Information: ####
+# ****************************
+
+
+# R version 4.1.3 (2022-03-10)
+# Platform: x86_64-w64-mingw32/x64 (64-bit)
+# Running under: Windows 10 x64 (build 19043)
+# Matrix products: default
+#   [1] gridExtra_2.3  ggdist_3.2.0   here_1.0.1     mded_0.1-2     reshape2_1.4.4
+# [6] ggridges_0.5.3 ggplot2_3.3.6  magrittr_2.0.3 dplyr_1.0.9    apollo_0.2.7
+
+
+# ****************************
+# Setup Environment: ####
+# ****************************
+
+## Clear workspace:
+rm(list = ls())
+
+## This sometimes fixes encoding issues using a HPC:
+Sys.setlocale("LC_ALL","C")
+
+
+## Note: My working directory is the zip file and then
+###I specify extensions when running scripts or importing data:
+# setwd("K:/WinterAnalysis1307/WP5/WinterReplication")
+
+
+## Libraries that will come in handy later
+library(apollo)
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(ggridges)
+library(reshape2)
+library(mded)
+library(here)
+library(data.table)
+
+# ****************************
+# Import Data: ####
+# ****************************
+
+
+database <- here("CEModelData", "database_Winter_Step1.csv") %>% fread() %>% data.frame()
+
+
+database$CountryDummy <- ifelse(database$Country == 0, 0, 1)
+## Keep only relevant columns
+database <- database[, c(
+  "Choice",
+  "Respondent",
+  "Season",
+  "Task",
+  "ID",
+  "Tax1",
+  "Tax2",
+  "Sound1",
+  "Sound2",
+  "Smell1",
+  "Smell2",
+  "Colour1",
+  "Colour2",
+  "Deadwood1",
+  "Deadwood2",
+  "Gender",
+  "DummyAge",
+  "MilesDistance",
+  "IncomeDummy",
+  "Impairment",
+  "Country",
+  "CountryDummy",
+  "EthnicityDummyWhite",
+  "Urbanicity",
+  "MostRecentVisit",
+  "WoodlandsScore"
+)]
+
+apollo_initialise()
+
+
+# ****************************
+# Estimation Basics: ####
+# ****************************
+
+
+## Note 10 cores as I'm using the University of Kent 'Tesla' HPC:
+apollo_control = list(
+  nCores    = 10,
+  analyticGrad    = TRUE, # following manual here
+  mixing    = TRUE,
+  modelDescr = "Winter_Test_WTPSpaceUncorrelated",
+  modelName  = "Winter_Test_WTPSpaceUncorrelated", ## Added dates last verified
+  indivID    = "Respondent", ## This is the name of a column in the database indicating each unique respondent
+  outputDirectory = "CEoutput/ModelOne"
+)
+
+
+## Define parameters starting values:
+### Note starting mean of tax at -3 to avoid issues later when using the lognormal distribution
+apollo_beta = c(
+  asc_A      = 0,
+  asc_B      = 0,
+
+  asc_C = -2.2121,
+  mu_Tax = -3.7355,
+  mu_Sound = 2.8542,
+  mu_Smell = 1.8859,
+  mu_Colour = -5.3266,
+  mu_Deadwood = -2.3712,
+  mu_Sound2 = -2.0527,
+  mu_Smell2 = -5.6148,
+  mu_Colour2 = -10.7500,
+  mu_Deadwood2 = 3.9079,
+  sig_Tax = 2.9901,
+  sig_Colour2 = 12.6124,
+  sig_Colour = -0.5181,
+  sig_Smell2 = 9.2560,
+  sig_Smell = 1.3572,
+  sig_Sound2 = 11.5939,
+  sig_Sound = 1.4390,
+  sig_Deadwood2 = 11.4997,
+  sig_Deadwood = 3.2791,
+
+
+  ## Group 1
+  sig_Sound_Colour   = 0.01,
+  sig_Smell_Colour = 0.01,
+  sig_Deadwood_Colour = 0.01,
+  sig_Sound_Smell   = 0.01,
+  sig_Colour_Smell = 0.01,
+  sig_Deadwood_Smell = 0.01,
+  sig_Smell_Sound = 0.01,
+  sig_Colour_Sound = 0.01,
+  sig_Deadwood_Sound = 0.01,
+  sig_Sound_Deadwood   = 0.01,
+  sig_Smell_Deadwood = 0.01,
+  sig_Colour_Deadwood = 0.01,
+
+  ## Group 2
+  sig_Sound2_Colour   = 0.01,
+  sig_Smell2_Colour = 0.01,
+  sig_Deadwood2_Colour = 0.01,
+  sig_Sound2_Smell   = 0.01,
+  sig_Colour2_Smell = 0.01,
+  sig_Deadwood2_Smell = 0.01,
+  sig_Smell2_Sound = 0.01,
+  sig_Colour2_Sound = 0.01,
+  sig_Deadwood2_Sound = 0.01,
+  sig_Sound2_Deadwood   = 0.01,
+  sig_Smell2_Deadwood = 0.01,
+  sig_Colour2_Deadwood = 0.01,
+
+  ## Group 3
+  sig_Sound_Colour2   = 0.01,
+  sig_Smell_Colour2 = 0.01,
+  sig_Deadwood_Colour2 = 0.01,
+  sig_Sound_Smell2   = 0.01,
+  sig_Colour_Smell2 = 0.01,
+  sig_Deadwood_Smell2 = 0.01,
+  sig_Smell_Sound2 = 0.01,
+  sig_Colour_Sound2 = 0.01,
+  sig_Deadwood_Sound2 = 0.01,
+  sig_Sound_Deadwood2   = 0.01,
+  sig_Smell_Deadwood2 = 0.01,
+  sig_Colour_Deadwood2 = 0.01,
+
+  ## Group 4
+  sig_Sound1_Colour2   = 0.01,
+  sig_Smell1_Colour2 = 0.01,
+  sig_Deadwood1_Colour2 = 0.01,
+  sig_Sound1_Smell2   = 0.01,
+  sig_Colour1_Smell2 = 0.01,
+  sig_Deadwood1_Smell2 = 0.01,
+  sig_Smell1_Sound2 = 0.01,
+  sig_Colour1_Sound2 = 0.01,
+  sig_Deadwood1_Sound2 = 0.01,
+  sig_Sound1_Deadwood2   = 0.01,
+  sig_Smell1_Deadwood2 = 0.01,
+  sig_Colour1_Deadwood2 = 0.01
+)
+
+
+## Hold Alternative-Specific Constants for non-status-quo options at zero
+apollo_fixed = c("asc_A","asc_B")
+
+
+## Set parameters for generating draws
+### Note that draws by attribute (5) or by level (9) a big difference!
+apollo_draws = list(
+  interDrawsType = "sobol",## Robust to using MLHS or Sobol draws
+  interNDraws    = 5000, ## Same results if you use 5000 draws
+  interUnifDraws = c(),
+  interNormDraws = c(
+    "draws_Tax",
+    "draws_Smell",
+    "draws_Sound",
+    "draws_Colour",
+    "draws_Deadwood",
+    "draws_Smell2",
+    "draws_Sound2",
+    "draws_Colour2",
+    "draws_Deadwood2"
+  ))
+
+
+## Create random parameters
+### Note lognormal for tax attribute to impose negative signs
+apollo_randCoeff = function(apollo_beta, apollo_inputs){
+  randcoeff = list()
+  randcoeff[["beta_Tax"]] = -exp(mu_Tax + sig_Tax * draws_Tax )
+
+  randcoeff[["b_Smell"]] =  (mu_Smell + sig_Smell * draws_Smell  +
+                               sig_Smell_Colour * draws_Colour +
+                               sig_Smell_Sound * draws_Sound +
+                               sig_Smell_Deadwood * draws_Deadwood +
+
+                               sig_Smell2_Colour * draws_Colour2 +
+                               sig_Smell2_Sound * draws_Sound2 +
+                               sig_Smell2_Deadwood * draws_Deadwood2)
+
+  randcoeff[["b_Sound"]] =  (mu_Sound + sig_Sound * draws_Sound +
+                               sig_Sound_Colour * draws_Colour +
+                               sig_Sound_Smell * draws_Smell +
+                               sig_Sound_Deadwood * draws_Deadwood +
+
+                               sig_Sound2_Colour * draws_Colour2 +
+                               sig_Sound2_Smell * draws_Smell2 +
+                               sig_Sound2_Deadwood * draws_Deadwood2)
+
+  randcoeff[["b_Colour"]] =  (mu_Colour + sig_Colour * draws_Colour   +
+                                sig_Colour_Smell * draws_Smell +
+                                sig_Colour_Sound * draws_Sound +
+                                sig_Colour_Deadwood * draws_Deadwood +
+
+                                sig_Colour2_Smell * draws_Smell2 +
+                                sig_Colour2_Sound * draws_Sound2 +
+                                sig_Colour2_Deadwood * draws_Deadwood2 )
+
+  randcoeff[["b_Deadwood"]] =  (mu_Deadwood + sig_Deadwood * draws_Deadwood   +
+                                  sig_Deadwood_Colour * draws_Colour +
+                                  sig_Deadwood_Sound * draws_Sound +
+                                  sig_Deadwood_Smell * draws_Smell +
+
+                                  sig_Deadwood2_Colour * draws_Colour2 +
+                                  sig_Deadwood2_Sound * draws_Sound2 +
+                                  sig_Deadwood2_Smell * draws_Smell2 )
+
+
+  randcoeff[["b_Smell2"]] =  (mu_Smell2 + sig_Smell2 * draws_Smell2   +
+                                sig_Smell_Colour2 * draws_Colour2 +
+                                sig_Smell_Sound2 * draws_Sound2 +
+                                sig_Smell_Deadwood2 * draws_Deadwood2 +
+
+                                sig_Smell1_Colour2 * draws_Colour +
+                                sig_Smell1_Sound2 * draws_Sound +
+                                sig_Smell1_Deadwood2 * draws_Deadwood )
+
+  randcoeff[["b_Sound2"]] =  (mu_Sound2 + sig_Sound2 * draws_Sound2   +
+                                sig_Sound_Colour2 * draws_Colour2 +
+                                sig_Sound_Smell2 * draws_Smell2 +
+                                sig_Sound_Deadwood2 * draws_Deadwood2 +
+
+                                sig_Sound1_Colour2 * draws_Colour +
+                                sig_Sound1_Smell2 * draws_Smell +
+                                sig_Sound1_Deadwood2 * draws_Deadwood)
+
+  randcoeff[["b_Colour2"]] =  (mu_Colour2 + sig_Colour2 * draws_Colour2   +
+                                 sig_Colour_Smell2 * draws_Smell2 +
+                                 sig_Colour_Sound2 * draws_Sound2 +
+                                 sig_Colour_Deadwood2 * draws_Deadwood2 +
+
+                                 sig_Colour1_Smell2 * draws_Smell +
+                                 sig_Colour1_Sound2 * draws_Sound +
+                                 sig_Colour1_Deadwood2 * draws_Deadwood)
+
+  randcoeff[["b_Deadwood2"]] =  (mu_Deadwood2 + sig_Deadwood2 * draws_Deadwood2   +
+                                   sig_Deadwood_Colour2 * draws_Colour2 +
+                                   sig_Deadwood_Sound2 * draws_Sound2 +
+                                   sig_Deadwood_Smell2 * draws_Smell2 +
+
+                                   sig_Deadwood1_Colour2 * draws_Colour +
+                                   sig_Deadwood1_Sound2 * draws_Sound +
+                                   sig_Deadwood1_Smell2 * draws_Smell)
+  return(randcoeff)
+}
+
+
+apollo_inputs = apollo_validateInputs() ## Required to check inputs are fine
+
+
+# ****************************
+# Estimation Specification: ####
+### Note: Model in WTP-space.
+# ****************************
+
+apollo_probabilities=function(apollo_beta, apollo_inputs, functionality="estimate"){
+
+  apollo_attach(apollo_beta, apollo_inputs)
+  on.exit(apollo_detach(apollo_beta, apollo_inputs))
+
+  P = list()
+
+  V = list()
+  V[['A']]  = asc_A - beta_Tax * (
+    b_Sound  * (Sound1 == 1) + b_Sound2  * (Sound1 == 2) +
+      b_Smell * (Smell1 == 1) + b_Smell2 * (Smell1 == 2) +
+      b_Colour * (Colour1 == 1) + b_Colour2 * (Colour1 == 2) +
+      b_Deadwood * (Deadwood1 == 7) + b_Deadwood2 * (Deadwood1 == 15) -
+      Tax1)
+
+
+  V[['B']]  =  asc_B - beta_Tax * (
+    b_Sound  * (Sound2 == 1) + b_Sound2  * (Sound2 == 2)  +
+      b_Smell * (Smell2 == 1) + b_Smell2 * (Smell2 == 2) +
+      b_Colour * (Colour2 == 1) + b_Colour2 * (Colour2 == 2) +
+      b_Deadwood * (Deadwood2 == 7) + b_Deadwood2 * (Deadwood2 == 15) -
+      Tax2)
+
+  V[['C']]  = asc_C
+
+  mnl_settings = list(
+    alternatives = c(A = 1, B = 2, C = 3),
+    avail        = list(A = 1, B = 1, C = 1),
+    choiceVar    = Choice,
+    V            = V
+  )
+
+  ## Compute probabilities using MNL model
+  P[['model']] = apollo_mnl(mnl_settings, functionality)
+
+  ## Take product across observation for same individual
+  P = apollo_panelProd(P, apollo_inputs, functionality)
+
+  ## Average across inter-individual draws
+  P = apollo_avgInterDraws(P, apollo_inputs, functionality)
+
+  ## Prepare and return outputs of function
+  P = apollo_prepareProb(P, apollo_inputs, functionality)
+  return(P)
+}
+
+
+# ****************************
+# Model Outputs: ####
+# ****************************
+
+#
+# ## Actually estimates the model
+Winter_Test_WTPSpaceUncorrelated = apollo_estimate(apollo_beta, apollo_fixed, apollo_probabilities, apollo_inputs)
+
+# Model output and results here alongside saving information
+apollo_modelOutput(Winter_Test_WTPSpaceUncorrelated,modelOutput_settings = list(printPVal=TRUE))
+apollo_saveOutput(Winter_Test_WTPSpaceUncorrelated,saveOutput_settings = list(printPVal=TRUE))
+# saveRDS(Winter_Test_WTPSpaceUncorrelated, here("CEoutput/ModelOne","Winter_Test_WTPSpaceUncorrelated.rds"))
+
+
+# ****************************
+# Summarise WTP: ####
+# ****************************
+
+
+## Calculate conditional WTP:
+# Model <- readRDS(here("CEoutput/ModelOne","Winter_Test_WTPSpaceUncorrelated.rds")) ## Enter model of interest RDS here
+
+#
+# ## Calculate conditional WTP:
+# Winter_Test_WTPSpaceUncorrelated_ConWTP <- apollo_conditionals(Model,apollo_probabilities,apollo_inputs )
+# fwrite(Winter_Test_WTPSpaceUncorrelated_ConWTP %>% data.frame(),sep=",",
+#        here("CEoutput/ModelOne","Winter_Test_WTPSpaceUncorrelated_ConWTP.csv"))
+#
+#
+# ## Calculate unconditional WTP: (Needed for Fig.2. of the paper) [NOTE: Unconditionals make v large dataframes]
+# Winter_Test_WTPSpaceUncorrelated_UnconWTP <- apollo_unconditionals(Model,apollo_probabilities,apollo_inputs )
+# fwrite(Winter_Test_WTPSpaceUncorrelated_UnconWTP %>% data.frame(),sep=",",
+#        here("CEoutput/ModelOne","Winter_Test_WTPSpaceUncorrelated_UnconWTP.csv"))
+
+
+# *********************************************************************************************************
+#### END OF SCRIPT ####
+## Next Step: Run More Mixed Logit Models
+## Below: OLD CODE DO NOT USE
+# *********************************************************************************************************
+
+
+# here("CEModelScripts", "XX_Winter_MXL_ModelTwo_Correlated.R") %>% source()
+
+# End  -------------------------------------

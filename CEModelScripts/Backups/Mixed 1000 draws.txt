@@ -1,0 +1,60 @@
+Model run at                                : 2024-04-05 09:13:09.123865
+Estimation method                           : bfgs
+Model diagnosis                             : successful convergence
+Optimisation diagnosis                      : Maximum found
+     hessian properties                     : Negative definitive
+     maximum eigenvalue                     : -12.923704
+Number of individuals                       : 1769
+Number of rows in database                  : 15921
+Number of modelled outcomes                 : 15921
+
+Number of cores used                        :  6 
+Number of inter-individual draws            : 1000 (pmc)
+
+LL(start)                                   : -17491.01
+LL at equal shares, LL(0)                   : -17491.01
+LL at observed shares, LL(C)                : -17437.25
+LL(final)                                   : -14433.4
+Rho-squared vs equal shares                  :  0.1748 
+Adj.Rho-squared vs equal shares              :  0.1737 
+Rho-squared vs observed shares               :  0.1723 
+Adj.Rho-squared vs observed shares           :  0.1713 
+AIC                                         :  28904.79 
+BIC                                         :  29050.63 
+
+Estimated parameters                        : 19
+Time taken (hh:mm:ss)                       :  00:22:55.51 
+     pre-estimation                         :  00:05:23.95 
+     estimation                             :  00:06:39.65 
+          initial estimation                :  00:06:17.57 
+          estimation after rescaling        :  00:00:22.08 
+     post-estimation                        :  00:10:51.91 
+Iterations                                  :  41  
+     initial estimation                     :  40 
+     estimation after rescaling             :  1 
+
+Unconstrained optimisation.
+
+Estimates:
+                 Estimate        s.e.   t.rat.(0)  p(1-sided)    Rob.s.e. Rob.t.rat.(0)  p(1-sided)
+asc_A             0.00000          NA          NA          NA          NA            NA          NA
+asc_B             0.00000          NA          NA          NA          NA            NA          NA
+asc_C            -0.80309    0.057599    -13.9427     0.00000    0.068796      -11.6735     0.00000
+mu_Tax           -0.06347    0.002821    -22.4990     0.00000    0.003475      -18.2656     0.00000
+mu_Sound          0.33015    0.059144      5.5822   1.187e-08    0.056259        5.8685   2.199e-09
+mu_Smell          0.34429    0.062770      5.4849   2.068e-08    0.060128        5.7260   5.141e-09
+mu_Colour        -0.06643    0.075432     -0.8807     0.18924    0.065480       -1.0146     0.15516
+mu_Deadwood       0.24127    0.061220      3.9410   4.057e-05    0.058901        4.0962   2.100e-05
+sig_Tax          -0.08114    0.003105    -26.1302     0.00000    0.004226      -19.1994     0.00000
+sig_Sound        -0.25775    0.152825     -1.6866     0.04584    0.120016       -2.1476     0.01587
+sig_Smell        -0.37968    0.276306     -1.3741     0.08470    0.457214       -0.8304     0.20315
+sig_Colour       -1.39193    0.079734    -17.4572     0.00000    0.090437      -15.3912     0.00000
+sig_Deadwood     -1.27195    0.072881    -17.4523     0.00000    0.073821      -17.2302     0.00000
+mu_Sound2         0.09635    0.049339      1.9528     0.02542    0.047662        2.0215     0.02161
+mu_Smell2        -0.03594    0.048577     -0.7398     0.22971    0.046240       -0.7772     0.21852
+mu_Colour2       -0.12948    0.058020     -2.2316     0.01282    0.057810       -2.2397     0.01256
+mu_Deadwood2      0.72563    0.056088     12.9373     0.00000    0.056453       12.8537     0.00000
+sig_Sound2        1.26354    0.062391     20.2522     0.00000    0.070127       18.0179     0.00000
+sig_Smell2        0.97190    0.062392     15.5772     0.00000    0.066492       14.6167     0.00000
+sig_Colour2      -1.54030    0.068094    -22.6202     0.00000    0.076119      -20.2354     0.00000
+sig_Deadwood2    -1.22320    0.069537    -17.5906     0.00000    0.076163      -16.0603     0.00000
