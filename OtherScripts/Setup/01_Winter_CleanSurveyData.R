@@ -1,8 +1,11 @@
-#### RELATE WP5: Winter Paper Setting up data for analysis  ###############
+#### Stated preferences for the colours, smells and sounds of biodiversity  ###############
+# Project: ERC Relate Project. Work Package 5
+# Author: Dr Peter King (p.king1@leeds.ac.uk)
 # Function: To clean the survey data into usable inputs to the choice models.
-# Author: Dr Peter King (p.m.king@kent.ac.uk)
-# Last Edited: 03/02/2023
 # Notes: very long cleaning file but works.
+# Last Edited: 28/09/2024
+# - double-checking that it runs without errors
+# - postcode checks take forever
 
 
 # **********************************************************************************
@@ -12,29 +15,44 @@
 
 
 ## sessionInfo()-----------------------------------------------------------------
-# R version 4.2.0 (2022-04-22 ucrt)
-# Platform: x86_64-w64-mingw32/x64 (64-bit)
-# Running under: Windows 10 x64 (build 19044)
+# R version 4.4.1 (2024-06-14 ucrt)
+# Platform: x86_64-w64-mingw32/x64
+# Running under: Windows 11 x64 (build 22631)
 #
 # Matrix products: default
 #
+#
 # locale:
-#   [1] LC_COLLATE=English_United Kingdom.utf8  LC_CTYPE=English_United Kingdom.utf8    LC_MONETARY=English_United Kingdom.utf8
-# [4] LC_NUMERIC=C                            LC_TIME=English_United Kingdom.utf8
+#   [1] LC_COLLATE=English_United Kingdom.utf8
+# [2] LC_CTYPE=English_United Kingdom.utf8
+# [3] LC_MONETARY=English_United Kingdom.utf8
+# [4] LC_NUMERIC=C
+# [5] LC_TIME=English_United Kingdom.utf8
+#
+# time zone: Europe/London
+# tzcode source: internal
 #
 # attached base packages:
 #   [1] stats     graphics  grDevices utils     datasets  methods   base
 #
 # other attached packages:
-#   [1] udunits2_0.13.2.1  PostcodesioR_0.3.1 geosphere_1.5-18   psych_2.2.9        dplyr_1.0.10       magrittr_2.0.3     readxl_1.4.1
-# [8] here_1.0.1
+#   [1] udunits2_0.13.2.1  PostcodesioR_0.3.1 geosphere_1.5-18
+# [4] psych_2.4.3        readxl_1.4.3       lubridate_1.9.3
+# [7] forcats_1.0.0      stringr_1.5.1      dplyr_1.1.4
+# [10] purrr_1.0.2        readr_2.1.5        tidyr_1.3.1
+# [13] tibble_3.2.1       ggplot2_3.5.1      tidyverse_2.0.0
+# [16] data.table_1.15.4  magrittr_2.0.3     here_1.0.1
 #
 # loaded via a namespace (and not attached):
-#   [1] Rcpp_1.0.9       cellranger_1.1.0 pillar_1.8.1     compiler_4.2.0   tools_4.2.0      digest_0.6.31    evaluate_0.20    lifecycle_1.0.3
-# [9] tibble_3.1.8     nlme_3.1-157     lattice_0.20-45  pkgconfig_2.0.3  rlang_1.0.6      cli_3.6.0        DBI_1.1.3        rstudioapi_0.14
-# [17] yaml_2.3.6       parallel_4.2.0   xfun_0.36        fastmap_1.1.0    httr_1.4.4       knitr_1.41       generics_0.1.3   vctrs_0.5.1
-# [25] rprojroot_2.0.3  grid_4.2.0       tidyselect_1.2.0 glue_1.6.2       R6_2.5.1         fansi_1.0.3      rmarkdown_2.20   sp_1.6-0
-# [33] htmltools_0.5.4  assertthat_0.2.1 mnormt_2.1.1     utf8_1.2.2
+#   [1] gtable_0.3.5      compiler_4.4.1    Rcpp_1.0.12       tidyselect_1.2.1
+# [5] parallel_4.4.1    scales_1.3.0      lattice_0.22-6    R6_2.5.1
+# [9] generics_0.1.3    munsell_0.5.1     rprojroot_2.0.4   pillar_1.9.0
+# [13] tzdb_0.4.0        rlang_1.1.4       sp_2.1-4          utf8_1.2.4
+# [17] stringi_1.8.4     timechange_0.3.0  cli_3.6.3         withr_3.0.0
+# [21] grid_4.4.1        rstudioapi_0.16.0 hms_1.1.3         nlme_3.1-165
+# [25] lifecycle_1.0.4   vctrs_0.6.5       mnormt_2.1.1      glue_1.7.0
+# [29] cellranger_1.1.0  fansi_1.0.6       colorspace_2.1-0  httr_1.4.7
+# [33] tools_4.4.1       pkgconfig_2.0.3
 
 
 ## Libraries here: -----------------------------------------------------------------
@@ -47,12 +65,7 @@ library(dplyr)
 library(geosphere)
 library(PostcodesioR)
 library(udunits2)
-
-
-## Setting working directory
-# here()
-## Yes, I'm using here() for all imports and exports
-## I'm was trying to use renv() which is not as easy as first indicated
+library(data.table)
 
 
 
@@ -70,8 +83,20 @@ library(udunits2)
       here("OtherData", "Winter_SurveyData.xlsx"), n_max = 1
     ), paste)
 ) ## Here I import and concatenate the top two header rows from the data.
-Winter <- data.frame(read_xlsx(here("OtherData","Winter_SurveyData.xlsx"),sheet = 1,skip = 2,col_names = headers)) ## Import all the data and add the top two rows as headers.
+Winter <-
+  here("OtherData", "Winter_SurveyData.xlsx") %>%
+  read_xlsx(sheet = 1,
+            skip = 2,
+            col_names = headers) %>%
+  data.frame() ## Import all the data and add the top two rows as headers.
+
 attach(Winter) ## just makes it easier to refer to variables.
+
+
+Exclude <- here("OtherData",
+                "ExcludeList.csv") %>%
+  fread() %>%
+  data.frame()
 
 
 ## Trim to only completed responses
@@ -91,47 +116,97 @@ Winter$Season <- 0 ## Set to zero for later seasons
 
 # **********************************************************************************
 ## Start with BIOWELL responses first:
+## NOTE: ACTUAL BIOWELL SCORES HIDDEN IN THIS DATA
+## this is how you would use them if they were available
+## but instead skip this step
 # **********************************************************************************
+
 
 
 BioWell <-
   data.frame(Winter[c(52:136)]) ## Subset the winter data to only have biowell responses
-Factors2 <-
-  (fa(r = BioWell, 11, rotate = "none", fm = "pa")) ## Re-estimate with fewer factors
-Scores <-
-  data.frame(Factors2$scores) ## The scores are respondent-level values of each of the 11 factors
+# Factors2 <-
+#   (fa(r = BioWell, 11, rotate = "none", fm = "pa")) ## Re-estimate with fewer factors
+# Scores <-
+#   data.frame(Factors2$scores) ## The scores are respondent-level values of each of the 11 factors
+# Winter <-
+#   cbind(Winter, Scores) ## These are the factors you can cbind() to the data and include in models
+# # Winter <- Winter[!is.na(Winter$PA1),] ## Drop incomplete or missing data
+#
+#
+# ## This code calculates each respondents mean for each `stem` question (17 in total).
+# ## This is helpful to have one value per person per question which can then be used to calculate one `score` per person.
+# BioWellScores <-
+#   cbind(
+#     "Encountering.the.living.things" = BioWell %>% select(starts_with("Encountering.the.living.things")) %>% rowMeans(),
+#     "The.number.of.living.things" = BioWell %>% select(starts_with("The.number.of.living.things")) %>% rowMeans(),
+#     "The.variety.of.living.things" = BioWell %>% select(starts_with("The.variety.of.living.things")) %>% rowMeans(),
+#     "The.interactions.between.plants" = BioWell %>% select(starts_with("The.interactions.between.plants")) %>% rowMeans(),
+#     "The.living.processes" = BioWell %>% select(starts_with("The.living.processes")) %>% rowMeans(),
+#     "The.variety.of.sounds" = BioWell %>% select(starts_with("The.variety.of.sounds")) %>% rowMeans(),
+#     "The.distinctive.sounds" = BioWell %>% select(starts_with("The.distinctive.sounds")) %>% rowMeans(),
+#     "The.vivid.colours" = BioWell %>% select(starts_with("The.vivid.colours")) %>% rowMeans(),
+#     "The.variety.of.colours" = BioWell %>% select(starts_with("The.variety.of.colours")) %>% rowMeans(),
+#     "The.maturity.of.living.things" = BioWell %>% select(starts_with("The.maturity.of.living.things")) %>% rowMeans(),
+#     "The.variety.of.shapes" = BioWell %>% select(starts_with("The.variety.of.shapes")) %>% rowMeans(),
+#     "The.sponginess.of.living.things" = BioWell %>% select(starts_with("The.sponginess.of.living.things")) %>% rowMeans(),
+#     "The.variety.of.textures" = BioWell %>% select(starts_with("The.variety.of.textures")) %>% rowMeans(),
+#     "The.woody.smells" = BioWell %>% select(starts_with("The.woody.smells")) %>% rowMeans(),
+#     "The.variety.of.smells" = BioWell %>% select(starts_with("The.variety.of.smells")) %>% rowMeans(),
+#     "Changes.in.this.season" = BioWell %>% select(starts_with("Changes.in.this.season")) %>% rowMeans(),
+#     "The.presence.of.animals" = BioWell %>% select(starts_with("The.presence.of.animals")) %>% rowMeans()
+#   )
+#
+#
+# # BioWell_Everything <-cbind(BioWell,BioWellScores,"Overall"=rowSums(BioWellScores)/17)
+# Winter <-
+#   cbind(Winter, BioWellScores, "Overall" = rowSums(BioWellScores) / 17) ## Add a column to the Winter data with each persons mean biowell score.
+
+## Placeholder code to add zeroes rather than the real data
+## NOTE: not used in the analysis for this paper
+Winter$Encountering.the.living.things = 0
+Winter$The.number.of.living.things = 0
+Winter$The.variety.of.living.things = 0
+Winter$The.interactions.between.plants = 0
+Winter$The.living.processes = 0
+Winter$The.variety.of.sounds = 0
+Winter$The.distinctive.sounds = 0
+Winter$The.vivid.colours = 0
+Winter$The.variety.of.colours = 0
+Winter$The.maturity.of.living.things = 0
+Winter$The.variety.of.shapes = 0
+Winter$The.sponginess.of.living.things = 0
+Winter$The.variety.of.textures = 0
+Winter$The.woody.smells = 0
+Winter$The.variety.of.smells = 0
+Winter$Changes.in.this.season = 0
+Winter$The.presence.of.animals = 0
+
+
+## Modified code to keep scripts running but hiding biowell
 Winter <-
-  cbind(Winter, Scores) ## These are the factors you can cbind() to the data and include in models
-# Winter <- Winter[!is.na(Winter$PA1),] ## Drop incomplete or missing data
+  cbind(Winter,
+        "PA1" = 0,
+        "PA2" = 0,
+        "PA3" = 0,
+        "PA4" = 0,
+        "PA5" = 0,
+        "PA6" = 0,
+        "PA7" = 0,
+        "PA8" = 0,
+        "PA9" = 0,
+        "PA10" = 0,
+        "PA11" = 0,
+        "Overall" = 0) ## Add a column to the Winter data with each persons mean biowell score.
 
 
-## This code calculates each respondents mean for each `stem` question (17 in total).
-## This is helpful to have one value per person per question which can then be used to calculate one `score` per person.
-BioWellScores <-
-  cbind(
-    "Encountering.the.living.things" = BioWell %>% select(starts_with("Encountering.the.living.things")) %>% rowMeans(),
-    "The.number.of.living.things" = BioWell %>% select(starts_with("The.number.of.living.things")) %>% rowMeans(),
-    "The.variety.of.living.things" = BioWell %>% select(starts_with("The.variety.of.living.things")) %>% rowMeans(),
-    "The.interactions.between.plants" = BioWell %>% select(starts_with("The.interactions.between.plants")) %>% rowMeans(),
-    "The.living.processes" = BioWell %>% select(starts_with("The.living.processes")) %>% rowMeans(),
-    "The.variety.of.sounds" = BioWell %>% select(starts_with("The.variety.of.sounds")) %>% rowMeans(),
-    "The.distinctive.sounds" = BioWell %>% select(starts_with("The.distinctive.sounds")) %>% rowMeans(),
-    "The.vivid.colours" = BioWell %>% select(starts_with("The.vivid.colours")) %>% rowMeans(),
-    "The.variety.of.colours" = BioWell %>% select(starts_with("The.variety.of.colours")) %>% rowMeans(),
-    "The.maturity.of.living.things" = BioWell %>% select(starts_with("The.maturity.of.living.things")) %>% rowMeans(),
-    "The.variety.of.shapes" = BioWell %>% select(starts_with("The.variety.of.shapes")) %>% rowMeans(),
-    "The.sponginess.of.living.things" = BioWell %>% select(starts_with("The.sponginess.of.living.things")) %>% rowMeans(),
-    "The.variety.of.textures" = BioWell %>% select(starts_with("The.variety.of.textures")) %>% rowMeans(),
-    "The.woody.smells" = BioWell %>% select(starts_with("The.woody.smells")) %>% rowMeans(),
-    "The.variety.of.smells" = BioWell %>% select(starts_with("The.variety.of.smells")) %>% rowMeans(),
-    "Changes.in.this.season" = BioWell %>% select(starts_with("Changes.in.this.season")) %>% rowMeans(),
-    "The.presence.of.animals" = BioWell %>% select(starts_with("The.presence.of.animals")) %>% rowMeans()
-  )
-
-
-# BioWell_Everything <-cbind(BioWell,BioWellScores,"Overall"=rowSums(BioWellScores)/17)
-Winter <-
-  cbind(Winter, BioWellScores, "Overall" = rowSums(BioWellScores) / 17) ## Add a column to the Winter data with each persons mean biowell score.
+## Here I am storing the list of IDs to exclude (exclude = 1)
+## This list is from the full dataset with spatial data
+## but we can't give you that so I'm telling you who gets dropped
+## storing it in PA1 as (a) we never use it,
+## (b) don't want to add a new column and upset things later
+## Without this column I'd just give the spatial analysis files
+Winter$PA1 <- ifelse(Winter$ID %in% c(Exclude$.), 1, 0 )
 
 
 # **********************************************************************************
@@ -420,7 +495,8 @@ Winter$Spring20210WoodlandVisitDummy <- recode(Winter$Over.the.past.year..how.of
                                                "Once a week"=3,
                                                "Several times a week"=4,
                                                "Every day"=5)
-## THIS IS HOW YOU RENAME COLUMNS
+
+
 colnames(Winter)[which(names(Winter)=="Spring20210WoodlandVisitDummy")] <- "MostRecentVisit"
 
 
@@ -1208,11 +1284,27 @@ colnames(database)[which(names(database) == "Spring20210WoodlandVisitDummy")] <-
   "MostRecentVisit"
 
 
-## How to truncate the data for use in Apollo
-## NOTE: Not used anymore
-# database_Truncated <- database[database$Timing...Page.Submit...24/60 > quantile(database$Timing...Page.Submit...24/60,0.05),]
-# database_Truncated <- database_Truncated[database_Truncated$Protestor!=1,]
-# database_Truncated$Respondent <- rep(1:(nrow(database_Truncated)/9),each=(length(unique(database_Truncated$Task))))
+
+#
+#
+# ## Import Respondents Data
+# Winter <- here("OtherData","Winter_dataframe_Step4.csv") %>% fread() %>% data.frame()
+
+## Adding this here for ease of information
+Winter$SerialSQ <-
+  ifelse(Winter$Scenario.2  == "NO CHANGE" &
+           Winter$Scenario.4  == "NO CHANGE" &
+           Winter$Scenario.5  == "NO CHANGE" &
+           Winter$Scenario.11  == "NO CHANGE" &
+           Winter$Scenario.12 == "NO CHANGE" &
+           Winter$Scenario.14  == "NO CHANGE" &
+           Winter$Scenario.15  == "NO CHANGE" &
+           Winter$Scenario.17  == "NO CHANGE" &
+           Winter$Scenario.18  == "NO CHANGE",
+         0, 1
+  )
+
+database$SerialSQ <- rep(Winter$SerialSQ, each = 9)
 
 
 # ***********************
@@ -1223,9 +1315,6 @@ colnames(database)[which(names(database) == "Spring20210WoodlandVisitDummy")] <-
 
 ## These are the only ones we actually end up using
 ## Also fwrite() is much faster
-# write.csv(database, file = "database_Winter_Step1.csv", fileEncoding = "latin1")
-# write.csv(Winter,  file = "Winter_dataframe_Step1.csv", fileEncoding = "latin1")
-
 fwrite(database %>% data.frame(),
        sep = ",",
        here("OtherData", "database_Winter_Step1.csv"))
@@ -1234,14 +1323,9 @@ fwrite(Winter %>% data.frame(),
        sep = ",",
        here("OtherData", "Winter_dataframe_Step1.csv"))
 
-# write.csv(database_Truncated, file = "database_Truncated_Winter.csv", fileEncoding = "latin1")
-
-# write.csv(Winter_Truncated,  file = "Winter_Truncated_dataframe.csv", fileEncoding = "latin1")
-# write.csv(Reshaped, file = "Reshaped_Winter_dataframe.csv", fileEncoding = "latin1")
-
 
 # **********************************************************************************
 #### END OF SCRIPT ####
 ## Notes: Data now converted to usable dataframes: Winter_dataframe and database_Winter
-## Next step: Winter_SpatialSetup.R
+## Next step: 02_Winter_MNL_ModelZero.R
 # **********************************************************************************
