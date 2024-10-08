@@ -1,9 +1,9 @@
 ------------------------------
 ### ERC-Funded RELATE Project Work Package Five ####
 - Repo for the data and code for the "Stated preferences for the colours, smells and sounds of biodiversity. " from the RELATE ERC-funded project.
-- Accepted at Ecological Economics
+- Accepted at Ecological Economics: https://doi.org/10.1016/j.ecolecon.2024.108410 
 - Author: Peter King (p.king1@leeds.ac.uk)
-- Last Edited: 28/09/2024.
+- Last Edited: 08/10/2024.
 - Guide to replicating the paper from survey data
 
 
