@@ -15,6 +15,9 @@
   - For the full survey data please see: https://data.kent.ac.uk/480/
 - If all the CEoutput isn't here, it is at the above official repo.
 - We did loads of additional analysis which isn't here but ask me for it
+- Using specialist and High-Performance Computing systems provided by Information Services at the University of Kent. Using RStudio and Apollo (Hess and Palma, 2019).
+- This work was funded by the European Research Council (ERC) through the Horizon 2020 Research and Innovation Programme (Consolidator Grant no. 726104).
+- Ethical approval for the data collection was granted by the School of Anthropology and Conservation Research Ethics Committee, University of Kent (Ref: 009-ST-19).
 
 ------------------------------
 ##### Folders:
@@ -36,9 +39,6 @@ R version 4.4.1
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 Running under: Windows 11 x64 (build 19045)
 RStudio  "2023.06.2+561" "Mountain Hydrangea"
-Using specialist and High-Performance Computing systems provided by Information Services at the University of Kent. RStudio with Apollo.
-This work was funded by the European Research Council (ERC) through the Horizon 2020 Research and Innovation Programme (Consolidator Grant no. 726104).
-Ethical approval for the data collection was granted by the School of Anthropology and Conservation Research Ethics Committee, University of Kent (Ref: 009-ST-19).
 
 ------------------------------------------------------------------------
 
