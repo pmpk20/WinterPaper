@@ -1,6 +1,6 @@
 ------------------------------
 ### Stated preferences for the colours, smells and sounds of biodiversity: supporting dataset ####
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.594113641.svg)](https://doi.org/10.5281/zenodo.594113641)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.594113641.svg)](https://doi.org/10.5281/zenodo.20645895)
 
 
 - ERC-Funded RELATE Project Work Package Five repo for the data and code
